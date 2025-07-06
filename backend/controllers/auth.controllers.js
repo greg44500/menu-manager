@@ -203,7 +203,7 @@ const logout = asyncHandler(async (req, res) => {
         }
 
         // Supprimer le cookie contenant le token
-        res.cookie("token", "", {
+        res.cookie("jwt", "", {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             expires: new Date(0),

@@ -34,7 +34,12 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173', // URL exacte de votre frontend Vite
+  credentials: true, // Permet l'envoi des cookies
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.use(cookieParser());
 connectDB(); //Methode de connexion MongoDB
