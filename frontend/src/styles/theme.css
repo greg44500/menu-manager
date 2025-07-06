@@ -1,0 +1,217 @@
+/* ==========================================================================
+   THEME.CSS - Palette Terracotta avec support thème sombre/clair (Tailwind v4)
+   Basé sur : https://coolors.co/palette/fffcf2-ccc5b9-403d39-252422-eb5e28
+   ========================================================================== */
+
+/* === CONFIGURATION TAILWIND V4 === */
+@import "tailwindcss";
+
+@theme {
+  /* === COULEURS PERSONNALISÉES TAILWIND V4 === */
+  --color-primary: #EB5E28;
+  --color-primary-hover: #D04A1A;
+  --color-primary-light: #F07B4A;
+  --color-primary-pale: #FDF4F0;
+  --color-primary-dark: #B83E1A;
+
+  --color-secondary: #403D39;
+  --color-secondary-light: #5A5651;
+  --color-secondary-dark: #252422;
+
+  --color-background: #FFFCF2;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #CCC5B9;
+  --color-surface-hover: #F5F2EB;
+
+  --color-text-primary: #252422;
+  --color-text-secondary: #403D39;
+  --color-text-muted: #8B8680;
+  --color-text-inverse: #FFFCF2;
+
+  --color-success: #059669;
+  --color-success-bg: #ECFDF5;
+  --color-warning: #D97706;
+  --color-warning-bg: #FFFBEB;
+  --color-error: #DC2626;
+  --color-error-bg: #FEF2F2;
+  --color-info: #2563EB;
+  --color-info-bg: #EFF6FF;
+
+  --color-border: #CCC5B9;
+  --color-border-light: #E5DDD5;
+  --color-border-dark: #A8A196;
+
+  /* === ESPACEMENTS === */
+  --spacing-sidebar: 16rem;
+  --spacing-sidebar-collapsed: 4rem;
+
+  /* === OMBRES === */
+  --shadow-sm: 0 1px 2px 0 rgba(37, 36, 34, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(37, 36, 34, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(37, 36, 34, 0.1);
+}
+
+/* === THÈME CLAIR (PAR DÉFAUT) === */
+:root {
+  /* === COULEURS PRINCIPALES === */
+  --primary: #EB5E28;           /* Orange terracotta - Actions principales */
+  --primary-hover: #D04A1A;     /* Orange foncé pour hover */
+  --primary-light: #F07B4A;     /* Orange clair pour backgrounds */
+  --primary-pale: #FDF4F0;      /* Orange très pâle pour notifications */
+  --primary-dark: #B83E1A;      /* Orange sombre pour visited links */
+
+  --secondary: #403D39;         /* Charbon - Navigation, textes */
+  --secondary-light: #5A5651;   /* Charbon clair pour variations */
+  --secondary-dark: #252422;    /* Noir charbon - Headers, emphasis */
+
+  /* === BACKGROUNDS === */
+  --background: #FFFCF2;        /* Crème - Background principal */
+  --surface: #FFFFFF;           /* Blanc pur - Cards, modales */
+  --surface-alt: #CCC5B9;       /* Beige sable - Backgrounds secondaires */
+  --surface-hover: #F5F2EB;     /* Crème plus foncé pour hover */
+
+  /* === TEXTES === */
+  --text-primary: #252422;      /* Noir charbon - Texte principal */
+  --text-secondary: #403D39;    /* Charbon - Texte secondaire */
+  --text-muted: #8B8680;        /* Beige foncé - Texte désactivé */
+  --text-inverse: #FFFCF2;      /* Crème - Texte sur fond foncé */
+
+  /* === LIENS === */
+  --link: #EB5E28;              /* Orange - Liens normaux */
+  --link-hover: #D04A1A;        /* Orange foncé - Hover */
+  --link-visited: #B83E1A;      /* Orange sombre - Visités */
+
+  /* === ÉTATS === */
+  --success: #059669;           /* Vert - Succès */
+  --success-bg: #ECFDF5;        /* Vert pâle - Background succès */
+  --success-border: #10B981;    /* Vert pour bordures */
+
+  --warning: #D97706;           /* Orange foncé - Avertissements */
+  --warning-bg: #FFFBEB;        /* Orange très pâle */
+  --warning-border: #F59E0B;    /* Orange pour bordures */
+
+  --error: #DC2626;             /* Rouge - Erreurs */
+  --error-bg: #FEF2F2;          /* Rouge pâle */
+  --error-border: #EF4444;      /* Rouge pour bordures */
+
+  --info: #2563EB;              /* Bleu - Informations */
+  --info-bg: #EFF6FF;           /* Bleu pâle */
+  --info-border: #3B82F6;       /* Bleu pour bordures */
+
+  /* === BORDURES === */
+  --border: #CCC5B9;            /* Beige - Bordures normales */
+  --border-light: #E5DDD5;      /* Beige clair - Subtiles */
+  --border-dark: #A8A196;       /* Beige foncé - Marquées */
+  --border-focus: #EB5E28;      /* Orange - Focus */
+
+  /* === OMBRES === */
+  --shadow-sm: 0 1px 2px 0 rgba(37, 36, 34, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(37, 36, 34, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(37, 36, 34, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(37, 36, 34, 0.1);
+
+  /* === NAVIGATION === */
+  --nav-bg: #252422;            /* Noir charbon - Background nav */
+  --nav-text: #FFFCF2;          /* Crème - Texte nav */
+  --nav-active: #EB5E28;        /* Orange - Élément actif */
+  --nav-hover: rgba(255, 252, 242, 0.1); /* Crème transparent */
+  --nav-border: #403D39;        /* Charbon pour séparateurs */
+
+  /* === FORMULAIRES === */
+  --input-bg: #FFFFFF;          /* Blanc - Background inputs */
+  --input-border: #CCC5B9;      /* Beige - Bordures */
+  --input-focus: #EB5E28;       /* Orange - Focus */
+  --input-error: #DC2626;       /* Rouge - Erreur */
+  --input-disabled: #F5F2EB;    /* Crème foncé - Désactivé */
+
+  /* === BOUTONS === */
+  --btn-primary-bg: #EB5E28;
+  --btn-primary-hover: #D04A1A;
+  --btn-primary-active: #B83E1A;
+  --btn-primary-text: #FFFCF2;
+
+  --btn-secondary-bg: #CCC5B9;
+  --btn-secondary-hover: #A8A196;
+  --btn-secondary-active: #8B8680;
+  --btn-secondary-text: #252422;
+
+  --btn-ghost-bg: transparent;
+  --btn-ghost-hover: #FDF4F0;
+  --btn-ghost-text: #EB5E28;
+}
+
+/* === THÈME SOMBRE === */
+[data-theme="dark"] {
+  /* === COULEURS PRINCIPALES (identiques) === */
+  --primary: #EB5E28;
+  --primary-hover: #F07B4A;     /* Plus clair en mode sombre */
+  --primary-light: #D04A1A;
+  --primary-pale: #2A1611;      /* Très sombre */
+  --primary-dark: #F07B4A;
+
+  --secondary: #CCC5B9;         /* Beige devient principal en sombre */
+  --secondary-light: #E5DDD5;
+  --secondary-dark: #A8A196;
+
+  /* === BACKGROUNDS INVERSÉS === */
+  --background: #1A1917;        /* Très sombre */
+  --surface: #252422;           /* Charbon pour cards */
+  --surface-alt: #403D39;       /* Charbon clair pour variation */
+  --surface-hover: #2D2A26;     /* Légèrement plus clair */
+
+  /* === TEXTES INVERSÉS === */
+  --text-primary: #FFFCF2;      /* Crème - Texte principal */
+  --text-secondary: #CCC5B9;    /* Beige - Texte secondaire */
+  --text-muted: #8B8680;        /* Beige foncé - Désactivé */
+  --text-inverse: #252422;      /* Charbon sur fond clair */
+
+  /* === ÉTATS ADAPTÉS === */
+  --success-bg: #0A2B1F;        /* Vert très sombre */
+  --warning-bg: #2A1F0A;        /* Orange très sombre */
+  --error-bg: #2A0F0F;          /* Rouge très sombre */
+  --info-bg: #0F1A2A;           /* Bleu très sombre */
+
+  /* === BORDURES ADAPTÉES === */
+  --border: #403D39;            /* Charbon */
+  --border-light: #353229;      /* Charbon foncé */
+  --border-dark: #5A5651;       /* Charbon clair */
+
+  /* === OMBRES ADAPTÉES === */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+
+  /* === NAVIGATION ADAPTÉE === */
+  --nav-bg: #1A1917;           /* Plus sombre que le background */
+  --nav-hover: rgba(235, 94, 40, 0.1); /* Orange transparent */
+
+  /* === FORMULAIRES ADAPTÉS === */
+  --input-bg: #252422;          /* Charbon */
+  --input-disabled: #353229;    /* Charbon foncé */
+
+  /* === BOUTONS ADAPTÉS === */
+  --btn-secondary-bg: #403D39;
+  --btn-secondary-hover: #5A5651;
+  --btn-secondary-text: #FFFCF2;
+
+  --btn-ghost-hover: rgba(235, 94, 40, 0.1);
+}
+
+/* === CLASSES UTILITAIRES === */
+.theme-transition {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* === UTILITIES POUR DÉVELOPPEMENT === */
+.bg-primary { background-color: var(--primary); }
+.bg-secondary { background-color: var(--secondary); }
+.bg-surface { background-color: var(--surface); }
+.bg-background { background-color: var(--background); }
+
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-muted { color: var(--text-muted); }
+
+.border-default { border-color: var(--border); }
+.border-light { border-color: var(--border-light); }
