@@ -13,10 +13,12 @@
     "@reduxjs/toolkit": "^2.8.2",
     "@tailwindcss/vite": "^4.0.14",
     "axios": "^1.10.0",
+    "lucide-react": "^0.525.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hot-toast": "^2.5.2",
-    "react-redux": "^9.2.0"
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^7.6.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",

@@ -1,8 +1,9 @@
 // frontend/src/App.jsx
 import { Provider } from 'react-redux'
 import { store } from './store'
+import { router } from './router'
 import { Toaster } from 'react-hot-toast'
-import LoginForm from './components/auth/LoginForm'
+import { RouterProvider } from 'react-router-dom'
 
 // Import des styles globaux
 import './styles/globals.css'
@@ -12,13 +13,15 @@ import './styles/components.css'
 function App() {
   return (
     <Provider store={store}>
+        {/* React Router Provider */}
+      <RouterProvider router={router} />
       <div className="app theme-transition" style={{ 
         backgroundColor: 'var(--background)', 
         color: 'var(--text-primary)',
         minHeight: '100vh',
         padding: '2rem'
       }}>
-        <LoginForm />
+      
         
         {/* Configuration React Hot Toast avec thème terracotta */}
         <Toaster

@@ -747,3 +747,137 @@ box-shadow: none; /* <= Enlève les ombres au repos */
     padding: 0 0.75rem;
   }
 }
+
+/* === SMOOTH SIDEBAR =================================================== */
+.sidebar {
+  /* remplace la transition d’origine par une plus lente et sur transform */
+  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* état ouvert */
+.sidebar-expanded {
+  width: var(--spacing-sidebar);              /* 16 rem */
+  transform: translateX(0);
+}
+
+/* état fermé : même largeur, mais on la décale vers la gauche            */
+/* en ne laissant dépasser que 4 rem (= var(--spacing-sidebar-collapsed)) */
+.sidebar-collapsed {
+  width: var(--spacing-sidebar);
+  transform: translateX(
+    calc(-1 * (var(--spacing-sidebar) - var(--spacing-sidebar-collapsed)))
+  );
+}
+
+/* décalage progressif du contenu */
+.main-content {
+  transition: margin-left 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.main-content-shifted   { margin-left: var(--spacing-sidebar); }
+.main-content-collapsed { margin-left: var(--spacing-sidebar-collapsed); }
+
+/* === STYLES POUR LES BOUTONS DE NAVIGATION === */
+/* À ajouter dans ton fichier components.css */
+
+.nav-button {
+  background: transparent !important;
+  color: var(--text-secondary) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-button-active {
+  background: var(--primary-pale) !important;
+  color: var(--primary) !important;
+}
+
+.nav-button-inactive:hover {
+  background: rgba(235, 94, 40, 0.1) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Effet ripple subtil au clic */
+.nav-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(235, 94, 40, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.nav-button:active::before {
+  width: 100px;
+  height: 100px;
+}
+
+/* Assure que le contenu reste au-dessus */
+.nav-button > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* === BOUTONS DE NAVIGATION SIDEBAR === */
+.nav-button {
+  background: transparent !important;
+  color: var(--text-secondary) !important;
+}
+
+.nav-button-active {
+  background: var(--primary-pale) !important;
+  color: var(--primary) !important;
+}
+
+.nav-button-inactive:hover {
+  background: rgba(235, 94, 40, 0.1) !important;
+  color: var(--text-primary) !important;
+}
+
+.nav-button:active {
+  transform: scale(0.98);
+}
+
+/* === BOUTONS DE NAVIGATION SIDEBAR === */
+.nav-button {
+  background: transparent !important;
+  color: var(--text-secondary) !important;
+}
+
+.nav-button-active {
+  background: var(--primary-pale) !important;
+  color: var(--primary) !important;
+}
+
+.nav-button-inactive:hover {
+  background: rgba(235, 94, 40, 0.1) !important;
+  color: var(--text-primary) !important;
+}
+
+.nav-button:active {
+  transform: scale(0.98);
+}
+
+/* === BOUTONS D'ACTION SIDEBAR === */
+.action-button {
+  background: transparent !important;
+  color: var(--text-secondary) !important;
+  transition: all 0.2s ease;
+}
+
+.action-button:hover {
+  background: rgba(235, 94, 40, 0.08) !important;
+  color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  transform: translateY(-1px);
+}
+
+.action-button:active {
+  transform: translateY(0) scale(0.98);
+}

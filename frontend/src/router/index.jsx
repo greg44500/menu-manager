@@ -1,0 +1,106 @@
+// frontend/src/router/index.jsx
+import { createBrowserRouter, Navigate } from 'react-router-dom'
+
+// Composants de protection des routes
+import ProtectedRoute from '../components/auth/ProtectedRoute'
+import PublicRoute from '../components/auth/PublicRoute'
+
+// Pages d'authentification
+import LoginPage from '../pages/auth/Login'
+
+// Layout principal pour les pages protégées
+import Layout from '../components/layout/Layout'
+
+// Pages principales
+import Dashboard from '../pages/dashboard/Dashboard'
+import ClassroomList from '../pages/classrooms/ClassroomList'
+import ProgressionList from '../pages/progressions/ProgressionList'
+import UserList from '../pages/users/UserList'
+import MenuList from '../pages/menus/MenuList'
+import UserProfile from '../pages/users/UserProfile'
+import ChangePassword from '../pages/auth/ChangePassword'
+
+// Page 404
+import NotFound from '../components/common/NotFound'
+
+// CONFIGURATION DES ROUTES
+export const router = createBrowserRouter([
+  // ROUTES PUBLIQUES (accessibles sans connexion)
+  {
+    path: '/login',
+    element: (
+      <PublicRoute>
+        <LoginPage />
+      </PublicRoute>
+    ),
+  },
+
+  // ROUTES PROTÉGÉES (nécessitent une connexion)
+  {
+    path: '/',
+    element: (
+      <ProtectedRoute>
+        <Layout />
+      </ProtectedRoute>
+    ),
+    children: [
+      // Redirection par défaut vers dashboard
+      {
+        index: true,
+        element: <Navigate to="/dashboard" replace />
+      },
+
+      // DASHBOARD (accessible à tous les utilisateurs connectés)
+      {
+        path: 'dashboard',
+        element: <Dashboard />
+      },
+
+      // PROFIL UTILISATEUR (accessible à tous)
+      {
+        path: 'profile',
+        element: <UserProfile />
+      },
+
+      // CHANGEMENT DE MOT DE PASSE (accessible à tous)
+      {
+        path: 'change-password',
+        element: <ChangePassword />
+      },
+
+      // GESTION DES CLASSES (accessible à tous)
+      {
+        path: 'classrooms',
+        element: <ClassroomList />
+      },
+
+      // GESTION DES PROGRESSIONS (accessible à tous)
+      {
+        path: 'progressions',
+        element: <ProgressionList />
+      },
+
+      // GESTION DES MENUS (accessible à tous)
+      {
+        path: 'menus',
+        element: <MenuList />
+      },
+
+      // GESTION DES UTILISATEURS (managers et superAdmins uniquement)
+      {
+        path: 'users',
+        element: (
+          <ProtectedRoute requiredRoles={['manager', 'superAdmin']}>
+            <UserList />
+          </ProtectedRoute>
+        )
+      },
+    ]
+  },
+
+  // PAGE 404 (route catch-all)
+  {
+    path: '*',
+    element: <NotFound />
+  }
+])
