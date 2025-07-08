@@ -881,3 +881,169 @@ box-shadow: none; /* <= Enlève les ombres au repos */
 .action-button:active {
   transform: translateY(0) scale(0.98);
 }
+
+/* ==========================================================================
+   THEME ANIMATIONS - À ajouter à components.css
+   Animations spécifiques pour le toggle de thème
+   ========================================================================== */
+
+/* === ANIMATION SHIMMER POUR LE TOGGLE === */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* === TRANSITIONS GLOBALES POUR LE CHANGEMENT DE THÈME === */
+.theme-transition {
+  transition: 
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Applique la transition à tous les éléments pendant le changement de thème */
+* {
+  transition: 
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* === STYLES POUR LE TOGGLE THÈME === */
+.theme-toggle {
+  position: relative;
+  overflow: hidden;
+}
+
+/* État actif du toggle */
+.theme-toggle-active {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+}
+
+/* Bouton coulissant du toggle */
+.theme-toggle-button {
+  position: relative;
+  z-index: 2;
+}
+
+/* État actif du bouton coulissant */
+.theme-toggle-button-active {
+  background: var(--surface);
+}
+
+/* Effet de focus pour l'accessibilité */
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* === ANIMATIONS SPÉCIFIQUES AU MODE SOMBRE === */
+
+/* Pulse subtil pour les icônes */
+@keyframes theme-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+/* Animation pour l'icône lune en mode sombre */
+[data-theme="dark"] .theme-toggle-button .animate-pulse {
+  animation: theme-pulse 3s ease-in-out infinite;
+}
+
+/* Animation pour l'icône soleil en mode clair */
+.theme-toggle-button .animate-pulse {
+  animation: theme-pulse 2s ease-in-out infinite;
+}
+
+/* === MICRO-INTERACTIONS SUPPLÉMENTAIRES === */
+
+/* Effet hover sur le toggle */
+.theme-toggle:hover {
+  transform: scale(1.02);
+}
+
+.theme-toggle:active {
+  transform: scale(0.98);
+}
+
+/* Glow subtil en mode sombre */
+[data-theme="dark"] .theme-toggle-active {
+  box-shadow: 
+    0 4px 12px rgba(235, 94, 40, 0.3),
+    0 0 20px rgba(235, 94, 40, 0.1),
+    inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Ombre interne en mode clair */
+.theme-toggle:not(.theme-toggle-active) {
+  box-shadow: 
+    inset 0 2px 4px rgba(37, 36, 34, 0.1),
+    0 1px 2px rgba(37, 36, 34, 0.05);
+}
+
+/* === ANIMATION D'APPARITION AU CHARGEMENT === */
+.theme-toggle {
+  animation: fadeInScale 0.5s ease-out;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* === RESPONSIVE POUR LE TOGGLE === */
+@media (max-width: 768px) {
+  .theme-toggle {
+    /* Taille légèrement plus grande sur mobile pour la facilité d'utilisation */
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* === AMÉLIORATION DE L'ACCESSIBILITÉ === */
+
+/* Focus visible amélioré */
+.theme-toggle:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+  border-radius: 9999px;
+}
+
+/* Indication visuelle pour les utilisateurs qui préfèrent les mouvements réduits */
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle,
+  .theme-toggle-button {
+    transition-duration: 0.1s;
+  }
+  
+  .animate-pulse {
+    animation: none;
+  }
+  
+  @keyframes shimmer {
+    from, to {
+      transform: translateX(0);
+    }
+  }
+}

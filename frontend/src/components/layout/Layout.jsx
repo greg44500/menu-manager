@@ -3,12 +3,14 @@ import { useState } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import toast from 'react-hot-toast'
+import { useTheme } from '../../hooks/useTheme' // Import du hook thème
+import ThemeToggle from '../common/ThemeToggle' 
 import { Menu, ChevronLeft, House, GraduationCap, CalendarCog, Utensils, Users, CircleUserRound, Moon, Sun, Search, UserRoundPen } from 'lucide-react' 
 
 const Layout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const { isDarkMode } = useTheme() // Récupération de l'état du thème
   
   const { user, logout, isAdmin } = useAuth()
   const navigate = useNavigate()
@@ -238,7 +240,7 @@ const Layout = () => {
           backgroundColor: 'var(--surface)',
           borderBottom: '1px solid var(--border)',
           padding: '0 1.5rem',
-          height: '64px',
+          height: '75px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -281,6 +283,7 @@ const Layout = () => {
               gap: '1rem'
             }}>
               {/* Toggle thème */}
+              <ThemeToggle size="md" />
               <button
                 onClick={toggleTheme}
                 style={{
@@ -292,7 +295,6 @@ const Layout = () => {
                 }}
                 title="Changer de thème"
               >
-                {isDarkMode ? <Sun size={30} strokeWidth={1.25} /> : <Moon size={30} strokeWidth={1.25} />}
               </button>
 
               {/* Infos utilisateur */}

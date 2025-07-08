@@ -183,11 +183,126 @@ const deleteTeacher = asyncHandler(async (req, res) => {
   });
 });
 
+// ============================================================================
+// backend/controllers/user.controllers.js - FONCTIONS À AJOUTER
+// ============================================================================
+
+// **@desc : Get all users
+// **@Method : GET /api/users
+// **@Access : superAdmin, manager
+const getAllUsers = asyncHandler(async (req, res) => {
+  const users = await UserModel.find({})
+    .select('-password') // Exclure les mots de passe
+    .sort({ createdAt: -1 });
+
+  res.status(200).json({
+    success: true,
+    count: users.length,
+    data: users, // Utiliser 'data' au lieu de 'teachers' pour la cohérence
+  });
+});
+
+// **@desc : Get user by ID
+// **@Method : GET /api/users/:id
+// **@Access : superAdmin, manager
+const getUserById = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+
+  if (!isValidObjectId(id)) {
+    return next(new Error("ID utilisateur invalide"));
+  }
+
+  const user = await UserModel.findById(id).select('-password');
+  
+  if (!user) {
+    return next(new Error("Utilisateur non trouvé"));
+  }
+
+  res.status(200).json({
+    success: true,
+    data: user
+  });
+});
+
+// **@desc : Update user
+// **@Method : PUT /api/users/:id
+// **@Access : superAdmin, manager
+const updateUser = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const {
+    firstname,
+    lastname,
+    email,
+    role,
+    specialization,
+    isActive,
+    password
+  } = req.body;
+
+  if (!isValidObjectId(id)) {
+    return next(new Error("ID utilisateur invalide"));
+  }
+
+  const user = await UserModel.findById(id);
+  if (!user) {
+    return next(new Error("Utilisateur non trouvé"));
+  }
+
+  // Mise à jour des champs
+  if (firstname) user.firstname = firstname;
+  if (lastname) user.lastname = lastname;
+  if (email) user.email = email;
+  if (role) user.role = role;
+  if (specialization) user.specialization = specialization;
+  if (isActive !== undefined) user.isActive = isActive;
+  
+  // Mise à jour du mot de passe si fourni
+  if (password && password.trim()) {
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(password, salt);
+    user.isTemporaryPassword = true; // Nouveau mot de passe = temporaire
+    user.temporaryPasswordExpires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  }
+
+  const updatedUser = await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Utilisateur mis à jour avec succès",
+    data: updatedUser
+  });
+});
+
+// **@desc : Delete user
+// **@Method : DELETE /api/users/:id
+// **@Access : superAdmin
+const deleteUser = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+
+  if (!isValidObjectId(id)) {
+    return next(new Error("ID utilisateur invalide"));
+  }
+
+  const user = await UserModel.findByIdAndDelete(id);
+  if (!user) {
+    return next(new Error("Utilisateur non trouvé"));
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "Utilisateur supprimé avec succès"
+  });
+});
+
 module.exports = {
   getUserProfile,
   updatePassword,
   requestPasswordReset,
   resetPassword,
   getAllTeachers,
-  deleteTeacher
+  deleteTeacher,
+  getAllUsers,
+  getUserById,
+  updateUser,
+  deleteUser
 };
