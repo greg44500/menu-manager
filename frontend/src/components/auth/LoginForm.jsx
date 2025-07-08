@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../hooks/useAuth'
+import {EyeClosed, Eye} from 'lucide-react'
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
@@ -158,7 +159,7 @@ const LoginForm = () => {
                     fontSize: '0.875rem'
                   }}
                 >
-                  {showPassword ? '🙈' : '👀'}
+                  {showPassword ? <EyeClosed /> : <Eye />}
                 </button>
               </div>
             </div>

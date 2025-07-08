@@ -12,7 +12,10 @@ import LoginPage from '../pages/auth/Login'
 import Layout from '../components/layout/Layout'
 
 // Pages principales
-import Dashboard from '../pages/dashboard/Dashboard'
+import DashboardRouter from '../pages/dashboard/DashboardRouter'
+import SuperAdminDashboard from '../pages/dashboard/SuperAdminDashboard'
+import DashboardManager from '../pages/dashboard/DashboardManager'
+import DashboardUser from '../pages/dashboard/DashboardUser'
 import ClassroomList from '../pages/classrooms/ClassroomList'
 import ProgressionList from '../pages/progressions/ProgressionList'
 import UserList from '../pages/users/UserList'
@@ -53,7 +56,35 @@ export const router = createBrowserRouter([
       // DASHBOARD (accessible à tous les utilisateurs connectés)
       {
         path: 'dashboard',
-        element: <Dashboard />
+        element: (
+          <ProtectedRoute>
+            <DashboardRouter />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'admin/dashboard',
+        element: (
+          <ProtectedRoute requiredRoles={['superAdmin']}>
+            <SuperAdminDashboard />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'manager/dashboard',
+        element: (
+          <ProtectedRoute requiredRoles={['manager']}>
+            <DashboardManager />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'user/dashboard',
+        element: (
+          <ProtectedRoute requiredRoles={['user']}>
+            <DashboardUser />
+          </ProtectedRoute>
+        )
       },
 
       // PROFIL UTILISATEUR (accessible à tous)
@@ -68,25 +99,37 @@ export const router = createBrowserRouter([
         element: <ChangePassword />
       },
 
-      // GESTION DES CLASSES (accessible à tous)
+      // GESTION DES CLASSES (superAdmin et manager uniquement)
       {
         path: 'classrooms',
-        element: <ClassroomList />
+        element: (
+          <ProtectedRoute requiredRoles={['superAdmin', 'manager']}>
+            <ClassroomList />
+          </ProtectedRoute>
+        )
       },
 
-      // GESTION DES PROGRESSIONS (accessible à tous)
+      // GESTION DES PROGRESSIONS (accessible à tous les rôles)
       {
         path: 'progressions',
-        element: <ProgressionList />
+        element: (
+          <ProtectedRoute requiredRoles={['superAdmin', 'manager', 'user']}>
+            <ProgressionList />
+          </ProtectedRoute>
+        )
       },
 
-      // GESTION DES MENUS (accessible à tous)
+      // GESTION DES MENUS (accessible à tous les rôles)
       {
         path: 'menus',
-        element: <MenuList />
+        element: (
+          <ProtectedRoute requiredRoles={['superAdmin', 'manager', 'user']}>
+            <MenuList />
+          </ProtectedRoute>
+        )
       },
 
-      // GESTION DES UTILISATEURS (managers et superAdmins uniquement)
+      // GESTION DES UTILISATEURS (manager et superAdmins uniquement)
       {
         path: 'users',
         element: (

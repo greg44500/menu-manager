@@ -10,7 +10,7 @@ import { Menu, ChevronLeft, House, GraduationCap, CalendarCog, Utensils, Users, 
 const Layout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const { isDarkMode } = useTheme() // Récupération de l'état du thème
+  const {toggleTheme } = useTheme() // Récupération de l'état du thème
   
   const { user, logout, isAdmin } = useAuth()
   const navigate = useNavigate()
@@ -36,11 +36,6 @@ const Layout = () => {
     setSidebarCollapsed(!sidebarCollapsed)
   }
 
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode)
-    // TODO: Implémenter le changement de thème global
-    toast('Thème sombre à venir !', { icon: <Moon size={30} strokeWidth={1.25} />})
-  }
 
   // Navigation items selon les rôles
   const getNavigationItems = () => {
