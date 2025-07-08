@@ -4,7 +4,7 @@ import { setupListeners } from '@reduxjs/toolkit/query'
 
 // Import des slices
 import authSlice from './slices/authSlice'
-
+import dashboardReducer from './slices/dashboardSlice'
 // Import de l'API de base (RTK Query)
 import { baseApi } from './api/baseApi'
 
@@ -16,6 +16,7 @@ export const store = configureStore({
   reducer: {
     // Gestion de l'authentification
     auth: authSlice,
+    dashboard: dashboardReducer,
     
     // API centralisée avec RTK Query
     // POURQUOI ? RTK Query gère automatiquement :

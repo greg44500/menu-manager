@@ -1,10 +1,10 @@
 // frontend/src/components/users/UserTable.jsx
 import { useState } from 'react'
-import { 
-  useGetAllUsersQuery, 
-  useDeleteUserMutation 
+import {
+  useGetAllUsersQuery,
+  useDeleteUserMutation
 } from '../../store/api/usersApi'
-import UserModal from './UserModal'
+import UserModal from '../users/UserModal'
 
 /**
  * TABLEAU DES UTILISATEURS
@@ -28,15 +28,15 @@ const UserTable = () => {
   const [userToDelete, setUserToDelete] = useState(null)
 
   // RTK QUERY HOOKS
-  const { 
-    data: usersData, 
-    isLoading, 
-    error, 
-    refetch 
+  const {
+    data: usersData,
+    isLoading,
+    error,
+    refetch
   } = useGetAllUsersQuery()
 
-  const [deleteUser, { 
-    isLoading: isDeleting 
+  const [deleteUser, {
+    isLoading: isDeleting
   }] = useDeleteUserMutation()
 
   // DONNÉES UTILISATEURS
@@ -44,13 +44,13 @@ const UserTable = () => {
 
   // FILTRAGE ET RECHERCHE
   const filteredUsers = users.filter(user => {
-    const matchesSearch = 
+    const matchesSearch =
       user.firstname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.lastname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email?.toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesRole = filterRole === 'all' || user.role === filterRole
-    const matchesStatus = filterStatus === 'all' || 
+    const matchesStatus = filterStatus === 'all' ||
       (filterStatus === 'active' ? user.isActive : !user.isActive)
 
     return matchesSearch && matchesRole && matchesStatus
@@ -147,7 +147,7 @@ const UserTable = () => {
       <div className="alert alert-error">
         <p className="font-medium">Erreur lors du chargement des utilisateurs</p>
         <p>{error.data?.message || 'Erreur inconnue'}</p>
-        <button 
+        <button
           onClick={refetch}
           className="btn btn-sm btn-secondary mt-2"
         >
@@ -271,7 +271,7 @@ const UserTable = () => {
               {filteredUsers.length === 0 ? (
                 <tr>
                   <td colSpan="7" className="text-center p-8" style={{ color: 'var(--text-muted)' }}>
-                    {searchTerm || filterRole !== 'all' || filterStatus !== 'all' 
+                    {searchTerm || filterRole !== 'all' || filterStatus !== 'all'
                       ? 'Aucun utilisateur ne correspond aux filtres'
                       : 'Aucun utilisateur trouvé'
                     }
@@ -279,8 +279,8 @@ const UserTable = () => {
                 </tr>
               ) : (
                 filteredUsers.map((user) => (
-                  <tr 
-                    key={user._id} 
+                  <tr
+                    key={user._id}
                     className="border-b hover:bg-surface-hover transition-colors"
                     style={{ borderColor: 'var(--border)' }}
                   >
@@ -391,7 +391,7 @@ const UserTable = () => {
             <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
               Cette action est irréversible.
             </p>
-            
+
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setUserToDelete(null)}

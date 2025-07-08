@@ -9,16 +9,10 @@ import { Sun, Moon } from 'lucide-react'
  * - size: 'sm' | 'md' | 'lg' (défaut: 'md')
  * - showLabel: boolean (défaut: false)
  * - className: string pour styles additionnels
- * 
- * POURQUOI cette approche ?
- * - Animation fluide avec CSS personnalisés (components.css)
- * - Accessible (ARIA, focus visible, role switch)
- * - Cohérent avec le design terracotta existant
- * - Réutilisable avec différentes tailles
  */
-const ThemeToggle = ({ 
-  size = 'md', 
-  showLabel = false, 
+const ThemeToggle = ({
+  size = 'md',
+  showLabel = false,
   className = '',
   orientation = 'horizontal' // 'horizontal' | 'vertical'
 }) => {
@@ -52,7 +46,7 @@ const ThemeToggle = ({
   const config = sizeConfig[size] || sizeConfig.md
 
   return (
-    <div 
+    <div
       className={`
         flex items-center gap-3
         ${orientation === 'vertical' ? 'flex-col' : 'flex-row'}
@@ -61,7 +55,7 @@ const ThemeToggle = ({
     >
       {/* Label optionnel */}
       {showLabel && (
-        <span 
+        <span
           className={`
             ${config.labelSize} font-medium
             transition-colors duration-300 ease-in-out
@@ -71,7 +65,7 @@ const ThemeToggle = ({
           {isDarkMode ? 'Mode sombre' : 'Mode clair'}
         </span>
       )}
-      
+
       {/* Toggle Switch */}
       <button
         onClick={toggleTheme}
@@ -86,10 +80,9 @@ const ThemeToggle = ({
         `}
         style={{
           backgroundColor: isDarkMode ? 'var(--primary)' : 'var(--border)',
-          boxShadow: isDarkMode 
-            ? '0 4px 12px rgba(235, 94, 40, 0.3), inset 0 2px 4px rgba(0, 0, 0, 0.1)' 
-            : 'inset 0 2px 4px rgba(37, 36, 34, 0.1)',
-          focusRingColor: 'var(--primary)'
+          boxShadow: isDarkMode
+            ? '0 4px 12px rgba(235, 94, 40, 0.3), inset 0 2px 4px rgba(0, 0, 0, 0.1)'
+            : 'inset 0 2px 4px rgba(37, 36, 34, 0.1)'
         }}
         role="switch"
         aria-checked={isDarkMode}
@@ -100,15 +93,15 @@ const ThemeToggle = ({
         <span
           className={`
             theme-toggle-button
-            ${config.thumb} inline-block transform rounded-full 
-            transition-all duration-500 ease-in-out
-            flex items-center justify-center
-            ${isDarkMode ? config.translate : 'translate-x-0.5'}
-          `}
+            ${config.thumb}
+            inline-flex items-center justify-center
+            transition-transform duration-200 ease-in-out
+            ${isDarkMode ? 'theme-toggle-button-active' : ''}
+            `}
           style={{
             backgroundColor: 'var(--surface)',
-            boxShadow: isDarkMode 
-              ? '0 2px 8px rgba(0, 0, 0, 0.2)' 
+            boxShadow: isDarkMode
+              ? '0 2px 8px rgba(0, 0, 0, 0.2)'
               : '0 2px 4px rgba(37, 36, 34, 0.1)',
           }}
         >
@@ -117,15 +110,15 @@ const ThemeToggle = ({
             className="relative transition-all duration-300 ease-in-out flex items-center justify-center"
           >
             {isDarkMode ? (
-              <Moon 
-                size={config.iconSize} 
+              <Moon
+                size={config.iconSize}
                 strokeWidth={2}
                 style={{ color: 'var(--primary)' }}
                 className="drop-shadow-sm"
               />
             ) : (
-              <Sun 
-                size={config.iconSize} 
+              <Sun
+                size={config.iconSize}
                 strokeWidth={2}
                 style={{ color: 'var(--warning)' }}
                 className="drop-shadow-sm"
@@ -135,7 +128,7 @@ const ThemeToggle = ({
         </span>
 
         {/* Effet de brillance subtil */}
-        <span 
+        <span
           className={`
             absolute inset-0 rounded-full
             transition-opacity duration-500 ease-in-out pointer-events-none
