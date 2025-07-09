@@ -6,37 +6,44 @@ const {
     authorizeRoles
 } = require('../middlewares/auth.middlewares');
 
-const { getUserProfile, updatePassword, requestPasswordReset, resetPassword,  getAllUsers,
+const { 
+    getUserProfile, 
+    updatePassword, 
+    requestPasswordReset, 
+    resetPassword,  
+    getAllUsers,
     getUserById, 
     updateUser,
-    deleteUser } = require('../controllers/user.controllers');
+    deleteUser 
+} = require('../controllers/user.controllers');
+
 const sendReminderEmails = require('../utils/sendReminderMails');
-// Main User Profile Info Routes
+
+// ================================
+// ROUTES SPÉCIFIQUES EN PREMIER
+// ================================
+
+// Profil utilisateur connecté
 router.get('/profile', authenticateUser, getUserProfile);
-router.patch('/password/:id', authenticateUser, updatePassword);
-// router.get('/logout', authenticateUser, logout); //authenticateUser
 
-
-//** REQUEST AND RESET PASSWORD */
-// Route pour demander la réinitialisation du mot de passe
+// Routes reset password (SANS auth - normal pour reset)
 router.post("/request-password-reset", requestPasswordReset);
-
-// Route pour réinitialiser le mot de passe avec le token
 router.post("/reset-password", resetPassword);
-
-// Route pour rappeler le changement de mot de passe temporaire
 router.post("/send-password-reminders", sendReminderEmails);
-module.exports = router
 
-//** REQUEST ROUTES USER */
-// Récupérer tous les utilisateurs (superAdmin/manager uniquement)
+// Changement de mot de passe
+router.patch('/password/:id', authenticateUser, updatePassword);
+
+// ================================
+// ROUTES CRUD AVEC AUTHENTIFICATION
+// ================================
+
+// ✅ AUTHENTIFICATION REMISE : Récupérer tous les utilisateurs
 router.get('/', authenticateUser, authorizeRoles(['superAdmin', 'manager']), getAllUsers);
 
-// Récupérer un utilisateur spécifique (superAdmin/manager uniquement)
+// ✅ AUTHENTIFICATION REMISE : CRUD complet
 router.get('/:id', authenticateUser, authorizeRoles(['superAdmin', 'manager']), getUserById);
-
-// Mettre à jour un utilisateur (superAdmin/manager uniquement)
 router.put('/:id', authenticateUser, authorizeRoles(['superAdmin', 'manager']), updateUser);
-
-// Supprimer un utilisateur (superAdmin uniquement)
 router.delete('/:id', authenticateUser, authorizeRoles(['superAdmin']), deleteUser);
+
+module.exports = router;

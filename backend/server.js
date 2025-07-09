@@ -15,6 +15,7 @@ const locationRoutes = require("./routes/location.routes.js")
 const productionTypeRoutes = require("./routes/productionType.routes.js")
 const serviceRoutes = require("./routes/service.routes.js")
 const itemRoutes = require("./routes/items.routes.js")
+const menuRoutes = require ("./routes/menu.routes.js")
 const errorHandler = require("./middlewares/errorHandler")
 const morgan = require('morgan')
 
@@ -56,6 +57,8 @@ app.use("/api/locations", locationRoutes)
 app.use("/api/production-type", productionTypeRoutes)
 app.use("/api/services", serviceRoutes)
 app.use("/api/items", itemRoutes)
+app.use('/api/menus', menuRoutes)
+
 
 
 app.listen(port, () => {

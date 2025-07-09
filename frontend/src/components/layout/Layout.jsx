@@ -72,6 +72,7 @@ const Layout = () => {
   return (
     // 🔥 CONTAINER PRINCIPAL - Structure fixe
     <div style={{
+      '--spacing-sidebar': '250px',
       height: '100vh',
       display: 'flex',
       flexDirection: 'column',

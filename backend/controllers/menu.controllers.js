@@ -4,9 +4,9 @@ const asyncHandler = require('express-async-handler')
 // ** @desc    Créer un nouveau Menu (unique)
 // ** @route   POST /api/menus
 // ** @access  Formateur, Manager, Admin
-const asyncHandler = require("express-async-handler");
-const Menu = require("../models/menuModel");
-const Service = require("../models/serviceModel");
+
+
+const Service = require("../models/service.model");
 
 // @desc    Créer un menu
 // @route   POST /api/menus

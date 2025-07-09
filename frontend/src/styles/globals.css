@@ -56,6 +56,10 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--text-primary);
 }
 
+:root {
+  --spacing-sidebar: 250px;
+}
+
 p {
   margin: 0;
   line-height: 1.6;
@@ -148,3 +152,63 @@ button {
     padding: 0 0.75rem;
   }
 }
+
+/* Animation StatCard*/
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* 🎨 STYLES CSS POUR LES ANIMATIONS
+  @keyframes fadeInBlur {
+    from {
+      opacity: 0;
+      backdrop-filter: blur(0px);
+    }
+    to {
+      opacity: 1;
+      backdrop-filter: blur(8px) saturate(180%);
+    }
+  }
+
+  @keyframes slideInScale {
+    from {
+      opacity: 0;
+      transform: scale(0.95) translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  /* Animation de sortie (optionnelle) */
+  /* .modal-blur-wrapper.closing {
+    animation: fadeOutBlur 0.2s ease-in forwards;
+  }
+
+  @keyframes fadeOutBlur {
+    from {
+      opacity: 1;
+      backdrop-filter: blur(8px) saturate(180%);
+    }
+    to {
+      opacity: 0;
+      backdrop-filter: blur(0px);
+    }
+  } */ 
+

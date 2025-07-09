@@ -1047,3 +1047,127 @@ box-shadow: none; /* <= Enlève les ombres au repos */
     }
   }
 }
+
+/* === ANIMATIONS POUR BLUR MODAL === */
+/* À ajouter dans frontend/src/styles/components.css */
+
+/* Animation d'entrée de l'overlay avec flou */
+@keyframes fadeInBlur {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(8px) saturate(180%);
+    -webkit-backdrop-filter: blur(8px) saturate(180%);
+  }
+}
+
+/* Animation d'entrée de la modale */
+@keyframes slideInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Animation de sortie (optionnelle) */
+@keyframes fadeOutBlur {
+  from {
+    opacity: 1;
+    backdrop-filter: blur(8px) saturate(180%);
+    -webkit-backdrop-filter: blur(8px) saturate(180%);
+  }
+  to {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+  }
+}
+
+/* Animation de sortie modale */
+@keyframes slideOutScale {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95) translateY(-20px);
+  }
+}
+
+/* Support pour préférence mouvement réduit */
+@media (prefers-reduced-motion: reduce) {
+  @keyframes fadeInBlur {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes slideInScale {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
+
+/* === ANIMATIONS POUR MODALE === */
+/* À ajouter à la fin de frontend/src/styles/components.css */
+
+/* Animation d'entrée de l'overlay avec flou */
+@keyframes fadeInBlur {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(8px) saturate(180%);
+    -webkit-backdrop-filter: blur(8px) saturate(180%);
+  }
+}
+
+/* Animation d'entrée de la modale */
+@keyframes slideInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Animation de sortie (optionnelle) */
+@keyframes fadeOutBlur {
+  from {
+    opacity: 1;
+    backdrop-filter: blur(8px) saturate(180%);
+    -webkit-backdrop-filter: blur(8px) saturate(180%);
+  }
+  to {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+  }
+}
+
+/* Support pour préférence mouvement réduit */
+@media (prefers-reduced-motion: reduce) {
+  @keyframes fadeInBlur {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes slideInScale {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
