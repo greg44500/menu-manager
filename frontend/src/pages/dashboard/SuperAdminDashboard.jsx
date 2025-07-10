@@ -2,26 +2,24 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchDashboardStats } from '../../store/slices/dashboardSlice'
-import { useGetAllUsersQuery } from '../../store/api/usersApi' // ← NOUVEAU
+import { useGetAllUsersQuery } from '../../store/api/usersApi'
 import StatCard from '../../components/common/StatCard'
-import Modal from '../../components/common/Modal'
-import { Users, School, BarChart2, Utensils, Hourglass, AlertCircle, RotateCcw } from 'lucide-react'
-
-/**
- * DASHBOARD SUPER ADMIN
- * 
- * POURQUOI cette architecture ?
- * - fetchDashboardStats() : Récupère les COMPTEURS (performances optimisées)
- * - useGetAllUsersQuery() : Récupère les DONNÉES COMPLÈTES (pour la modale)
- * - Séparation des responsabilités : stats VS données détaillées
- */
+import DashboardSection from '../../pages/dashboard/DashboardSection'
+import UserModal from '../../pages/users/UserModal'
+import {
+  Users,
+  School,
+  BarChart2,
+  Utensils,
+  Hourglass,
+  AlertCircle,
+  RotateCcw
+} from 'lucide-react'
 
 const SuperAdminDashboard = () => {
+  const [activeSection, setActiveSection] = useState(null)
+  const [showUserModal, setShowUserModal] = useState(false)
 
-  // ÉTATS LOCAUX
-  const [isUsersModalOpen, setIsUsersModalOpen] = useState(false)
-
-  // REDUX - STATISTIQUES GÉNÉRALES
   const dispatch = useDispatch()
   const {
     usersCount,
@@ -32,55 +30,20 @@ const SuperAdminDashboard = () => {
     error: statsError
   } = useSelector(state => state.dashboard)
 
-  // RTK QUERY - DONNÉES UTILISATEURS COMPLÈTES
-  const {
-    data: usersData,
-    isLoading: usersLoading,
-    error: usersError,
-    refetch: refetchUsers
-  } = useGetAllUsersQuery(undefined, {
-    // OPTIMISATION : Ne charge que si modal ouverte
-    skip: !isUsersModalOpen,
-
-    refetchOnMountOrArgChange: true,
+  const usersQuery = useGetAllUsersQuery(undefined, {
+    skip: !showUserModal,
+    refetchOnMountOrArgChange: true
   })
+  const usersData = usersQuery?.data;
+  const usersLoading = usersQuery?.isLoading;
+  const usersError = usersQuery?.error;
 
-  //  AUTHENTIFICATION UTILISATEUR ACTUEL
   const { user: currentUser } = useSelector(state => state.auth)
 
-  //  HANDLERS
-  const handleOpenUsersModal = () => {
-    setIsUsersModalOpen(true)
-  }
-
-  const handleCloseUsersModal = () => {
-    setIsUsersModalOpen(false)
-  }
-
-  //  CHARGEMENT INITIAL DES STATS
   useEffect(() => {
     dispatch(fetchDashboardStats())
   }, [dispatch])
 
-  //  DEBUG COMPLET
-  console.log('Dashboard state:', {
-    // Stats générales
-    usersCount,
-    classroomsCount,
-    progressionsCount,
-    menusCount,
-    statsLoading,
-    statsError,
-    // Données utilisateurs
-    usersData,
-    usersLoading,
-    usersError,
-    // UI
-    isUsersModalOpen,
-    currentUser
-  })
-
-  // ÉTAT DE CHARGEMENT GLOBAL
   if (statsLoading) {
     return (
       <div style={{
@@ -98,7 +61,6 @@ const SuperAdminDashboard = () => {
     )
   }
 
-  //  GESTION DES ERREURS STATS
   if (statsError) {
     return (
       <div style={{
@@ -140,7 +102,7 @@ const SuperAdminDashboard = () => {
         Tableau de Bord Administrateur
       </h1>
 
-      {/* 🔥 SECTION STATS CLIQUABLES */}
+      {/* 🟦 STATISTIQUES GÉNÉRALES */}
       <div className="card" style={{ marginBottom: '2rem' }}>
         <div className="card-header">
           <h2 style={{
@@ -158,45 +120,66 @@ const SuperAdminDashboard = () => {
             gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
             gap: '1.5rem'
           }}>
-            {/* ⚡ CARTE UTILISATEURS - CLIQUABLE */}
             <StatCard
               title="Utilisateurs"
               count={usersCount || 0}
               icon={<Users size={24} />}
-              onClick={handleOpenUsersModal}
-              clickable={true}
+              onClick={() => setActiveSection('users')}
+              clickable
               variant="primary"
               loading={statsLoading}
-              hoverText="Cliquer pour voir la liste complète"
             />
-
-            {/* AUTRES CARTES - NON CLIQUABLES POUR L'INSTANT */}
             <StatCard
               title="Classes"
               count={classroomsCount || 0}
               icon={<School size={24} />}
-              clickable={false}
+              onClick={() => setActiveSection('classrooms')}
+              clickable
               variant="info"
             />
             <StatCard
               title="Progressions"
               count={progressionsCount || 0}
               icon={<BarChart2 size={24} />}
-              clickable={false}
+              onClick={() => setActiveSection('progressions')}
+              clickable
               variant="success"
             />
             <StatCard
               title="Menus"
               count={menusCount || 0}
               icon={<Utensils size={24} />}
-              clickable={false}
+              onClick={() => setActiveSection('menus')}
+              clickable
               variant="warning"
             />
           </div>
         </div>
       </div>
 
-      {/* 🔥 SECTION DEBUG - À GARDER TEMPORAIREMENT */}
+      {/* 🧩 SECTION DYNAMIQUE AFFICHÉE SELON LA STATCARD */}
+      {activeSection && (
+        <div className="mt-6">
+          <DashboardSection
+            section={activeSection}
+            onOpenUserModal={() => setShowUserModal(true)}
+          />
+        </div>
+
+      )}
+      {/* ⚡ MODALE AJOUT UTILISATEUR */}
+      {showUserModal && (
+        <UserModal
+          mode="create"
+          onClose={() => setShowUserModal(false)}
+          onSuccess={() => {
+            // Refetch users or refresh logic if needed
+            setShowUserModal(false)
+          }}
+        />
+      )}
+
+      {/* 🔍 INFOS DE DEBUG */}
       <div className="card" style={{ marginBottom: '2rem' }}>
         <div className="card-header">
           <h2 style={{
@@ -222,10 +205,8 @@ const SuperAdminDashboard = () => {
             <p><strong>Classrooms Count:</strong> {classroomsCount}</p>
             <p><strong>Progressions Count:</strong> {progressionsCount}</p>
             <p><strong>Menus Count:</strong> {menusCount}</p>
-
             <hr style={{ margin: '1rem 0', borderColor: 'var(--border)' }} />
-
-            <p><strong>Modal Open:</strong> {isUsersModalOpen ? 'true' : 'false'}</p>
+            <p><strong>Modal Open:</strong> {showUserModal ? 'true' : 'false'}</p>
             <p><strong>Users Loading:</strong> {usersLoading ? 'true' : 'false'}</p>
             <p><strong>Users Error:</strong> {usersError?.data?.message || 'null'}</p>
             <p><strong>Users Data Length:</strong> {usersData?.users?.length || 0}</p>
@@ -233,122 +214,6 @@ const SuperAdminDashboard = () => {
           </div>
         </div>
       </div>
-
-      {/* 🔥 SECTION ACTIONS RAPIDES */}
-      <div className="card">
-        <div className="card-header">
-          <h2 style={{
-            fontSize: '1.25rem',
-            fontWeight: '600',
-            color: 'var(--text-primary)',
-            margin: 0
-          }}>
-            Actions Rapides
-          </h2>
-        </div>
-        <div className="card-content">
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '1rem'
-          }}>
-            <button
-              className="btn btn-primary"
-              onClick={handleOpenUsersModal}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-            >
-              <Users size={18} />
-              Gérer les Utilisateurs
-            </button>
-
-            <button
-              className="btn btn-secondary"
-              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-            >
-              <School size={18} />
-              Gérer les Classes
-            </button>
-
-            <button
-              className="btn btn-ghost"
-              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-            >
-              <BarChart2 size={18} />
-              Voir Progressions
-            </button>
-
-            <button
-              className="btn btn-ghost"
-              onClick={() => {
-                dispatch(fetchDashboardStats())
-                if (isUsersModalOpen) refetchUsers()
-              }}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-            >
-              🔄 Actualiser
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* 🎯 MODALE UTILISATEURS AVEC DONNÉES RÉELLES */}
-      <Modal
-        isOpen={isUsersModalOpen}
-        onClose={handleCloseUsersModal}
-        title={`👥 Gestion des Utilisateurs`}
-        // ⚡ PASSAGE DES DONNÉES UTILISATEURS
-        usersData={usersData?.users || []} // Format: { users: [...], count: n }
-        currentUser={currentUser}
-        // 🎨 GESTION DU LOADING DANS LA MODALE
-        isLoading={usersLoading}
-        error={usersError}
-        onRefresh={refetchUsers}
-      >
-        {/* 🔄 GESTION DES ÉTATS DANS LA MODALE */}
-        {usersLoading && (
-          <div style={{
-            textAlign: 'center',
-            padding: '3rem',
-            color: 'var(--text-muted)'
-          }}>
-            <Hourglass size={32} className="animate-spin" style={{ marginBottom: '1rem' }} />
-            <p>Chargement des utilisateurs...</p>
-          </div>
-        )}
-
-        {usersError && !usersLoading && (
-          <div style={{
-            textAlign: 'center',
-            padding: '3rem',
-            color: 'var(--error)',
-            backgroundColor: 'var(--error-bg)',
-            borderRadius: '0.5rem',
-            margin: '1rem'
-          }}>
-            <AlertCircle size={32} style={{ marginBottom: '1rem' }} />
-            <p>Erreur : {usersError?.data?.message || 'Impossible de charger les utilisateurs'}</p>
-            <button
-              className="btn btn-primary"
-              onClick={refetchUsers}
-              style={{ marginTop: '1rem' }}
-            >
-              🔄 Réessayer
-            </button>
-          </div>
-        )}
-
-        {!usersLoading && !usersError && (!usersData?.users?.length) && (
-          <div style={{
-            textAlign: 'center',
-            padding: '3rem',
-            color: 'var(--text-muted)'
-          }}>
-            <Users size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />
-            <p>Aucun utilisateur trouvé</p>
-          </div>
-        )}
-      </Modal>
-
     </div>
   )
 }

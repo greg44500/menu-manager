@@ -1,9 +1,8 @@
 /* ==========================================================================
-   COMPONENTS.CSS - Styles de composants globaux (CSS Vanilla + Variables)
-   Compatible Tailwind v4
+   COMPONENTS.CSS - Version restaurée et optimisée
    ========================================================================== */
 
-/* === COMPOSANTS BOUTONS MODERNES === */
+/* === BOUTONS === */
 .btn {
   padding: 0.625rem 1.25rem;
   border-radius: 0.5rem;
@@ -19,18 +18,12 @@
   justify-content: center;
   text-decoration: none;
   overflow: hidden;
-  
-  /* Performance GPU */
   will-change: transform, box-shadow, background-color;
   backface-visibility: hidden;
   transform: translateZ(0);
-  
-  /* Micro-interactions fluides */
-  transition: 
-    all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Effet ripple subtil */
 .btn::before {
   content: '';
   position: absolute;
@@ -62,127 +55,41 @@
   filter: grayscale(0.5);
 }
 
-/* PRIMARY - Style Glass Morphism */
 .btn-primary {
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
   color: var(--text-inverse);
-box-shadow: none; /* <= Enlève les ombres au repos */
-  backdrop-filter: none; /* <= Enlève l'effet de flou au repos */
 }
 
 .btn-primary:hover:not(:disabled) {
   background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary-dark) 100%);
-  box-shadow: 
-    0 4px 16px rgba(235, 94, 40, 0.2),
-    0 2px 6px rgba(37, 36, 34, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 16px rgba(235, 94, 40, 0.2), 0 2px 6px rgba(37, 36, 34, 0.1);
   transform: translateY(-2px) scale(1.01);
 }
 
-.btn-primary:active:not(:disabled) {
-  transform: translateY(-1px) scale(0.98);
-  box-shadow: 
-    0 2px 8px rgba(235, 94, 40, 0.2),
-    0 1px 4px rgba(37, 36, 34, 0.1);
-  transition-duration: 0.15s;
-}
-
-/* SECONDARY - Style Neumorphism */
 .btn-secondary {
   background: var(--surface);
   color: var(--text-primary);
-  box-shadow: 
-    8px 8px 16px rgba(37, 36, 34, 0.1),
-    -8px -8px 16px rgba(255, 255, 255, 0.7),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  box-shadow: 8px 8px 16px rgba(37, 36, 34, 0.1), -8px -8px 16px rgba(255, 255, 255, 0.7);
   border: 1px solid rgba(204, 197, 185, 0.3);
 }
 
 .btn-secondary:hover:not(:disabled) {
   background: var(--surface-hover);
-  box-shadow: 
-    12px 12px 24px rgba(37, 36, 34, 0.15),
-    -12px -12px 24px rgba(255, 255, 255, 0.8),
-    inset 0 2px 4px rgba(235, 94, 40, 0.1);
   transform: translateY(-2px);
   border-color: var(--primary-light);
 }
 
-.btn-secondary:active:not(:disabled) {
-  box-shadow: 
-    inset 4px 4px 8px rgba(37, 36, 34, 0.1),
-    inset -4px -4px 8px rgba(255, 255, 255, 0.7);
-  transform: translateY(0);
-  transition-duration: 0.15s;
-}
-
-/* GHOST - Style Minimal avec effet Glow */
-.btn-ghost {
-  background: transparent;
-  color: var(--primary);
-  border: 1px solid rgba(235, 94, 40, 0.2);
-  position: relative;
-}
-
-.btn-ghost::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 0.5rem;
-  background: linear-gradient(135deg, transparent, rgba(235, 94, 40, 0.05), transparent);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.btn-ghost:hover:not(:disabled) {
-  background: var(--primary-pale);
-  color: var(--primary-dark);
-  border-color: var(--primary);
-  box-shadow: 
-    0 0 20px rgba(235, 94, 40, 0.2),
-    0 4px 12px rgba(37, 36, 34, 0.1);
-  transform: translateY(-2px);
-}
-
-.btn-ghost:hover:not(:disabled)::after {
-  opacity: 1;
-}
-
-.btn-ghost:active:not(:disabled) {
-  background: rgba(235, 94, 40, 0.1);
-  transform: translateY(0);
-  box-shadow: 
-    0 0 12px rgba(235, 94, 40, 0.15),
-    0 2px 6px rgba(37, 36, 34, 0.08);
-}
-
-/* DANGER - Style Gradient avec Warning Glow */
 .btn-danger {
   background: linear-gradient(135deg, var(--error) 0%, #dc2626 100%);
   color: var(--text-inverse);
-  box-shadow: 
-    0 8px 32px rgba(220, 38, 38, 0.3),
-    0 2px 8px rgba(37, 36, 34, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .btn-danger:hover:not(:disabled) {
   background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-  box-shadow: 
-    0 12px 48px rgba(220, 38, 38, 0.4),
-    0 4px 16px rgba(37, 36, 34, 0.15),
-    0 0 24px rgba(220, 38, 38, 0.3);
+  box-shadow: 0 12px 48px rgba(220, 38, 38, 0.4);
   transform: translateY(-3px) scale(1.02);
 }
 
-.btn-danger:active:not(:disabled) {
-  transform: translateY(-1px) scale(0.98);
-  box-shadow: 
-    0 6px 24px rgba(220, 38, 38, 0.35),
-    0 2px 8px rgba(37, 36, 34, 0.12);
-}
-
-/* Tailles avec proportions parfaites */
 .btn-sm {
   padding: 0.5rem 1rem;
   font-size: 0.8125rem;
@@ -199,12 +106,6 @@ box-shadow: none; /* <= Enlève les ombres au repos */
   padding: 1.125rem 2.25rem;
   font-size: 1.125rem;
   border-radius: 0.75rem;
-}
-
-/* Animation de loading intégrée */
-.btn-loading {
-  pointer-events: none;
-  position: relative;
 }
 
 .btn-loading::after {
@@ -224,202 +125,7 @@ box-shadow: none; /* <= Enlève les ombres au repos */
   100% { transform: rotate(360deg); }
 }
 
-/* Mode sombre adaptatif */
-[data-theme="dark"] .btn-secondary {
-  background: var(--surface);
-  box-shadow: 
-    8px 8px 16px rgba(0, 0, 0, 0.3),
-    -8px -8px 16px rgba(88, 82, 81, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-
-[data-theme="dark"] .btn-secondary:hover:not(:disabled) {
-  box-shadow: 
-    12px 12px 24px rgba(0, 0, 0, 0.4),
-    -12px -12px 24px rgba(88, 82, 81, 0.15),
-    inset 0 2px 4px rgba(235, 94, 40, 0.1);
-}
-
-/* Tailles de boutons */
-.btn-sm {
-  padding: 0.375rem 0.75rem;
-  font-size: 0.875rem;
-}
-
-.btn-lg {
-  padding: 0.75rem 1.5rem;
-  font-size: 1.125rem;
-}
-
-.btn-xl {
-  padding: 1rem 2rem;
-  font-size: 1.25rem;
-}
-
-/* === COMPOSANTS CARDS === */
-.card {
-  background-color: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.2s ease;
-}
-
-.card:hover {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-}
-
-.card-header {
-  padding: 1rem;
-  border-bottom: 1px solid var(--border);
-  background-color: var(--surface-hover);
-  border-top-left-radius: 0.5rem;
-  border-top-right-radius: 0.5rem;
-}
-
-.card-content {
-  padding: 1rem;
-}
-
-.card-footer {
-  padding: 1rem;
-  border-top: 1px solid var(--border);
-  background-color: var(--surface-hover);
-  border-bottom-left-radius: 0.5rem;
-  border-bottom-right-radius: 0.5rem;
-}
-
-/* === COMPOSANTS INPUTS === */
-.input {
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: 0.375rem;
-  background-color: var(--surface);
-  color: var(--text-primary);
-  transition: all 0.2s ease;
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-}
-
-.input::placeholder {
-  color: var(--text-muted);
-}
-
-.input:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(235, 94, 40, 0.2);
-}
-
-.input-error {
-  border-color: var(--error);
-}
-
-.input-error:focus {
-  border-color: var(--error);
-  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
-}
-
-.input-success {
-  border-color: var(--success);
-}
-
-.input-success:focus {
-  border-color: var(--success);
-  box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2);
-}
-
-.label {
-  display: block;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  margin-bottom: 0.25rem;
-}
-
-.label-required::after {
-  content: " *";
-  color: var(--error);
-}
-
-/* === COMPOSANTS MODALES === */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1040;
-  transition: opacity 0.3s ease;
-}
-
-.modal-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1050;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-}
-
-.modal-content {
-  background-color: var(--surface);
-  border-radius: 0.5rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  max-width: 28rem;
-  width: 100%;
-  transform: scale(1);
-  transition: all 0.3s ease;
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.modal-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.modal-close {
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: color 0.2s ease;
-  background: none;
-  border: none;
-  font-size: 1.25rem;
-  padding: 0.25rem;
-}
-
-.modal-close:hover {
-  color: var(--text-primary);
-}
-
-.modal-body {
-  padding: 1rem;
-}
-
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  padding: 1rem;
-  border-top: 1px solid var(--border);
-}
-
-/* === COMPOSANTS BADGES === */
+/* === BADGES === */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -455,719 +161,134 @@ box-shadow: none; /* <= Enlève les ombres au repos */
   color: var(--info);
 }
 
-/* === COMPOSANTS ALERTS === */
-.alert {
-  padding: 1rem;
+/* === INPUTS === */
+.input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
   border-radius: 0.375rem;
-  border-left: 4px solid;
+  background-color: var(--surface);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  transition: all 0.2s ease;
 }
 
-.alert-success {
-  background-color: var(--success-bg);
-  border-left-color: var(--success);
-  color: var(--success);
+.input::placeholder {
+  color: var(--text-muted);
 }
 
-.alert-warning {
-  background-color: var(--warning-bg);
-  border-left-color: var(--warning);
-  color: var(--warning);
+.input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(235, 94, 40, 0.2);
 }
 
-.alert-error {
-  background-color: var(--error-bg);
-  border-left-color: var(--error);
+.input-error {
+  border-color: var(--error);
+}
+
+.input-error:focus {
+  border-color: var(--error);
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
+}
+
+.label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.label-required::after {
+  content: " *";
   color: var(--error);
 }
 
-.alert-info {
-  background-color: var(--info-bg);
-  border-left-color: var(--info);
-  color: var(--info);
-}
-
-/* === COMPOSANTS NAVIGATION === */
-.nav-item {
-  display: flex;
-  align-items: center;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.nav-item-active {
-  background-color: var(--primary);
-  color: var(--text-inverse);
-}
-
-.nav-item-inactive {
-  color: var(--text-muted);
-}
-
-.nav-item-inactive:hover {
-  color: var(--text-primary);
-  background-color: var(--surface-hover);
-}
-
-/* === COMPOSANTS SIDEBAR === */
-.sidebar {
-  position: fixed;
-  left: 0;
-  top: 0;
-  height: 100vh;
-  background-color: var(--secondary-dark);
-  color: var(--text-inverse);
-  transition: transform 0.3s ease;
-  z-index: 1030;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-}
-
-.sidebar-expanded {
-  width: 16rem;
-}
-
-.sidebar-collapsed {
-  width: 4rem;
-}
-
-.sidebar-header {
-  padding: 1rem;
-  border-bottom: 1px solid var(--secondary);
-}
-
-.sidebar-nav {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1rem 0;
-}
-
-.sidebar-nav-group {
-  margin-bottom: 1.5rem;
-}
-
-.sidebar-nav-group-title {
-  padding: 0.5rem 1rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.sidebar-nav-item {
-  display: flex;
-  align-items: center;
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  color: var(--text-inverse);
-  transition: background-color 0.2s ease;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.sidebar-nav-item:hover {
-  background-color: var(--secondary);
-}
-
-.sidebar-nav-item-active {
-  background-color: var(--primary);
-  color: var(--text-inverse);
-}
-
-.sidebar-nav-icon {
-  width: 1.25rem;
-  height: 1.25rem;
-  margin-right: 0.75rem;
-  flex-shrink: 0;
-}
-
-/* === COMPOSANTS MAIN CONTENT === */
-.main-content {
-  transition: all 0.3s ease;
-  min-height: 100vh;
-  background-color: var(--background);
-}
-
-.main-content-shifted {
-  margin-left: 16rem;
-}
-
-.main-content-collapsed {
-  margin-left: 4rem;
-}
-
-/* === COMPOSANTS HEADER/NAVBAR === */
-.header {
-  position: sticky;
-  top: 0;
-  z-index: 1020;
+/* === CARDS === */
+.card {
   background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease;
+}
+
+.card-header {
+  padding: 1rem;
   border-bottom: 1px solid var(--border);
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  background-color: var(--surface-hover);
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
 }
 
-.header-content {
+.card-content {
+  padding: 1rem;
+}
+
+.card-footer {
+  padding: 1rem;
+  border-top: 1px solid var(--border);
+  background-color: var(--surface-hover);
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+}
+
+.form-group {
+  margin-bottom: 1rem; /* espace vertical entre les champs */
+}
+
+.form-error {
+  color: var(--error);
+  font-size: 0.75rem; /* équivalent à text-sm */
+  margin-top: 0.25rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  height: 4rem;
-  padding: 0 1rem;
+  gap: 0.25rem;
 }
 
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+/* === ANIMATIONS === */
+@keyframes fadeInBlur {
+  from { opacity: 0; backdrop-filter: blur(0px); }
+  to { opacity: 1; backdrop-filter: blur(8px); }
 }
 
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+@keyframes slideInScale {
+  from { opacity: 0; transform: scale(0.95) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-/* === COMPOSANTS LOADING === */
-.loading-spinner {
-  border: 2px solid var(--border);
-  border-top: 2px solid var(--primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+@keyframes fadeOutBlur {
+  from { opacity: 1; backdrop-filter: blur(8px); }
+  to { opacity: 0; backdrop-filter: blur(0px); }
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* === COMPOSANTS TOGGLE THÈME === */
-.theme-toggle {
-  position: relative;
-  display: inline-flex;
-  height: 1.5rem;
-  width: 2.75rem;
-  align-items: center;
-  border-radius: 9999px;
-  background-color: var(--border);
-  transition: background-color 0.2s ease;
-  cursor: pointer;
-  border: none;
-  outline: none;
-}
-
-.theme-toggle:focus {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-}
-
-.theme-toggle-active {
-  background-color: var(--primary);
-}
-
-.theme-toggle-button {
-  display: inline-block;
-  height: 1rem;
-  width: 1rem;
-  border-radius: 50%;
-  background-color: white;
-  transition: transform 0.2s ease;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  margin-left: 0.25rem;
-}
-
-.theme-toggle-button-active {
-  transform: translateX(1.25rem);
-}
-
-/* === ANIMATIONS GLOBALES === */
-.fade-in {
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-.slide-in-right {
-  animation: slideInRight 0.3s ease-out;
-}
-
-.slide-in-left {
-  animation: slideInLeft 0.3s ease-out;
-}
-
-@keyframes fadeIn {
-  from { 
-    opacity: 0; 
-    transform: translateY(10px); 
-  }
-  to { 
-    opacity: 1; 
-    transform: translateY(0); 
-  }
-}
-
-@keyframes slideInRight {
-  from { 
-    opacity: 0; 
-    transform: translateX(20px); 
-  }
-  to { 
-    opacity: 1; 
-    transform: translateX(0); 
-  }
-}
-
-@keyframes slideInLeft {
-  from { 
-    opacity: 0; 
-    transform: translateX(-20px); 
-  }
-  to { 
-    opacity: 1; 
-    transform: translateX(0); 
-  }
-}
-
-/* === RESPONSIVE === */
-@media (max-width: 768px) {
-  .sidebar {
-    transform: translateX(-100%);
-  }
-  
-  .sidebar-mobile-open {
-    transform: translateX(0);
-  }
-  
-  .main-content-shifted,
-  .main-content-collapsed {
-    margin-left: 0;
-  }
-  
-  .header-content {
-    padding: 0 0.75rem;
-  }
-}
-
-/* === SMOOTH SIDEBAR =================================================== */
-.sidebar {
-  /* remplace la transition d’origine par une plus lente et sur transform */
-  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* état ouvert */
-.sidebar-expanded {
-  width: var(--spacing-sidebar);              /* 16 rem */
-  transform: translateX(0);
-}
-
-/* état fermé : même largeur, mais on la décale vers la gauche            */
-/* en ne laissant dépasser que 4 rem (= var(--spacing-sidebar-collapsed)) */
-.sidebar-collapsed {
-  width: var(--spacing-sidebar);
-  transform: translateX(
-    calc(-1 * (var(--spacing-sidebar) - var(--spacing-sidebar-collapsed)))
-  );
-}
-
-/* décalage progressif du contenu */
-.main-content {
-  transition: margin-left 0.45s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.main-content-shifted   { margin-left: var(--spacing-sidebar); }
-.main-content-collapsed { margin-left: var(--spacing-sidebar-collapsed); }
-
-/* === STYLES POUR LES BOUTONS DE NAVIGATION === */
-/* À ajouter dans ton fichier components.css */
-
-.nav-button {
-  background: transparent !important;
-  color: var(--text-secondary) !important;
-  position: relative;
-  overflow: hidden;
-}
-
-.nav-button-active {
-  background: var(--primary-pale) !important;
-  color: var(--primary) !important;
-}
-
-.nav-button-inactive:hover {
-  background: rgba(235, 94, 40, 0.1) !important;
-  color: var(--text-primary) !important;
-}
-
-/* Effet ripple subtil au clic */
-.nav-button::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(235, 94, 40, 0.2);
-  transform: translate(-50%, -50%);
-  transition: width 0.3s ease, height 0.3s ease;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.nav-button:active::before {
-  width: 100px;
-  height: 100px;
-}
-
-/* Assure que le contenu reste au-dessus */
-.nav-button > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* === BOUTONS DE NAVIGATION SIDEBAR === */
-.nav-button {
-  background: transparent !important;
-  color: var(--text-secondary) !important;
-}
-
-.nav-button-active {
-  background: var(--primary-pale) !important;
-  color: var(--primary) !important;
-}
-
-.nav-button-inactive:hover {
-  background: rgba(235, 94, 40, 0.1) !important;
-  color: var(--text-primary) !important;
-}
-
-.nav-button:active {
-  transform: scale(0.98);
-}
-
-/* === BOUTONS DE NAVIGATION SIDEBAR === */
-.nav-button {
-  background: transparent !important;
-  color: var(--text-secondary) !important;
-}
-
-.nav-button-active {
-  background: var(--primary-pale) !important;
-  color: var(--primary) !important;
-}
-
-.nav-button-inactive:hover {
-  background: rgba(235, 94, 40, 0.1) !important;
-  color: var(--text-primary) !important;
-}
-
-.nav-button:active {
-  transform: scale(0.98);
-}
-
-/* === BOUTONS D'ACTION SIDEBAR === */
-.action-button {
-  background: transparent !important;
-  color: var(--text-secondary) !important;
-  transition: all 0.2s ease;
-}
-
-.action-button:hover {
-  background: rgba(235, 94, 40, 0.08) !important;
-  color: var(--primary) !important;
-  border-color: var(--primary) !important;
-  transform: translateY(-1px);
-}
-
-.action-button:active {
-  transform: translateY(0) scale(0.98);
-}
-
-/* ==========================================================================
-   THEME ANIMATIONS - À ajouter à components.css
-   Animations spécifiques pour le toggle de thème
-   ========================================================================== */
-
-/* === ANIMATION SHIMMER POUR LE TOGGLE === */
 @keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  50% {
-    transform: translateX(100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(100%); }
+  100% { transform: translateX(100%); }
 }
 
-/* === TRANSITIONS GLOBALES POUR LE CHANGEMENT DE THÈME === */
-.theme-transition {
-  transition: 
-    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Applique la transition à tous les éléments pendant le changement de thème */
-* {
-  transition: 
-    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* === STYLES POUR LE TOGGLE THÈME === */
-.theme-toggle {
-  position: relative;
-  overflow: hidden;
-}
-
-/* État actif du toggle */
-.theme-toggle-active {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
-}
-
-/* Bouton coulissant du toggle */
-.theme-toggle-button {
-  position: relative;
-  z-index: 2;
-}
-
-/* État actif du bouton coulissant */
-.theme-toggle-button-active {
-  background: var(--surface);
-}
-
-/* Effet de focus pour l'accessibilité */
-.theme-toggle:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
-}
-
-/* === ANIMATIONS SPÉCIFIQUES AU MODE SOMBRE === */
-
-/* Pulse subtil pour les icônes */
 @keyframes theme-pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.05);
-  }
-}
-
-/* Animation pour l'icône lune en mode sombre */
-[data-theme="dark"] .theme-toggle-button .animate-pulse {
-  animation: theme-pulse 3s ease-in-out infinite;
-}
-
-/* Animation pour l'icône soleil en mode clair */
-.theme-toggle-button .animate-pulse {
-  animation: theme-pulse 2s ease-in-out infinite;
-}
-
-/* === MICRO-INTERACTIONS SUPPLÉMENTAIRES === */
-
-/* Effet hover sur le toggle */
-.theme-toggle:hover {
-  transform: scale(1.02);
-}
-
-.theme-toggle:active {
-  transform: scale(0.98);
-}
-
-/* Glow subtil en mode sombre */
-[data-theme="dark"] .theme-toggle-active {
-  box-shadow: 
-    0 4px 12px rgba(235, 94, 40, 0.3),
-    0 0 20px rgba(235, 94, 40, 0.1),
-    inset 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Ombre interne en mode clair */
-.theme-toggle:not(.theme-toggle-active) {
-  box-shadow: 
-    inset 0 2px 4px rgba(37, 36, 34, 0.1),
-    0 1px 2px rgba(37, 36, 34, 0.05);
-}
-
-/* === ANIMATION D'APPARITION AU CHARGEMENT === */
-.theme-toggle {
-  animation: fadeInScale 0.5s ease-out;
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
 }
 
 @keyframes fadeInScale {
-  from {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
 }
 
-/* === RESPONSIVE POUR LE TOGGLE === */
+/* === ACCESSIBILITÉ & RESPONSIVE === */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse { animation: none; }
+  * { transition-duration: 0.1s; }
+}
+
 @media (max-width: 768px) {
-  .theme-toggle {
-    /* Taille légèrement plus grande sur mobile pour la facilité d'utilisation */
-    min-height: 44px;
-    min-width: 44px;
-  }
-}
-
-/* === AMÉLIORATION DE L'ACCESSIBILITÉ === */
-
-/* Focus visible amélioré */
-.theme-toggle:focus-visible {
-  outline: 3px solid var(--primary);
-  outline-offset: 3px;
-  border-radius: 9999px;
-}
-
-/* Indication visuelle pour les utilisateurs qui préfèrent les mouvements réduits */
-@media (prefers-reduced-motion: reduce) {
-  .theme-toggle,
-  .theme-toggle-button {
-    transition-duration: 0.1s;
-  }
-  
-  .animate-pulse {
-    animation: none;
-  }
-  
-  @keyframes shimmer {
-    from, to {
-      transform: translateX(0);
-    }
-  }
-}
-
-/* === ANIMATIONS POUR BLUR MODAL === */
-/* À ajouter dans frontend/src/styles/components.css */
-
-/* Animation d'entrée de l'overlay avec flou */
-@keyframes fadeInBlur {
-  from {
-    opacity: 0;
-    backdrop-filter: blur(0px);
-    -webkit-backdrop-filter: blur(0px);
-  }
-  to {
-    opacity: 1;
-    backdrop-filter: blur(8px) saturate(180%);
-    -webkit-backdrop-filter: blur(8px) saturate(180%);
-  }
-}
-
-/* Animation d'entrée de la modale */
-@keyframes slideInScale {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-/* Animation de sortie (optionnelle) */
-@keyframes fadeOutBlur {
-  from {
-    opacity: 1;
-    backdrop-filter: blur(8px) saturate(180%);
-    -webkit-backdrop-filter: blur(8px) saturate(180%);
-  }
-  to {
-    opacity: 0;
-    backdrop-filter: blur(0px);
-    -webkit-backdrop-filter: blur(0px);
-  }
-}
-
-/* Animation de sortie modale */
-@keyframes slideOutScale {
-  from {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: scale(0.95) translateY(-20px);
-  }
-}
-
-/* Support pour préférence mouvement réduit */
-@media (prefers-reduced-motion: reduce) {
-  @keyframes fadeInBlur {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  
-  @keyframes slideInScale {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-}
-
-/* === ANIMATIONS POUR MODALE === */
-/* À ajouter à la fin de frontend/src/styles/components.css */
-
-/* Animation d'entrée de l'overlay avec flou */
-@keyframes fadeInBlur {
-  from {
-    opacity: 0;
-    backdrop-filter: blur(0px);
-    -webkit-backdrop-filter: blur(0px);
-  }
-  to {
-    opacity: 1;
-    backdrop-filter: blur(8px) saturate(180%);
-    -webkit-backdrop-filter: blur(8px) saturate(180%);
-  }
-}
-
-/* Animation d'entrée de la modale */
-@keyframes slideInScale {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-/* Animation de sortie (optionnelle) */
-@keyframes fadeOutBlur {
-  from {
-    opacity: 1;
-    backdrop-filter: blur(8px) saturate(180%);
-    -webkit-backdrop-filter: blur(8px) saturate(180%);
-  }
-  to {
-    opacity: 0;
-    backdrop-filter: blur(0px);
-    -webkit-backdrop-filter: blur(0px);
-  }
-}
-
-/* Support pour préférence mouvement réduit */
-@media (prefers-reduced-motion: reduce) {
-  @keyframes fadeInBlur {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  
-  @keyframes slideInScale {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
+  .sidebar { transform: translateX(-100%); }
+  .sidebar-mobile-open { transform: translateX(0); }
+  .main-content-shifted,
+  .main-content-collapsed { margin-left: 0; }
 }
