@@ -262,7 +262,7 @@ const Layout = () => {
                 <button
                   key={item.path}
                   onClick={() => navigate(item.path)}
-                  className={`nav-button ${isActive ? 'nav-button-active' : 'nav-button-inactive'}`}
+                  className={`icon-button nav-button ${isActive ? 'nav-button-active' : 'nav-button-inactive'}`}
                   style={{
                     width: '100%',
                     padding: '0.75rem 1rem',

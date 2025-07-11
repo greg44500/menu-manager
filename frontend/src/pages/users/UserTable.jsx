@@ -151,14 +151,7 @@ const UserTable = () => {
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                     <button
                       title="Modifier"
-                      style={{
-                        padding: '8px',
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        borderRadius: '6px',
-                        color: 'var(--text-muted)',
-                        cursor: 'pointer'
-                      }}
+                      className="icon-button"
                       onClick={() => {
                         setModalMode('edit')
                         setSelectedUser(user)
@@ -169,14 +162,7 @@ const UserTable = () => {
                     </button>
                     <button
                       title="Supprimer"
-                      style={{
-                        padding: '8px',
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        borderRadius: '6px',
-                        color: 'var(--text-muted)',
-                        cursor: 'pointer'
-                      }}
+                      className="icon-button"
                       onClick={() => handleDelete(user._id)}
                     >
                       <Trash2 size={16} />

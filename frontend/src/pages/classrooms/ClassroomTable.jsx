@@ -50,10 +50,10 @@ const ClassroomTable = ({ onEdit }) => {
                 <table style={{ width: '100%', minWidth: '700px' }}>
                     <thead style={{ backgroundColor: 'var(--surface-hover)', borderBottom: '1px solid var(--border)' }}>
                         <tr>
-                            {['Nom', 'Diplôme', 'Catégorie', 'Année', 'Groupe', 'Actions'].map((title, idx) => (
+                            {['Nom', 'Diplôme', 'Catégorie', 'Année', 'Groupe', 'Formateur', 'Actions'].map((title, idx) => (
                                 <th key={idx} style={{
                                     padding: '1rem 1.5rem',
-                                    textAlign: idx === 5 ? 'right' : 'left',
+                                    textAlign: idx === 6 ? 'right' : 'left',
                                     fontSize: '0.75rem',
                                     fontWeight: '600',
                                     color: 'var(--text-secondary)',
@@ -86,32 +86,23 @@ const ClassroomTable = ({ onEdit }) => {
                                 <td style={{ padding: '1rem 1.5rem' }}>{c.category || '-'}</td>
                                 <td style={{ padding: '1rem 1.5rem' }}>{c.certificationSession || '-'}</td>
                                 <td style={{ padding: '1rem 1.5rem' }}>{c.group || '-'}</td>
+                                <td style={{ padding: '1rem 1.5rem' }}>
+                                    {c.assignedTeachers?.[0]
+                                        ? `${c.assignedTeachers[0].firstname} ${c.assignedTeachers[0].lastname}`
+                                        : '-'}
+                                </td>
                                 <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
                                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                                        <button
+                                        <button className="icon-button"
                                             title="Modifier"
-                                            style={{
-                                                padding: '8px',
-                                                backgroundColor: 'transparent',
-                                                border: 'none',
-                                                borderRadius: '6px',
-                                                color: 'var(--text-muted)',
-                                                cursor: 'pointer'
-                                            }}
+
                                             onClick={() => onEdit(c)}
                                         >
                                             <Edit3 size={16} />
                                         </button>
                                         <button
                                             title="Supprimer"
-                                            style={{
-                                                padding: '8px',
-                                                backgroundColor: 'transparent',
-                                                border: 'none',
-                                                borderRadius: '6px',
-                                                color: 'var(--text-muted)',
-                                                cursor: 'pointer'
-                                            }}
+                                            className="icon-button"
                                             onClick={() => handleDelete(c._id)}
                                         >
                                             <Trash2 size={16} />

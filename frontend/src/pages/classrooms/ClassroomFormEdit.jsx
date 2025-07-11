@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { classroomSchema } from '../../validation/classroomSchema';
 import { useUpdateClassroomMutation } from '../../store/api/classroomsApi';
+import { useGetAllUsersQuery } from '../../store/api/usersApi';
 
 const diplomas = ['CAP', 'BAC', 'BP', 'BTS', 'CS'];
 const categories = ['CUIS', 'CSHCR', 'CSR', 'AC', 'ACSR', 'MHR', 'CDR', 'BAR', 'SOM'];
@@ -11,6 +12,8 @@ const groups = ['A', 'B', 'C'];
 
 const ClassroomFormEdit = ({ classroom, onSuccess }) => {
   const [updateClassroom, { isLoading: isUpdating }] = useUpdateClassroomMutation();
+  const { data: usersData } = useGetAllUsersQuery();
+  const users = usersData?.users || [];
 
   const {
     register,
@@ -25,6 +28,7 @@ const ClassroomFormEdit = ({ classroom, onSuccess }) => {
       group: '',
       certificationSession: '',
       alternationNumber: '',
+      assignedTeachers: [],
     },
   });
 
@@ -36,6 +40,7 @@ const ClassroomFormEdit = ({ classroom, onSuccess }) => {
         group: classroom.group || '',
         certificationSession: classroom.certificationSession || '',
         alternationNumber: classroom.alternationNumber || '',
+        assignedTeachers: classroom.assignedTeachers?.map(t => t._id) || []
       });
     }
   }, [classroom, reset]);
@@ -104,6 +109,20 @@ const ClassroomFormEdit = ({ classroom, onSuccess }) => {
           placeholder="1 à 3"
         />
         {errors.alternationNumber && <p className="form-error">{errors.alternationNumber.message}</p>}
+      </div>
+      <div className="form-group">
+        <label className="label">Formateur assigné</label>
+        <select className="input" {...register('assignedTeachers')}>
+          <option value="">Sélectionner un formateur</option>
+          {users
+            .filter(user => user.role === 'user')
+            .map((user) => (
+              <option key={user._id} value={user._id}>
+                {user.firstname} {user.lastname}
+              </option>
+            ))}
+        </select>
+        {errors.assignedTeachers && <p className="form-error">{errors.assignedTeachers.message}</p>}
       </div>
 
       <div className="flex justify-end gap-2">

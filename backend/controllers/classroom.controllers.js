@@ -116,7 +116,7 @@ const getOneClassroom = asyncHandler(async (req, res, next) => {
         id
     } = req.params
 
-    const searchClassroom = await Classroom.findById(id)
+    const searchClassroom = await Classroom.findById(id).populate('assignedTeachers', 'firstname lastname')
     if (!isValidObjectId(id)) {
         return next(new Error("ID Classe invalide"));
     }
@@ -133,6 +133,7 @@ const getOneClassroom = asyncHandler(async (req, res, next) => {
 // ** @Access : superAdmin, manager
 const getAllClassrooms = asyncHandler(async (req, res) => {
   const classrooms = await Classroom.find()
+  .populate('assignedTeachers', 'firstname lastname')
     .sort({
       createdAt: -1
     });
