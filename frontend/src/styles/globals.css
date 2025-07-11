@@ -18,6 +18,7 @@
 html {
   /* Scroll fluide pour les ancres */
   scroll-behavior: smooth;
+  overflow: hidden;
   /* Améliore le rendu des polices */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

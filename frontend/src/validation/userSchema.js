@@ -1,7 +1,7 @@
 // frontend/src/validation/userSchema.js
 import * as yup from 'yup'
 
-const userSchema = yup.object({
+export const userSchema = yup.object({
   firstname: yup.string().required('Le prénom est requis'),
   lastname: yup.string().required('Le nom est requis'),
   email: yup.string()
@@ -18,6 +18,11 @@ const userSchema = yup.object({
     .oneOf(['cuisine', 'service'], 'Sélectionnez une spécialisation valide dans la liste')
     .required('La spécialisation est requise'),
   isActive: yup.boolean()
+});
+
+export const editUserSchema = yup.object().shape({
+  role: yup.string().required('Le rôle est requis'),
+  specialization: yup.string().required('La spécialisation est requise'),
+  isActive: yup.string().oneOf(['true', 'false']),
 })
 
-export default userSchema

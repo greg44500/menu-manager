@@ -1,32 +1,38 @@
-// src/components/users/UserModal.jsx
-import Modal from '../../components/common/Modal'
-import UserForm from '../../pages/users/UserForm'
+import Modal from '../../components/common/Modal';
+import UserForm from '../../pages/users/UserForm';
+import UserEditForm from '../../pages/users/UserEditForm';
 
-/**
- * Modale affichant uniquement le formulaire de création ou modification.
- */
-const UserModal = ({ mode = 'create', userData = null, onClose, onSuccess, isOpen = true }) => {
-  const isEdit = mode === 'edit'
+const UserModal = ({ mode = 'create', isOpen, onClose, userData, onSuccess }) => {
+  const isEdit = mode === 'edit';
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <div className="p-4 w-full max-w-md">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">
-          {isEdit ? 'MODIFIER LES PROPRIETES UTILISATEUR' : 'AJOUTER UN UTILISATEUR'}
-        </h2>
-
-        <UserForm
-          mode={mode}
-          initialValues={isEdit ? userData : null}
-          onCancel={onClose}
+    <Modal
+      title={isEdit ? 'Modifier un utilisateur' : 'Ajouter un utilisateur'}
+      isOpen={isOpen}
+      onClose={onClose}
+    >
+      {isEdit ? (
+        <UserEditForm
+          user={userData}
+          onClose={onClose}
           onSuccess={() => {
-            onSuccess?.()
-            onClose()
+            onSuccess?.();
+            onClose();
           }}
         />
-      </div>
+      ) : (
+        <UserForm
+          mode={mode}
+          initialValues={null}
+          onCancel={onClose}
+          onSuccess={() => {
+            onSuccess?.();
+            onClose();
+          }}
+        />
+      )}
     </Modal>
-  )
-}
+  );
+};
 
-export default UserModal
+export default UserModal;

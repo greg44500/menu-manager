@@ -10,6 +10,7 @@ import { baseApi } from './api/baseApi'
 
 // Import des APIs spécifiques (pour les enregistrer)
 import './api/authApi' // Enregistre les endpoints auth dans baseApi
+import './api/dashboardApi' // Enregistre les endpoints dashboard dans baseApi
 
 // 🏪 CONFIGURATION DU STORE PRINCIPAL
 export const store = configureStore({

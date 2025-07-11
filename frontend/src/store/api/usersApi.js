@@ -67,7 +67,7 @@ export const usersApi = baseApi.injectEndpoints({
         method: 'POST',
         body: userData,
       }),
-      invalidatesTags: ['User', 'UserProfile'],
+      invalidatesTags: ['User', 'UserProfile', 'Dashboard'],
       transformResponse: (response) => response.data,
       // Gestion d'erreur personnalisée
       transformErrorResponse: (response) => ({
@@ -105,7 +105,8 @@ export const usersApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: (result, error, id) => [
         { type: 'User', id },
-        'User'
+        'User',
+        'Dashboard'
       ],
       transformErrorResponse: (response) => ({
         status: response.status,

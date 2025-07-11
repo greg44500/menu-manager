@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import toast from 'react-hot-toast'
-import { useTheme } from '../../hooks/useTheme'
 import ThemeToggle from '../common/ThemeToggle'
 import {
   Menu,
@@ -15,7 +14,8 @@ import {
   Users,
   CircleUserRound,
   Search,
-  UserRoundPen
+  UserRoundPen,
+  LogOut
 } from 'lucide-react'
 
 const Layout = () => {
@@ -212,10 +212,12 @@ const Layout = () => {
 
           <button
             onClick={handleLogout}
-            className="btn btn-secondary"
+            className="btn badge-primary"
             style={{ fontSize: '0.875rem' }}
+
           >
-            Déconnexion
+          <LogOut className='icon-lucid' size={20} />
+        <span >Déconnexion</span>
           </button>
         </div>
       </header>

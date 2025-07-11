@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { AlertCircle } from 'lucide-react';
-import userSchema from '../../validation/userSchema';
+import { userSchema } from '../../validation/userSchema';
 import { useCreateUserMutation } from '../../store/api/usersApi';
 import { toast } from 'react-hot-toast';
 
@@ -61,7 +61,7 @@ const UserForm = ({ onSuccess }) => {
           </p>
         )}
       </div>
-       {/* Email */}
+      {/* Email */}
       <div className='form-group'>
         <label className="label label-required">Email</label>
         <input type="email" {...register("email")} className={`input ${errors.email ? 'input-error' : ''}`} />

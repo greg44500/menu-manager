@@ -1,11 +1,13 @@
 // frontend/src/pages/dashboard/SuperAdminDashboard.jsx
-import { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { fetchDashboardStats } from '../../store/slices/dashboardSlice'
+import { useState } from 'react'
+import { useSelector } from 'react-redux'
 import { useGetAllUsersQuery } from '../../store/api/usersApi'
+// import { useGetAllClassroomsQuery } from '../../store/api/classroomsApi'
+import { useGetDashboardStatsQuery } from '../../store/api/dashboardApi'
 import StatCard from '../../components/common/StatCard'
 import DashboardSection from '../../pages/dashboard/DashboardSection'
 import UserModal from '../../pages/users/UserModal'
+import ClassroomModal from '../../pages/classrooms/ClassroomModal'
 import {
   Users,
   School,
@@ -19,30 +21,31 @@ import {
 const SuperAdminDashboard = () => {
   const [activeSection, setActiveSection] = useState(null)
   const [showUserModal, setShowUserModal] = useState(false)
+  const [showClassroomModal, setShowClassroomModal] = useState(false)
+  const [editingClassroom, setEditingClassroom] = useState(null)
 
-  const dispatch = useDispatch()
-  const {
-    usersCount,
-    classroomsCount,
-    progressionsCount,
-    menusCount,
-    loading: statsLoading,
-    error: statsError
-  } = useSelector(state => state.dashboard)
+  const { user: currentUser } = useSelector(state => state.auth)
 
   const usersQuery = useGetAllUsersQuery(undefined, {
     skip: !showUserModal,
     refetchOnMountOrArgChange: true
   })
+
+  // const classroomsQuery = useGetAllClassroomsQuery(undefined, {
+  //   skip: !showClassroomModal,
+  //   refetchOnMountOrArgChange: true,
+  // })
+
+  const {
+    data: stats,
+    isLoading: statsLoading,
+    isError: statsIsError,
+    refetch
+  } = useGetDashboardStatsQuery()
+
   const usersData = usersQuery?.data;
   const usersLoading = usersQuery?.isLoading;
   const usersError = usersQuery?.error;
-
-  const { user: currentUser } = useSelector(state => state.auth)
-
-  useEffect(() => {
-    dispatch(fetchDashboardStats())
-  }, [dispatch])
 
   if (statsLoading) {
     return (
@@ -61,7 +64,7 @@ const SuperAdminDashboard = () => {
     )
   }
 
-  if (statsError) {
+  if (statsIsError) {
     return (
       <div style={{
         padding: '2rem',
@@ -78,11 +81,11 @@ const SuperAdminDashboard = () => {
       }}>
         <AlertCircle size={24} />
         <div>
-          <div>❌ Erreur : {statsError}</div>
+          <div>❌ Erreur lors du chargement du tableau de bord</div>
           <button
             className="btn btn-secondary"
             style={{ marginTop: '1rem' }}
-            onClick={() => dispatch(fetchDashboardStats())}
+            onClick={() => refetch()}
           >
             <RotateCcw /> Réessayer
           </button>
@@ -122,7 +125,7 @@ const SuperAdminDashboard = () => {
           }}>
             <StatCard
               title="Utilisateurs"
-              count={usersCount || 0}
+              count={stats?.usersCount || 0}
               icon={<Users size={24} />}
               onClick={() => setActiveSection('users')}
               clickable
@@ -131,7 +134,7 @@ const SuperAdminDashboard = () => {
             />
             <StatCard
               title="Classes"
-              count={classroomsCount || 0}
+              count={stats?.classroomsCount || 0}
               icon={<School size={24} />}
               onClick={() => setActiveSection('classrooms')}
               clickable
@@ -139,7 +142,7 @@ const SuperAdminDashboard = () => {
             />
             <StatCard
               title="Progressions"
-              count={progressionsCount || 0}
+              count={stats?.progressionsCount || 0}
               icon={<BarChart2 size={24} />}
               onClick={() => setActiveSection('progressions')}
               clickable
@@ -147,7 +150,7 @@ const SuperAdminDashboard = () => {
             />
             <StatCard
               title="Menus"
-              count={menusCount || 0}
+              count={stats?.menusCount || 0}
               icon={<Utensils size={24} />}
               onClick={() => setActiveSection('menus')}
               clickable
@@ -163,18 +166,45 @@ const SuperAdminDashboard = () => {
           <DashboardSection
             section={activeSection}
             onOpenUserModal={() => setShowUserModal(true)}
+            onOpenClassroomModal={() => {
+              setEditingClassroom(null);
+              setShowClassroomModal(true);
+            }}
+            onEditClassroom={(classroom) => {
+              setEditingClassroom(classroom);
+              setShowClassroomModal(true);
+            }}
           />
         </div>
-
       )}
+
       {/* ⚡ MODALE AJOUT UTILISATEUR */}
       {showUserModal && (
         <UserModal
+          isOpen={true}
           mode="create"
           onClose={() => setShowUserModal(false)}
           onSuccess={() => {
-            // Refetch users or refresh logic if needed
-            setShowUserModal(false)
+            setShowUserModal(false);
+            refetch();
+          }}
+        />
+      )}
+
+      {/* ⚡ MODALE AJOUT/ÉDITION CLASSE */}
+      {showClassroomModal && (
+        <ClassroomModal
+          isOpen
+          onClose={() => {
+            setShowClassroomModal(false);
+            setEditingClassroom(null);
+          }}
+          mode={editingClassroom ? 'edit' : 'create'}
+          classroom={editingClassroom}
+          onSuccess={() => {
+            setShowClassroomModal(false);
+            setEditingClassroom(null);
+            refetch();
           }}
         />
       )}
@@ -200,11 +230,11 @@ const SuperAdminDashboard = () => {
             fontSize: '0.875rem'
           }}>
             <p><strong>Stats Loading:</strong> {statsLoading ? 'true' : 'false'}</p>
-            <p><strong>Stats Error:</strong> {statsError || 'null'}</p>
-            <p><strong>Users Count:</strong> {usersCount}</p>
-            <p><strong>Classrooms Count:</strong> {classroomsCount}</p>
-            <p><strong>Progressions Count:</strong> {progressionsCount}</p>
-            <p><strong>Menus Count:</strong> {menusCount}</p>
+            <p><strong>Stats Error:</strong> {statsIsError ? 'true' : 'false'}</p>
+            <p><strong>Users Count:</strong> {stats?.usersCount}</p>
+            <p><strong>Classrooms Count:</strong> {stats?.classroomsCount}</p>
+            <p><strong>Progressions Count:</strong> {stats?.progressionsCount}</p>
+            <p><strong>Menus Count:</strong> {stats?.menusCount}</p>
             <hr style={{ margin: '1rem 0', borderColor: 'var(--border)' }} />
             <p><strong>Modal Open:</strong> {showUserModal ? 'true' : 'false'}</p>
             <p><strong>Users Loading:</strong> {usersLoading ? 'true' : 'false'}</p>

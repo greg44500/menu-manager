@@ -138,9 +138,9 @@ const getAllClassrooms = asyncHandler(async (req, res) => {
     });
 
   res.status(200).json({
-    success: true,
-    count: classrooms.length,
-    classrooms: classrooms.length ? classrooms : "Aucune classe trouvée",
+  success: true,
+  count: classrooms.length,
+  classrooms,
   });
 });
 
