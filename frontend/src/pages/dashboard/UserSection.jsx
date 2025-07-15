@@ -10,34 +10,16 @@ const UserSection = ({ onAddUser }) => {
   return (
     <div className="card" style={{ marginBottom: '2rem' }}>
       <div className="card-header">
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '16px'
-        }}>
+        <div className='card-header-position'>
           {/* Titre à gauche */}
-          <h2 style={{
-            fontSize: '1.25rem',
-            fontWeight: '600',
-            color: 'var(--text-primary)',
-            margin: 0
-          }}>
+          <h2 className='card-header-title'>
             Liste des utilisateurs
           </h2>
 
           {/* Bouton à droite */}
           <button
             onClick={onAddUser}
-            className="btn btn-primary"
-            style={{
-              padding: '0.5rem 1rem',
-              fontSize: '0.875rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}
+            className="btn btn-primary card-header-btn"
           >
             <Plus size={16} />
             Ajouter un utilisateur

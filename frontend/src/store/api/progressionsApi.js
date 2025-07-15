@@ -1,0 +1,69 @@
+// src/store/api/progressionsApi.js
+import { baseApi } from "./baseApi"; // Assure-toi que apiSlice.js est bien configuré
+
+export const progressionsApi = baseApi.injectEndpoints({
+  endpoints: (builder) => ({
+    // Récupérer toutes les progressions
+    getAllProgressions: builder.query({
+      query: () => '/progressions',
+      providesTags: ['Progression'],
+    }),
+
+    // Récupérer une progression par ID
+    getProgressionById: builder.query({
+      query: (id) => `/progressions/${id}`,
+      providesTags: (result, error, id) => [{ type: 'Progression', id }],
+    }),
+
+    // Créer une progression
+    createProgression: builder.mutation({
+      query: (data) => ({
+        url: '/progressions',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Progression'],
+    }),
+
+    // Modifier une progression
+    updateProgression: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/progressions/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        'Progression',
+        { type: 'Progression', id },
+      ],
+    }),
+
+    //Assigner un formateur à une progression
+    assignTeachers: builder.mutation({
+  query: ({ id, teachers }) => ({
+    url: `/progressions/${id}/assign-teachers`,
+    method: 'PUT',
+    body: { teachers }
+  }),
+  invalidatesTags: ['Progressions']
+}),
+
+    // Supprimer une progression
+    deleteProgression: builder.mutation({
+      query: (id) => ({
+        url: `/progressions/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Progression'],
+    }),
+  }),
+});
+
+export const {
+  useGetAllProgressionsQuery,
+  useGetProgressionByIdQuery,
+  useCreateProgressionMutation,
+  useUpdateProgressionMutation,
+  useDeleteProgressionMutation,
+  useAssignTeachersMutation,
+} = progressionsApi;

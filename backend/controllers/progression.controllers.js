@@ -13,86 +13,72 @@ const {
  //** @access  Admin / Manager (via middleware)
  
 const createProgression = asyncHandler(async (req, res) => {
-    const {
+  const { title, classrooms, teachers, weekNumbers } = req.body;
+
+  // Validation des champs obligatoires
+  if (!title?.length || !classrooms?.length || !weekNumbers?.length) {
+    res.status(400);
+    throw new Error('Titre, classes et semaines sont requis.');
+  }
+
+  // Vérifier si une progression existe déjà avec ce titre
+  const existingProgression = await Progression.findOne({ title });
+  if (existingProgression) {
+    res.status(400);
+    throw new Error('Une progression avec ce titre existe déjà.');
+  }
+
+  // Création des services pour chaque semaine
+  const createdServices = await Promise.all(
+    weekNumbers.map(async (week) => {
+      const newService = await Service.create({
+        weekNumber: week,
         classrooms,
-        teachers,
-        weekNumbers
-    } = req.body;
+        teachers: teachers || [],
+        menus: [],
+      });
 
-    // Validation des champs obligatoires
-    if (!classrooms ?.length || !teachers ?.length || !weekNumbers ?.length) {
-        res.status(400);
-        throw new Error('Tous les champs classes, formateurs et semaines sont requis.');
-    }
+      return {
+        weekNumber: week,
+        service: newService._id,
+        menu: [],
+      };
+    })
+  );
 
-    // Vérifier si une progression existe déjà avec les mêmes classes et semaines
-    const existingProgression = await Progression.findOne({
-        classrooms,
-        weekNumbers
-    });
-    if (existingProgression) {
-        res.status(400);
-        throw new Error('Une progression avec ces classes et semaines existe déjà.');
-    }
+  // Création de la progression
+  const progression = await Progression.create({
+    title,
+    classrooms,
+    teachers: teachers || [],
+    weekNumbers,
+    services: createdServices,
+  });
 
-    // Création des services pour chaque numéro de semaine
-    const createdServices = await Promise.all(
-        weekNumbers.map(async (week) => {
-            const newService = await Service.create({
-                weekNumber: week,
-                classrooms,
-                teachers,
-                menus: []
-            });
-
-            return {
-                weekNumber: week,
-                service: newService._id,
-                menu: []
-            };
-
-        })
-
+  // Mise à jour des classes : Ajout des formateurs assignés si fournis
+  if (teachers?.length) {
+    await Classroom.updateMany(
+      { _id: { $in: classrooms } },
+      {
+        $addToSet: {
+          assignedTeachers: { $each: teachers },
+        },
+      }
     );
 
-    // Création de la progression avec les services générés
-    const progression = await Progression.create({
-        classrooms,
-        teachers,
-        weekNumbers,
-        services: createdServices
-        // author: req.user._id,
-        // modifiedBy: req.user._id
-    });
-    console.log(createdServices)
-    // Mise à jour des classes : Ajout des formateurs assignés
-    await Classroom.updateMany({
-        _id: {
-            $in: classrooms
-        }
-    }, {
+    // Mise à jour des formateurs : Ajout des classes et progression
+    await User.updateMany(
+      { _id: { $in: teachers } },
+      {
         $addToSet: {
-            assignedTeachers: {
-                $each: teachers
-            }
-        }
-    });
+          assignedClassrooms: { $each: classrooms },
+          assignedProgressions: progression._id,
+        },
+      }
+    );
+  }
 
-    // Mise à jour des formateurs : Ajout des classes assignées et de la progression
-    await User.updateMany({
-        _id: {
-            $in: teachers
-        }
-    }, {
-        $addToSet: {
-            assignedClassrooms: {
-                $each: classrooms
-            },
-            assignedProgressions: progression._id
-        }
-    });
-
-    res.status(201).json(progression);
+  res.status(201).json(progression);
 });
 
 
@@ -103,123 +89,103 @@ const createProgression = asyncHandler(async (req, res) => {
 
 // Modifier une progression existante
 const updateProgression = asyncHandler(async (req, res) => {
-    const {
-        classrooms,
-        teachers,
-        weekNumbers
-    } = req.body;
-    const {
-        id
-    } = req.params;
+  const { title, classrooms, teachers, weekNumbers } = req.body;
+  const { id } = req.params;
 
-    // Vérifier si la progression existe
-    const progression = await Progression.findById(id);
-    if (!progression) {
-        res.status(404);
-        throw new Error('Progression non trouvée');
-    }
+  // Vérifier si la progression existe
+  const progression = await Progression.findById(id);
+  if (!progression) {
+    res.status(404);
+    throw new Error('Progression non trouvée');
+  }
 
-    // Récupération des anciennes valeurs
-    const oldClassrooms = progression.classrooms.map(String);
-    const oldTeachers = progression.teachers.map(String);
-    const oldWeekNumbers = progression.weekNumbers;
+  // Récupération des anciennes valeurs
+  const oldClassrooms = progression.classrooms.map(String);
+  const oldTeachers = progression.teachers.map(String);
+  const oldWeekNumbers = progression.weekNumbers;
 
-    // Mise à jour des classes et formateurs dans la progression
-    progression.classrooms = classrooms;
-    progression.teachers = teachers;
-    progression.weekNumbers = weekNumbers;
+  // Mise à jour des champs principaux
+  progression.title = title || progression.title;
+  progression.classrooms = classrooms;
+  progression.teachers = Array.isArray(teachers) ? teachers : [];
+  progression.weekNumbers = weekNumbers;
 
-    // Sauvegarde de la progression mise à jour
-    await progression.save();
+  await progression.save();
 
-    // Mise à jour des formateurs et classes dans leurs modèles respectifs
-    await Classroom.updateMany({
-        _id: {
-            $in: oldClassrooms
-        }
-    }, {
-        $pull: {
-            assignedTeachers: {
-                $in: oldTeachers
-            }
-        }
-    });
-    await Classroom.updateMany({
-        _id: {
-            $in: classrooms
-        }
-    }, {
+  // Nettoyage des anciens formateurs dans les anciennes classes
+  await Classroom.updateMany(
+    { _id: { $in: oldClassrooms } },
+    { $pull: { assignedTeachers: { $in: oldTeachers } } }
+  );
+
+  // Ajout des nouveaux formateurs dans les nouvelles classes (si fournis)
+  if (teachers?.length) {
+    await Classroom.updateMany(
+      { _id: { $in: classrooms } },
+      { $addToSet: { assignedTeachers: { $each: teachers } } }
+    );
+
+    await User.updateMany(
+      { _id: { $in: teachers } },
+      {
         $addToSet: {
-            assignedTeachers: {
-                $each: teachers
-            }
-        }
-    });
+          assignedClassrooms: { $each: classrooms },
+          assignedProgressions: id,
+        },
+      }
+    );
+  }
 
-    await User.updateMany({
-        _id: {
-            $in: oldTeachers
-        }
-    }, {
-        $pull: {
-            assignedClassrooms: {
-                $in: oldClassrooms
-            },
-            assignedProgressions: id
-        }
-    });
-    await User.updateMany({
-        _id: {
-            $in: teachers
-        }
-    }, {
-        $addToSet: {
-            assignedClassrooms: {
-                $each: classrooms
-            },
-            assignedProgressions: id
-        }
-    });
-
-    // Mise à jour des services existants
-    const oldServices = progression.services || [];
-    const oldServiceWeeks = oldServices.map(s => s.weekNumber);
-    const newServiceWeeks = weekNumbers;
-
-    // Trouver les semaines à supprimer
-    const weeksToRemove = oldServiceWeeks.filter(week => !newServiceWeeks.includes(week));
-    if (weeksToRemove.length > 0) {
-        await Service.deleteMany({
-            _id: {
-                $in: oldServices.filter(s => weeksToRemove.includes(s.weekNumber)).map(s => s.service)
-            }
-        });
-        progression.services = progression.services.filter(s => !weeksToRemove.includes(s.weekNumber));
+  // Nettoyage des anciennes affectations dans User
+  await User.updateMany(
+    { _id: { $in: oldTeachers } },
+    {
+      $pull: {
+        assignedClassrooms: { $in: oldClassrooms },
+        assignedProgressions: id,
+      },
     }
+  );
 
-    // Trouver les semaines à ajouter
-    const weeksToAdd = newServiceWeeks.filter(week => !oldServiceWeeks.includes(week));
-    for (const week of weeksToAdd) {
-        const newService = await Service.create({
-            weekNumber: week,
-            classrooms: classrooms,
-            teachers: teachers,
-        });
+  // Mise à jour des services existants
+  const oldServices = progression.services || [];
+  const oldServiceWeeks = oldServices.map((s) => s.weekNumber);
+  const newServiceWeeks = weekNumbers;
 
-        progression.services.push({
-            weekNumber: week,
-            service: newService._id
-        });
-    }
-
-    // Sauvegarde finale avec les services mis à jour
-    await progression.save();
-
-    res.status(200).json({
-        message: 'Progression mise à jour avec succès',
-        progression
+  // Suppression des services à retirer
+  const weeksToRemove = oldServiceWeeks.filter((week) => !newServiceWeeks.includes(week));
+  if (weeksToRemove.length > 0) {
+    await Service.deleteMany({
+      _id: oldServices
+        .filter((s) => weeksToRemove.includes(s.weekNumber))
+        .map((s) => s.service),
     });
+    progression.services = progression.services.filter((s) => !weeksToRemove.includes(s.weekNumber));
+  }
+
+  // Ajout des nouveaux services
+  const weeksToAdd = newServiceWeeks.filter((week) => !oldServiceWeeks.includes(week));
+  for (const week of weeksToAdd) {
+    const newService = await Service.create({
+      weekNumber: week,
+      classrooms,
+      teachers: teachers || [],
+    });
+
+    progression.services.push({
+      weekNumber: week,
+      service: newService._id,
+    });
+  }
+
+  await progression.save();
+
+  res.status(200).json({
+    message: 'Progression mise à jour avec succès',
+    progression,
+  });
 });
+
 
 // **@desc    Supprimer une progression par ID
 // **@route   DELETE /api/progressions/:id
@@ -401,6 +367,68 @@ const getProgressionsByTeacher = asyncHandler(async (req, res) => {
     res.status(200).json(progressions);
 });
 
+// @desc    Assigner des formateurs à une progression existante
+// @route   PUT /api/progressions/:id/assign-teachers
+// @access  Admin, Manager
+const assignTeachersToProgression = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { teachers } = req.body;
+
+  if (!Array.isArray(teachers)) {
+    res.status(400);
+    throw new Error("Les formateurs doivent être fournis sous forme de tableau.");
+  }
+
+  const progression = await Progression.findById(id);
+  if (!progression) {
+    res.status(404);
+    throw new Error("Progression non trouvée.");
+  }
+
+  const classrooms = progression.classrooms;
+
+  // Nettoyer les anciens formateurs
+  await Classroom.updateMany(
+    { _id: { $in: classrooms } },
+    { $pull: { assignedTeachers: { $in: progression.teachers } } }
+  );
+  await User.updateMany(
+    { _id: { $in: progression.teachers } },
+    {
+      $pull: {
+        assignedClassrooms: { $in: classrooms },
+        assignedProgressions: id,
+      },
+    }
+  );
+
+  // Ajouter les nouveaux formateurs
+  if (teachers.length) {
+    await Classroom.updateMany(
+      { _id: { $in: classrooms } },
+      { $addToSet: { assignedTeachers: { $each: teachers } } }
+    );
+    await User.updateMany(
+      { _id: { $in: teachers } },
+      {
+        $addToSet: {
+          assignedClassrooms: { $each: classrooms },
+          assignedProgressions: id,
+        },
+      }
+    );
+  }
+
+  // Mise à jour de la progression
+  progression.teachers = teachers;
+  await progression.save();
+
+  res.status(200).json({
+    message: "Formateurs assignés avec succès",
+    progression,
+  });
+});
+
 
 module.exports = {
     createProgression,
@@ -410,5 +438,6 @@ module.exports = {
     getProgressionById,
     getAllProgressions,
     getProgressionsByClassroom,
-    getProgressionsByTeacher
+    getProgressionsByTeacher,
+    assignTeachersToProgression
 }

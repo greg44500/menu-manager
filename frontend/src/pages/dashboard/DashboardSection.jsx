@@ -1,6 +1,7 @@
 // frontend/src/pages/dashboard/DashboardSection.jsx
 import UserSection from '../../pages/dashboard/UserSection'
 import ClassroomSection from '../classrooms/ClassroomSection'
+import ProgressionSection from '../progressions/ProgressionSection'
 
 const DashboardSection = ({
   section,
@@ -19,6 +20,10 @@ const DashboardSection = ({
           onOpenModal={onOpenClassroomModal}
           onEditClass={onEditClassroom}
         />
+      )}
+
+      {section === 'progressions' && (
+        <ProgressionSection onOpenModal={() => { }} />
       )}
     </>
   )

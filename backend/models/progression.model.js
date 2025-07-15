@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Service = require('./service.model'); // Import du modèle Service
 
 const progressionSchema = new mongoose.Schema({
+    title: {type: String, unique:true, required: true},
     classrooms: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Classroom', required: true }],
     teachers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }],
     

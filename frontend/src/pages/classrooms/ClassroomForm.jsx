@@ -103,7 +103,7 @@ const ClassroomForm = ({ classroom, mode = 'create', onSuccess }) => {
       </div>
 
       <div className="form-group">
-        <label className="label label-required">Nombre d’alternances</label>
+        <label className="label label-required">Numéro d’alternances</label>
         <input
           className='input'
           type="number"

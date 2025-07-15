@@ -24,6 +24,10 @@ const userSchema = new mongoose.Schema({
     enum: ["superAdmin", "manager", "user"],
     default: "user"
   },
+  isTeacher: {
+    type: Boolean, 
+    default: false
+  },
   specialization: {
     type: String,
     enum: ["cuisine", "service"],

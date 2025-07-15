@@ -12,7 +12,7 @@ const UserTable = () => {
   const [modalMode, setModalMode] = useState('create')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState(null)
-
+  
   const handleDelete = async (id) => {
     if (!window.confirm('Voulez-vous vraiment supprimer cet utilisateur ?')) return
     try {
@@ -72,10 +72,10 @@ const UserTable = () => {
         <table style={{ width: '100%', minWidth: '700px' }}>
           <thead style={{ backgroundColor: 'var(--surface-hover)', borderBottom: '1px solid var(--border)' }}>
             <tr>
-              {['Utilisateur', 'Email', 'Rôle', 'Spécialisation', 'Statut', 'Actions'].map((title, idx) => (
+              {['Utilisateur', 'Email', 'Rôle', 'Spécialisation', 'Statut', 'Formateur', 'Actions'].map((title, idx) => (
                 <th key={idx} style={{
                   padding: '1rem 1.5rem',
-                  textAlign: idx === 5 ? 'right' : 'left',
+                  textAlign: idx === 6 ? 'right' : 'left',
                   fontSize: '0.75rem',
                   fontWeight: '600',
                   color: 'var(--text-secondary)',
@@ -89,7 +89,7 @@ const UserTable = () => {
           <tbody>
             {users.length === 0 ? (
               <tr>
-                <td colSpan="6" style={{ padding: '3rem 1.5rem', textAlign: 'center' }}>
+                <td colSpan="7" style={{ padding: '3rem 1.5rem', textAlign: 'center' }}>
                   <div className="flex-center" style={{ flexDirection: 'column', gap: '12px' }}>
                     <div style={{ padding: '12px', backgroundColor: 'var(--surface-alt)', borderRadius: '50%' }}>
                       <User size={32} style={{ color: 'var(--text-muted)' }} />
@@ -147,6 +147,11 @@ const UserTable = () => {
                   <span className="badge badge-neutral">{user.specialization}</span>
                 </td>
                 <td style={{ padding: '1rem 1.5rem' }}>{getStatusBadge(user.isActive)}</td>
+                <td style={{ padding: '1rem 1.5rem' }}>
+                  <span className="badge badge-neutral">
+                    {user.isTeacher ? 'Oui' : 'Non'}
+                  </span>
+                </td>
                 <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                     <button

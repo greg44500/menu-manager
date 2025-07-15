@@ -234,6 +234,7 @@ const updateUser = asyncHandler(async (req, res, next) => {
     lastname,
     email,
     role,
+    isTeacher,
     specialization,
     isActive,
     password
@@ -253,6 +254,7 @@ const updateUser = asyncHandler(async (req, res, next) => {
   if (lastname) user.lastname = lastname;
   if (email) user.email = email;
   if (role) user.role = role;
+  if (typeof isTeacher !== 'undefined') user.isTeacher = isTeacher;
   if (specialization) user.specialization = specialization;
   if (isActive !== undefined) user.isActive = isActive;
   

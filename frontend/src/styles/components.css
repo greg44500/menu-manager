@@ -283,7 +283,27 @@
   border-top-left-radius: 0.5rem;
   border-top-right-radius: 0.5rem;
 }
+.card-header-position {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: '16px'
+}
 
+.card-header-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+.card-header-btn {
+ padding: 0.5rem 1rem;
+ font-size: 0.875rem;
+ display: flex;
+ align-items: center;
+ gap: 8px; 
+}
 .card-content {
   padding: 1rem;
 }

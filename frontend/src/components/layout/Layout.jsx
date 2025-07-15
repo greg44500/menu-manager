@@ -205,7 +205,7 @@ const Layout = () => {
                 fontSize: '0.75rem',
                 color: 'var(--text-muted)'
               }}>
-                {getRoleDisplayName(user?.role)}
+                <span>Niveau d'accés : {getRoleDisplayName(user?.role)} </span>
               </div>
             </div>
           </div>
@@ -216,8 +216,8 @@ const Layout = () => {
             style={{ fontSize: '0.875rem' }}
 
           >
-          <LogOut className='icon-lucid' size={20} />
-        <span >Déconnexion</span>
+            <LogOut className='icon-lucid' size={20} />
+            <span >Déconnexion</span>
           </button>
         </div>
       </header>

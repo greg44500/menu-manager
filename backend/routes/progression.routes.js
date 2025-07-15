@@ -11,7 +11,8 @@ const {
     getProgressionById,
     getAllProgressions,
     getProgressionsByClassroom,
-    getProgressionsByTeacher
+    getProgressionsByTeacher,
+    assignTeachersToProgression
 } = require("../controllers/progression.controllers");
 const {
     getServices
@@ -34,7 +35,7 @@ router.route("/:id")
 
 router.route("/:progressionId/services").get(getServices)
 
-
+router.put('/:id/assign-teachers', assignTeachersToProgression);//Ajout authenticateUser, authorizeRoles(["manager", "sueperAdmin"]), 
 
 router.get("/classroom/:classroomId", getProgressionsByClassroom)
 router.get("/teacher/:teacherId", getProgressionsByTeacher)
