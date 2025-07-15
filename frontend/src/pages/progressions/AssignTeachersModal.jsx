@@ -1,16 +1,15 @@
 import { useEffect, useState } from 'react';
-import Modal from '../../components/common/Modal'
-import { useGetAllUsersQuery } from '../../store/api/usersApi';
+import Modal from '../../components/common/Modal';
+import { useGetAllTeachersQuery } from '../../store/api/usersApi';
 import { useAssignTeachersMutation } from '../../store/api/progressionsApi';
 
 const AssignTeachersModal = ({ isOpen, onClose, progressionId, onSuccess }) => {
-    const { data: userApiData, isLoading } = useGetAllUsersQuery();
+    const { data: teacherApiData, isLoading } = useGetAllTeachersQuery();
     const [assignTeachers, { isLoading: isSubmitting }] = useAssignTeachersMutation();
     const [selectedTeachers, setSelectedTeachers] = useState([]);
     const [filter, setFilter] = useState('all');
 
-    const users = userApiData?.data || [];
-    const teachers = users.filter(user => user.isTeacher);
+    const teachers = teacherApiData?.teachers || [];
 
     const filteredTeachers = filter === 'all'
         ? teachers
@@ -38,13 +37,12 @@ const AssignTeachersModal = ({ isOpen, onClose, progressionId, onSuccess }) => {
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Assigner des formateurs">
-
             <div className="mb-4">
                 <label className="label">Filtrer par spécialité :</label>
                 <select className="input" value={filter} onChange={e => setFilter(e.target.value)}>
                     <option value="all">Tous</option>
-                    <option value="Cuisine">Cuisine</option>
-                    <option value="Service">Service</option>
+                    <option value="cuisine">Cuisine</option>
+                    <option value="service">Service</option>
                 </select>
             </div>
 
@@ -60,7 +58,7 @@ const AssignTeachersModal = ({ isOpen, onClose, progressionId, onSuccess }) => {
                             checked={selectedTeachers.includes(teacher._id)}
                             onChange={() => toggleTeacher(teacher._id)}
                         />
-                        <span>{teacher.firstname} {teacher.lastname} ({teacher.specialty || 'N/A'})</span>
+                        <span>{teacher.firstname} {teacher.lastname} ({teacher.specialization || 'N/A'})</span>
                     </div>
                 ))}
             </div>

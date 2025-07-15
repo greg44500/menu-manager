@@ -71,90 +71,36 @@ const Layout = () => {
 
   return (
     // 🔥 CONTAINER PRINCIPAL - Structure fixe
-    <div style={{
-      '--spacing-sidebar': '250px',
-      height: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      overflow: 'hidden',
-      backgroundColor: 'var(--background)',
-      color: 'var(--text-primary)'
-    }}>
+    <div className='main-container'>
 
       {/* 🔥 NAVBAR FIXE - Prend toute la largeur */}
-      <header style={{
-        height: '75px',
-        width: '100%',
-        backgroundColor: 'var(--surface)',
-        borderBottom: '1px solid var(--border)',
-        boxShadow: 'var(--shadow-sm)',
-        display: 'flex',
-        alignItems: 'center',
-        padding: '0 1.5rem',
-        position: 'fixed',
-        zIndex: 1030,              // ← Au-dessus de la sidebar
-        flexShrink: 0
-      }}>
+      <header className='navbar-header'>
 
         {/* 🔥 TOGGLE SIDEBAR - Intégré dans la navbar */}
         <button
           onClick={toggleSidebar}
-          style={{
-            background: 'none',
-            border: '1px solid var(--border)',
-            borderRadius: '0.375rem',
-            padding: '0.5rem',
-            cursor: 'pointer',
-            color: 'var(--text-secondary)',
-            fontSize: '1.125rem',
-            transition: 'all 0.2s ease',
-            marginRight: '1rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
+          className='toggle-sidebar'
           title={sidebarCollapsed ? 'Ouvrir le menu' : 'Fermer le menu'}
         >
           {sidebarCollapsed ? <Menu size={24} /> : <ChevronLeft size={24} />}
         </button>
 
         {/* Logo */}
-        <h1 style={{
-          fontSize: '1.25rem',
-          fontWeight: '600',
-          color: 'var(--primary)',
-          margin: 0,
-          marginRight: '2rem'
-        }}>
+        <h1 className='logo'>
           Menu Manager
         </h1>
 
         {/* Barre de recherche */}
-        <div style={{
-          flex: 1,
-          maxWidth: '400px',
-          position: 'relative'
-        }}>
+        <div className='search'>
           <input
             type="text"
             placeholder="Rechercher..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="input"
-            style={{
-              width: '100%',
-              paddingLeft: '2.5rem',
-              fontSize: '0.875rem'
-            }}
+            className="search-content"
+
           />
-          <span style={{
-            position: 'absolute',
-            left: '0.75rem',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            color: 'var(--text-muted)',
-            fontSize: '1rem'
-          }}>
+          <span className='search-icon'>
             <Search size={20} />
           </span>
         </div>
@@ -170,41 +116,15 @@ const Layout = () => {
           <ThemeToggle size="md" />
 
           {/* Infos utilisateur */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem',
-            padding: '0.5rem 1rem',
-            backgroundColor: 'var(--background)',
-            borderRadius: '0.5rem',
-            border: '1px solid var(--border)'
-          }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              backgroundColor: 'var(--primary)',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-              fontSize: '0.875rem',
-              fontWeight: '600'
-            }}>
+          <div className='user-info-container'>
+            <div className='user-info-avatar'>
               {user?.firstname?.charAt(0)}{user?.lastname?.charAt(0)}
             </div>
             <div>
-              <div style={{
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                color: 'var(--text-primary)'
-              }}>
+              <div className='user-info-identity'>
                 {user?.firstname} {user?.lastname}
               </div>
-              <div style={{
-                fontSize: '0.75rem',
-                color: 'var(--text-muted)'
-              }}>
+              <div className='user-info-role'>
                 <span>Niveau d'accés : {getRoleDisplayName(user?.role)} </span>
               </div>
             </div>
@@ -223,13 +143,7 @@ const Layout = () => {
       </header>
 
       {/* 🔥 CONTENU SOUS LA NAVBAR */}
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        marginTop: '75px',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
+      <div className='outlet-header'>
 
         {/* 🔥 SIDEBAR COULISSANTE - Position absolue */}
         <aside style={{
@@ -301,49 +215,18 @@ const Layout = () => {
           </nav>
 
           {/* Actions en bas */}
-          <div style={{
-            padding: '1rem',
-            borderTop: '1px solid var(--border)',
-            flexShrink: 0
-          }}>
+          <div className='btn-nav-section'>
             <button
-              className="action-button"
+              className="icon-button nav-button btn-nav"
               onClick={() => navigate('/profile')}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                background: 'none',
-                border: '1px solid var(--border)',
-                borderRadius: '0.375rem',
-                cursor: 'pointer',
-                color: 'var(--text-secondary)',
-                fontSize: '0.875rem',
-                marginBottom: '0.5rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}
+
             >
               <CircleUserRound size={20} strokeWidth={1.25} />
               PARAMETRES
             </button>
             <button
-              className="action-button"
+              className="icon-button nav-button btn-nav"
               onClick={() => window.open('mailto:gregdevweb44500@gmail.com')}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                background: 'none',
-                border: '1px solid var(--border)',
-                borderRadius: '0.375rem',
-                cursor: 'pointer',
-                color: 'var(--text-secondary)',
-                fontSize: '0.875rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                marginBottom: '75px'
-              }}
             >
               <UserRoundPen size={20} strokeWidth={1.25} />
               CONTACT

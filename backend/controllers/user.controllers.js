@@ -156,7 +156,7 @@ const getAllTeachers = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     count: teachers.length,
-    teachers: teachers.length ? teachers : "Aucun formateur trouvé",
+    teachers
   });
 });
 

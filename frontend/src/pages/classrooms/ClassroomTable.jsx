@@ -25,11 +25,6 @@ const ClassroomTable = ({ onEdit }) => {
     const classrooms = data?.classrooms || [];
     const totalPages = Math.ceil(classrooms.length / perPage);
     const paginated = classrooms.slice((page - 1) * perPage, page * perPage);
-<<<<<<< HEAD
-
-=======
-    console.log(classrooms)
->>>>>>> d7c9253 (Progression CRUD step 1, bugs fixed, userform re-design)
     if (isLoading) {
         return (
             <div className="flex-center" style={{ height: '16rem', color: 'var(--text-muted)' }}>

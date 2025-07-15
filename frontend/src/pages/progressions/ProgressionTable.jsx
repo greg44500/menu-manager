@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useGetAllProgressionsQuery, useDeleteProgressionMutation } from '../../store/api/progressionsApi';
 import { Edit3, Trash2, UserPlus } from 'lucide-react';
-import AssignTeachersModal from './AssignTeachersModal';
+import AssignTeachersModal from '../../pages/progressions/AssignTeachersModal';
 
 const ProgressionTable = ({ onEdit }) => {
-    const { data, isLoading, error } = useGetAllProgressionsQuery();
+    const { data, isLoading, error, refetch } = useGetAllProgressionsQuery();
     const [deleteProgression] = useDeleteProgressionMutation();
     const progressions = data?.data || [];
 
@@ -117,7 +117,7 @@ const ProgressionTable = ({ onEdit }) => {
                     isOpen={isModalOpen}
                     onClose={closeAssignModal}
                     progressionId={selectedProgression._id}
-                    onSuccess={closeAssignModal}
+                    onSuccess={refetch}
                     buttonStyle="btn btn-primary"
                     ensureArrayData={true}
                 />
