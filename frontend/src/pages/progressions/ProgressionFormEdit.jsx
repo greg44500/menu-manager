@@ -1,4 +1,3 @@
-// ✅ ProgressionFormEdit.jsx - Évite d'écraser les enseignants si absents
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -10,11 +9,11 @@ import { ChefHat, Utensils, Users } from 'lucide-react';
 
 const ProgressionFormEdit = ({ progression, onSuccess, onClose }) => {
     const [assignedTeachers, setAssignedTeachers] = useState([])
+    const [weekInput, setWeekInput] = useState('');
+
     const [updateProgression, { isLoading }] = useUpdateProgressionMutation();
     const { data: classroomsData } = useGetAllClassroomsQuery();
     const { data: progressionRefreshed, refetch } = useGetProgressionByIdQuery(progression._id, { skip: !progression?._id });
-
-
 
     const classrooms = useMemo(() => classroomsData?.classrooms || [], [classroomsData]);
 
@@ -39,19 +38,18 @@ const ProgressionFormEdit = ({ progression, onSuccess, onClose }) => {
 
     useEffect(() => {
         if (progression && classrooms.length > 0) {
-            console.log('RESET DATA FROM progression:', progression);
             reset({
                 title: progression.title || '',
                 classrooms: progression.classrooms?.map(c => c._id) || [],
                 weekNumbers: progression.weekNumbers || []
             });
+            setWeekInput(Array.isArray(progression.weekNumbers) ? progression.weekNumbers.join(',') : '');
         }
     }, [progression, classrooms, reset]);
 
     useEffect(() => {
         if (progressionRefreshed?.teachers?.length) {
             setAssignedTeachers(progressionRefreshed.teachers);
-            console.log("👤 Mise à jour formateurs depuis progressionRefreshed", progressionRefreshed.teachers);
         }
     }, [progressionRefreshed?.teachers]);
 
@@ -64,9 +62,6 @@ const ProgressionFormEdit = ({ progression, onSuccess, onClose }) => {
 
     const onSubmit = async (data) => {
         try {
-            console.log('Form data soumis:', data);
-            console.log('progressionRefreshed:', progressionRefreshed);
-
             const progressionId = progression?._id || progressionRefreshed?._id;
             if (!progressionId) {
                 toast.error("ID progression manquant.");
@@ -77,18 +72,21 @@ const ProgressionFormEdit = ({ progression, onSuccess, onClose }) => {
                 ? data.classrooms.map(id => id.toString())
                 : [];
 
+            const parsedWeeks = weekInput
+                .split(',')
+                .map(s => parseInt(s.trim(), 10))
+                .filter(n => !isNaN(n));
+
             const submissionData = {
                 title: data.title,
                 classrooms: classIds,
-                weekNumbers: data.weekNumbers,
+                weekNumbers: parsedWeeks,
             };
 
             const teacherIds = assignedTeachers.map(t => t._id);
-            if (teacherIds && teacherIds.length > 0) {
+            if (teacherIds.length > 0) {
                 submissionData.teachers = teacherIds;
             }
-
-            console.log('Données envoyées à updateProgression:', submissionData);
 
             await updateProgression({ id: progressionId, ...submissionData }).unwrap();
             toast.success('Progression modifiée avec succès !');
@@ -102,17 +100,15 @@ const ProgressionFormEdit = ({ progression, onSuccess, onClose }) => {
 
     const assignedCuisine = assignedTeachers.filter(t => t.specialization === 'cuisine');
     const assignedService = assignedTeachers.filter(t => t.specialization === 'service');
-    console.log("👀 Teachers affichés (visuel)", progressionRefreshed?.teachers);
+
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="form-container">
-            {/* Titre */}
             <div className="form-group">
                 <label className="label label-required">Titre de la progression</label>
                 <input {...register("title")} className={`input ${errors.title ? 'input-error' : ''}`} placeholder="Ex: BP AC 2 2028" />
                 {errors.title && <p className="form-error">{errors.title.message}</p>}
             </div>
 
-            {/* Classes avec checkbox scrollable */}
             <div className="form-group">
                 <label className="label label-required label-icon">
                     <Users size={16} className="text-muted" />
@@ -134,14 +130,18 @@ const ProgressionFormEdit = ({ progression, onSuccess, onClose }) => {
                 {errors.classrooms && <p className="form-error">{errors.classrooms.message}</p>}
             </div>
 
-            {/* Semaines */}
             <div className="form-group">
                 <label className="label label-required">Semaines concernées</label>
-                <input type="text" {...register('weekNumbers')} className={`input ${errors.weekNumbers ? 'input-error' : ''}`} placeholder="Ex: 1,2,3,5" />
+                <input
+                    type="text"
+                    value={weekInput}
+                    onChange={(e) => setWeekInput(e.target.value)}
+                    className={`input ${errors.weekNumbers ? 'input-error' : ''}`}
+                    placeholder="Ex: 1,2,3,5"
+                />
                 {errors.weekNumbers && <p className="form-error">{errors.weekNumbers.message}</p>}
             </div>
 
-            {/* Visuel Formateurs */}
             <div className="card card-summary">
                 <div className="card-content-form">
                     <div className="summary-grid">
@@ -172,7 +172,6 @@ const ProgressionFormEdit = ({ progression, onSuccess, onClose }) => {
                 </div>
             </div>
 
-            {/* Actions */}
             <div className="form-actions">
                 <button type="submit" className="btn btn-primary" disabled={isLoading}>Mettre à jour</button>
                 <button type="button" className="btn btn-secondary" onClick={onClose}>Annuler</button>
