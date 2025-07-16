@@ -15,7 +15,8 @@ import {
   CircleUserRound,
   Search,
   UserRoundPen,
-  LogOut
+  LogOut,
+  Settings
 } from 'lucide-react'
 
 const Layout = () => {
@@ -54,6 +55,7 @@ const Layout = () => {
       { path: '/classrooms', label: 'CLASSES', icon: <GraduationCap size={24} strokeWidth={1.25} /> },
       { path: '/progressions', label: 'PROGRESSIONS', icon: <CalendarCog size={24} strokeWidth={1.25} /> },
       { path: '/menus', label: 'MENUS', icon: <Utensils size={24} strokeWidth={1.25} /> },
+      { path: '/settings', label: 'PARAMÉTRAGES', icon: <Settings size={24} strokeWidth={1.25} /> }
     ]
 
     if (isAdmin()) {

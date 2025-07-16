@@ -109,7 +109,7 @@ const updateProgression = asyncHandler(async (req, res) => {
   progression.classrooms = classrooms;
   progression.teachers = Array.isArray(teachers) ? teachers : [];
   progression.weekNumbers = weekNumbers;
-
+console.log('Teacher',progression.teachers, teachers)
   await progression.save();
 
   // Nettoyage des anciens formateurs dans les anciennes classes
@@ -180,10 +180,14 @@ const updateProgression = asyncHandler(async (req, res) => {
 
   await progression.save();
 
-  res.status(200).json({
-    message: 'Progression mise à jour avec succès',
-    progression,
-  });
+ const updatedProgression = await Progression.findById(progression._id)
+  .populate('teachers', 'firstname lastname email specialization')
+  .populate('classrooms', 'name'); // Ajoute aussi classrooms si besoin
+
+res.status(200).json({
+  message: 'Progression mise à jour avec succès',
+  progression: updatedProgression,
+});
 });
 
 
@@ -274,7 +278,7 @@ const getProgressionById = asyncHandler(async (req, res) => {
     } = req.params;
     const progression = await Progression.findById(id)
         .populate('classrooms', 'virtualName') //Identifie le nom de la classe (nom virtuel ajouter .lean({virtual: true}))
-        .populate('teachers', 'firstname lastname email')
+        .populate('teachers', 'firstname lastname email specialization')
         .populate('services.service', 'type date')
         .populate({
             path: 'services', //
@@ -295,14 +299,27 @@ const getProgressionById = asyncHandler(async (req, res) => {
 // @access  Admin, Manager
 const getAllProgressions = asyncHandler(async (req, res) => {
     const progressions = await Progression.find()
-        .populate('classrooms', 'name')
-        .populate('teachers', 'firstname lastname email')
-        .populate('services.service', 'type date')
         .populate({
-            path: 'services',
-            select: 'items isMenuValidate isRestaurant author'
-        })
-        .lean();
+    path: 'classrooms',
+    select: 'name diploma category certificationSession',
+    options: { virtuals: true }
+  })
+  .populate('teachers', 'firstname lastname email')
+  .populate('services.service', 'type date')
+  .populate({
+    path: 'services',
+    select: 'items isMenuValidate isRestaurant author'
+  })
+  .lean({ virtuals: true }) // ← ESSENTIEL POUR CHAMPS VIRTUELS
+
+  for (const prog of progressions) {
+  if (Array.isArray(prog.classrooms)) {
+    prog.classrooms = prog.classrooms.map(cls => ({
+      ...cls,
+      virtualName: `${cls.diploma || ''}${cls.category || ''}${cls.alternanceNumber || ''}${cls.group || ''}${cls.certificationSession || ''}`
+    }));
+  }
+}
 
     res.status(200).json({
         success: true,
@@ -423,6 +440,9 @@ const assignTeachersToProgression = asyncHandler(async (req, res) => {
   progression.teachers = teachers;
   await progression.save();
 
+  // 👇 Important : récupérer les infos des enseignants
+await progression.populate('teachers');
+console.log('✅ Teachers enregistrés dans progression:', progression.teachers);
   res.status(200).json({
     message: "Formateurs assignés avec succès",
     progression,

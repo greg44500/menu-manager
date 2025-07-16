@@ -22,6 +22,7 @@ import UserList from '../pages/users/UserList'
 import MenuList from '../pages/menus/MenuList'
 import UserProfile from '../pages/users/UserProfile'
 import ChangePassword from '../pages/auth/ChangePassword'
+import SettingsDashboard from '../pages/settings/SettingsDashboard'
 
 // Page 404
 import NotFound from '../components/common/NotFound'
@@ -125,6 +126,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute requiredRoles={['superAdmin', 'manager', 'user']}>
             <MenuList />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: 'settings',
+        element: (
+          <ProtectedRoute requiredRoles={['superAdmin', 'manager']}>
+            <SettingsDashboard />
           </ProtectedRoute>
         )
       },

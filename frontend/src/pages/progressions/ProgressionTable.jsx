@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useGetAllProgressionsQuery, useDeleteProgressionMutation } from '../../store/api/progressionsApi';
 import { Edit3, Trash2, UserPlus } from 'lucide-react';
 import AssignTeachersModal from '../../pages/progressions/AssignTeachersModal';
 
-const ProgressionTable = ({ onEdit }) => {
+const ProgressionTable = ({ onEdit, refreshTrigger }) => {
     const { data, isLoading, error, refetch } = useGetAllProgressionsQuery();
+    useEffect(() => {
+        refetch();
+    }, [refreshTrigger, refetch]);
     const [deleteProgression] = useDeleteProgressionMutation();
     const progressions = data?.data || [];
 
@@ -51,7 +54,7 @@ const ProgressionTable = ({ onEdit }) => {
             </div>
         );
     }
-
+    console.log('PROGRESSIONS', progressions);
     return (
         <div className="card theme-transition">
             <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
@@ -89,7 +92,7 @@ const ProgressionTable = ({ onEdit }) => {
                                 <tr key={prog._id} style={{ borderBottom: '1px solid var(--border)' }}>
                                     <td style={{ padding: '1rem 1.5rem', fontWeight: '500' }}>{prog.title}</td>
                                     <td style={{ padding: '1rem 1.5rem' }}>{prog.weekNumbers?.join(', ')}</td>
-                                    <td style={{ padding: '1rem 1.5rem' }}>{prog.classrooms?.map((cls) => cls.name || cls.virtualName).join(', ')}</td>
+                                    <td style={{ padding: '1rem 1.5rem' }}>{prog.classrooms?.map(cls => cls?.name || cls?.virtualName || '[Classe inconnue]').join(', ')}</td>
                                     <td style={{ padding: '1rem 1.5rem' }}>{prog.teachers?.map((t) => `${t.firstname} ${t.lastname}`).join(', ')}</td>
                                     <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
                                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>

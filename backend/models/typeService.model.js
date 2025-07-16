@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-const productionTypeSchema = new mongoose.Schema({
+const TypeServiceSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
@@ -9,4 +9,4 @@ const productionTypeSchema = new mongoose.Schema({
     timestamps: true
 })
 
-module.exports = mongoose.model("ProductionType", productionTypeSchema);
+module.exports = mongoose.model("TypeService", TypeServiceSchema);

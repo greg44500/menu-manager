@@ -48,4 +48,7 @@ progressionSchema.pre('save', async function (next) {
     }
 });
 
+// Activer les champs virtuels lors de la conversion en JSON ou en objet
+progressionSchema.set("toJSON", { virtuals: true });
+
 module.exports = mongoose.model('Progression', progressionSchema);

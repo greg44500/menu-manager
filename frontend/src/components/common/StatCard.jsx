@@ -30,7 +30,7 @@ const StatCard = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false)
 
-  // 🎨 CONFIGURATION DES VARIANTS DE COULEUR
+  // CONFIGURATION DES VARIANTS DE COULEUR
   const variantConfig = {
     primary: {
       iconColor: 'var(--primary)',
@@ -97,7 +97,7 @@ const StatCard = ({
       }}
     >
       
-      {/* 🌊 EFFET DE FOND ANIMÉ */}
+      {/* EFFET DE FOND ANIMÉ */}
       {clickable && (
         <div
           style={{
@@ -114,7 +114,7 @@ const StatCard = ({
         />
       )}
 
-      {/* 📊 CONTENU PRINCIPAL */}
+      {/*CONTENU PRINCIPAL */}
       <div style={{ position: 'relative', zIndex: 1 }}>
         <h3 style={{
           fontSize: '0.875rem',
@@ -129,7 +129,7 @@ const StatCard = ({
         </h3>
         
         <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-          {/* 🔢 NOMBRE PRINCIPAL */}
+          {/* NOMBRE PRINCIPAL */}
           <p style={{
             fontSize: '2.25rem',
             fontWeight: '700',
@@ -152,7 +152,7 @@ const StatCard = ({
             )}
           </p>
           
-          {/* 📈 INDICATEUR CLIQUABLE */}
+          {/*INDICATEUR CLIQUABLE */}
           {clickable && !loading && (
             <span style={{
               fontSize: '0.75rem',
@@ -168,7 +168,7 @@ const StatCard = ({
         </div>
       </div>
 
-      {/* 🎨 ICÔNE DÉCORATIVE */}
+      {/* ICÔNE DÉCORATIVE */}
       <div style={{
         fontSize: '3rem',
         color: config.iconColor,

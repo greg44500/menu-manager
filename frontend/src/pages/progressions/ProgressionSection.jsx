@@ -7,6 +7,7 @@ const ProgressionSection = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('create');
     const [selectedProgression, setSelectedProgression] = useState(null);
+    const [refreshKey, setRefreshKey] = useState(0)
 
     const handleOpenModal = () => {
         setModalMode('create');
@@ -18,6 +19,11 @@ const ProgressionSection = () => {
         setModalMode('edit');
         setSelectedProgression(progression);
         setIsModalOpen(true);
+    };
+
+    const handleSuccess = () => {
+        setIsModalOpen(false);
+        setRefreshKey(prev => prev + 1); // ← Rafraîchir la table
     };
 
     return (
@@ -42,7 +48,7 @@ const ProgressionSection = () => {
                 </div>
 
                 <div className="card-content">
-                    <ProgressionTable onEdit={handleEditProgression} />
+                    <ProgressionTable onEdit={handleEditProgression} refreshTrigger={refreshKey} />
                 </div>
 
                 <ProgressionModal
@@ -50,7 +56,7 @@ const ProgressionSection = () => {
                     mode={modalMode}
                     progressionData={selectedProgression}
                     onClose={() => setIsModalOpen(false)}
-                    onSuccess={() => setIsModalOpen(false)}
+                    onSuccess={handleSuccess}
                 />
             </div>
         </div>
