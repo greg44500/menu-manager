@@ -2,12 +2,40 @@
 import { useState } from 'react'
 import { Building2, ScrollText } from 'lucide-react'
 import StatCard from '../../components/common/StatCard'
-import { useGetSettingsStatsQuery } from '../../store/api/settingsApi'
+import { useGetLocationsQuery } from '../../store/api/locationApi'
+import { useGetTypesServicesQuery } from '../../store/api/typeServiceApi.js'
 import TypeServiceSection from './TypeServiceSection'
+import LocationSection from './LocationSection'
 
 const SettingsDashboard = () => {
     const [activeSection, setActiveSection] = useState(null)
-    const { data: stats} = useGetSettingsStatsQuery()
+    const {
+        data: locationsData,
+        isLoading: locationsLoading,
+        error: locationsError
+    } = useGetLocationsQuery()
+
+    const {
+        data: typesData,
+        isLoading: typesLoading,
+        error: typesError
+    } = useGetTypesServicesQuery()
+
+    // 🔢 CALCUL DIRECT DES STATS (SEULEMENT 2 TYPES)
+    const stats = {
+        typesServicesCount: typesData?.length || 0,
+        locationsCount: Array.isArray(locationsData?.data) ? locationsData.data.length : 0,
+    }
+
+    // 🔍 DEBUG SIMPLIFIÉ
+    console.log('📊 Données locations:', locationsData)
+    console.log('📊 Données types:', typesData)
+    console.log('📊 Stats calculées:', stats)
+    console.log('📊 Loading states:', { locationsLoading, typesLoading })
+    console.log('📊 Errors:', { locationsError, typesError })
+
+
+
 
     const statCards = [
         {
@@ -78,14 +106,7 @@ const SettingsDashboard = () => {
                     )}
 
                     {activeSection === 'locations' && (
-                        <div className="card">
-                            <div className="card-header">
-                                <h2>Ateliers (locations)</h2>
-                            </div>
-                            <div className="card-content">
-                                <p>📋 Liste des ateliers ici</p>
-                            </div>
-                        </div>
+                        <LocationSection />
                     )}
                 </div>
             )}

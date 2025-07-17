@@ -29,14 +29,14 @@ const createLocation = asyncHandler(async (req, res) => {
         name
     });
     if (existingLocation) {
-        res.status(400);
-        throw new Error('Local déjà existant')
+        return res.status(400).json({
+            success: false,
+            message: 'Local déjà existant'
+        })
     }
     try {
 
-        const newLocation = new Location({
-            name
-        });
+        const newLocation = new Location({ name: name.toUpperCase() });
 
         const location = await newLocation.save();
 

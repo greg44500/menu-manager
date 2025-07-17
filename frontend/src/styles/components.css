@@ -773,3 +773,9 @@
     width: 100%;
   }
 }
+
+.container-service-location-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

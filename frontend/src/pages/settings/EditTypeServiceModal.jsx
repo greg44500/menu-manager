@@ -43,12 +43,12 @@ const EditTypeServiceModal = ({ type, onClose }) => {
                 />
             </div>
 
-            {error && <p className="text-error">{error}</p>}
+            {error && <p className="form-error">{error}</p>}
 
             <div className="flex justify-end gap-2 mt-4">
                 <button
                     type="button"
-                    className="btn btn-ghost"
+                    className="btn btn-ghost btn-form"
                     onClick={onClose}
                     disabled={isLoading}
                 >
@@ -56,7 +56,7 @@ const EditTypeServiceModal = ({ type, onClose }) => {
                 </button>
                 <button
                     type="submit"
-                    className="btn btn-primary"
+                    className="btn btn-primary btn-form"
                     disabled={isLoading}
                 >
                     {isLoading ? 'Modification...' : 'Enregistrer'}

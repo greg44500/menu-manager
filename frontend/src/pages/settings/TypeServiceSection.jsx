@@ -12,11 +12,11 @@ const TypeServiceSection = () => {
     return (
         <div className="card">
             <div
-                className="card-header"
-                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                className="card-header container-service-location-section"
+
             >
                 <h2>Types de services</h2>
-                <button className="btn btn-sm btn-primary" onClick={() => setShowCreateModal(true)}>
+                <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
                     + Ajouter un type de service
                 </button>
             </div>

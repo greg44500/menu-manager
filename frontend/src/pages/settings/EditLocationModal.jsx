@@ -1,13 +1,13 @@
-// frontend/src/components/settings/CreateTypeServiceModal.jsx
+// frontend/src/components/settings/EditLocationModal.jsx
 import { useState } from 'react'
 import { toast } from 'react-hot-toast'
-import { useCreateTypeServiceMutation } from '../../store/api/typeServiceApi.js'
+import { useUpdateLocationMutation } from '../../store/api/locationApi.js'
 
-const CreateTypeServiceModal = ({ onClose }) => {
-    const [name, setName] = useState('')
+const EditLocationModal = ({ location, onClose, onUpdated }) => {
+    const [name, setName] = useState(location?.name || '')
     const [error, setError] = useState(null)
 
-    const [createTypeService, { isLoading }] = useCreateTypeServiceMutation()
+    const [updateLocation, { isLoading }] = useUpdateLocationMutation()
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -20,25 +20,25 @@ const CreateTypeServiceModal = ({ onClose }) => {
         }
 
         try {
-            await createTypeService({ name }).unwrap()
-            toast.success("Type de service créé avec succès")
+            await updateLocation({ id: location._id, name }).unwrap()
+            toast.success("Atelier modifié avec succès")
             onClose()
+            onUpdated()
         } catch (err) {
             console.error(err)
-            setError("Erreur lors de la création")
-            toast.error("Échec de la création du type de service")
+            toast.error("Erreur lors de la mise à jour")
+            setError("Une erreur est survenue.")
         }
     }
 
     return (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-2">
             <div>
-                <label className="label" htmlFor="name">Nom du type de service</label>
+                <label className="label" htmlFor="edit-name">Nom de l'atelier</label>
                 <input
-                    id="name"
+                    id="edit-name"
                     type="text"
                     className="input w-full"
-                    placeholder="Ex : Restaurant"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                 />
@@ -60,11 +60,11 @@ const CreateTypeServiceModal = ({ onClose }) => {
                     className="btn btn-primary btn-form"
                     disabled={isLoading}
                 >
-                    {isLoading ? 'Création...' : 'Créer'}
+                    {isLoading ? 'Modification...' : 'Enregistrer'}
                 </button>
             </div>
         </form>
     )
 }
 
-export default CreateTypeServiceModal
+export default EditLocationModal

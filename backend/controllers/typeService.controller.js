@@ -35,7 +35,7 @@ const createTypeService = asyncHandler(async (req, res) => {
     try {
 
         const newtypeService = new typeService({
-            name
+            name: name.toUpperCase()
         });
 
         const savedTypeService = await newtypeService.save();

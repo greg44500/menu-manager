@@ -41,6 +41,8 @@ export const baseApi = createApi({
   ],
   
   // ENDPOINTS (seront définis dans des fichiers séparés)
+    keepUnusedDataFor: 0,
+  refetchOnMountOrArgChange: true,
   endpoints: () => ({}),
 })
 
@@ -50,5 +52,3 @@ export const baseApi = createApi({
 // - Afficher des notifications d'erreur
 // - Logger les erreurs
 
-export const {
-} = baseApi ;

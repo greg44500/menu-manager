@@ -1,13 +1,13 @@
-// frontend/src/components/settings/CreateTypeServiceModal.jsx
+// frontend/src/components/settings/CreateLocationModal.jsx
 import { useState } from 'react'
 import { toast } from 'react-hot-toast'
-import { useCreateTypeServiceMutation } from '../../store/api/typeServiceApi.js'
+import { useCreateLocationMutation } from '../../store/api/locationApi.js'
 
-const CreateTypeServiceModal = ({ onClose }) => {
+const CreateLocationModal = ({ onClose, onCreated }) => {
     const [name, setName] = useState('')
     const [error, setError] = useState(null)
 
-    const [createTypeService, { isLoading }] = useCreateTypeServiceMutation()
+    const [createLocation, { isLoading }] = useCreateLocationMutation()
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -20,25 +20,26 @@ const CreateTypeServiceModal = ({ onClose }) => {
         }
 
         try {
-            await createTypeService({ name }).unwrap()
-            toast.success("Type de service créé avec succès")
+            await createLocation({ name }).unwrap()
+            toast.success("Atelier créé avec succès")
             onClose()
+            onCreated()
         } catch (err) {
-            console.error(err)
-            setError("Erreur lors de la création")
-            toast.error("Échec de la création du type de service")
+            const message = err?.data?.message || "Erreur lors de la création"
+            setError(message)
+            toast.error(message)
         }
     }
 
     return (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-2">
             <div>
-                <label className="label" htmlFor="name">Nom du type de service</label>
+                <label className="label" htmlFor="name">Nom de l'atelier</label>
                 <input
                     id="name"
                     type="text"
                     className="input w-full"
-                    placeholder="Ex : Restaurant"
+                    placeholder="Ex : Atelier cuisine 1"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                 />
@@ -67,4 +68,4 @@ const CreateTypeServiceModal = ({ onClose }) => {
     )
 }
 
-export default CreateTypeServiceModal
+export default CreateLocationModal
