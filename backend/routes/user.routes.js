@@ -14,7 +14,8 @@ const {
     getAllUsers,
     getUserById, 
     updateUser,
-    deleteUser 
+    deleteUser, 
+    getAllTeachersOnly
 } = require('../controllers/user.controllers');
 
 const sendReminderEmails = require('../utils/sendReminderMails');
@@ -41,9 +42,11 @@ router.patch('/password/:id', authenticateUser, updatePassword);
 // ✅ AUTHENTIFICATION REMISE : Récupérer tous les utilisateurs
 router.get('/', authenticateUser, authorizeRoles(['superAdmin', 'manager']), getAllUsers);
 
+// ✅ ROUTE TEACHERS - DOIT ÊTRE AVANT /:id
+router.get('/teachers', authenticateUser, authorizeRoles(['superAdmin']), getAllTeachersOnly);
+
 // ✅ AUTHENTIFICATION REMISE : CRUD complet
 router.get('/:id', authenticateUser, authorizeRoles(['superAdmin', 'manager']), getUserById);
 router.put('/:id', authenticateUser, authorizeRoles(['superAdmin', 'manager']), updateUser);
 router.delete('/:id', authenticateUser, authorizeRoles(['superAdmin']), deleteUser);
-
 module.exports = router;

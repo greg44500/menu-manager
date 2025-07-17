@@ -1,83 +1,92 @@
-// frontend/src/components/settings/TypeServiceTable.jsx
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Edit3, Trash2 } from 'lucide-react'
 import { useGetTypesServicesQuery, useDeleteTypeServiceMutation } from '../../store/api/typeServiceApi.js'
 import toast from 'react-hot-toast'
 import Modal from '../../components/common/Modal'
 import EditTypeServiceModal from './EditTypeServiceModal'
+import DataTable from '../../components/common/DataTable'
 
 const TypeServiceTable = () => {
-    const { data: types = [], isLoading, isError, refetch } = useGetTypesServicesQuery()
-    const [deleteType] = useDeleteTypeServiceMutation()
+  const { data: types = [], isLoading, isError, refetch } = useGetTypesServicesQuery()
+  const [deleteType] = useDeleteTypeServiceMutation()
 
-    const [editModalOpen, setEditModalOpen] = useState(false)
-    const [selectedType, setSelectedType] = useState(null)
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [selectedType, setSelectedType] = useState(null)
+  const [refreshKey, setRefreshKey] = useState(0)
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Supprimer ce type de service ?')) return
-        try {
-            await deleteType(id).unwrap()
-            toast.success('Type supprimé avec succès')
-            refetch()
-        } catch (err) {
-            toast.error(err, 'Erreur lors de la suppression')
-        }
+  const handleDelete = async (id) => {
+    if (!window.confirm('Supprimer ce type de service ?')) return
+    try {
+      await deleteType(id).unwrap()
+      toast.success('Type supprimé avec succès')
+      refetch()
+      setRefreshKey(prev => prev + 1)
+    } catch (err) {
+      toast.error('Erreur lors de la suppression')
+      console.error(err)
     }
+  }
 
-    const handleEdit = (type) => {
-        setSelectedType(type)
-        setEditModalOpen(true)
-    }
+  const handleEdit = (type) => {
+    setSelectedType(type)
+    setEditModalOpen(true)
+  }
 
-    if (isLoading) return <p>Chargement...</p>
-    if (isError) return <p>Erreur lors du chargement des types.</p>
-    if (types.length === 0) return <p>Aucun type de service pour le moment.</p>
+  const columns = useMemo(() => [
+    {
+      accessorKey: 'name',
+      header: 'Nom',
+      cell: ({ row }) => <span>{row.original.name}</span>,
+    },
+  ], [])
 
-    return (
-        <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', minWidth: '400px' }}>
-                <thead>
-                    <tr>
-                        <th style={{ textAlign: 'left', padding: '12px' }}>Nom</th>
-                        <th style={{ textAlign: 'right', padding: '12px' }}>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {types.map((type) => (
-                        <tr key={type._id} style={{ borderBottom: '1px solid var(--border)' }}>
-                            <td style={{ padding: '12px', fontWeight: '500' }}>{type.name}</td>
-                            <td style={{ padding: '12px', textAlign: 'right' }}>
-                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                                    <button className="icon-button" onClick={() => handleEdit(type)}>
-                                        <Edit3 size={16} />
-                                    </button>
-                                    <button className="icon-button" onClick={() => handleDelete(type._id)}>
-                                        <Trash2 size={16} />
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+  const rowActions = (type) => (
+    <div className="flex justify-end gap-2">
+      <button className="icon-button" onClick={() => handleEdit(type)}>
+        <Edit3 size={16} />
+      </button>
+      <button className="icon-button" onClick={() => handleDelete(type._id)}>
+        <Trash2 size={16} />
+      </button>
+    </div>
+  )
 
-            {editModalOpen && selectedType && (
-                <Modal
-                    isOpen={editModalOpen}
-                    onClose={() => setEditModalOpen(false)}
-                    title="Modifier le type de service"
-                >
-                    <EditTypeServiceModal
-                        type={selectedType}
-                        onClose={() => {
-                            setEditModalOpen(false)
-                            setSelectedType(null)
-                        }}
-                    />
-                </Modal>
-            )}
-        </div>
-    )
+  if (isLoading) return <p>Chargement...</p>
+  if (isError) return <p>Erreur lors du chargement des types.</p>
+  if (types.length === 0) return <p>Aucun type de service pour le moment.</p>
+
+  return (
+    <div className="card">
+      <DataTable
+        key={refreshKey}
+        columns={columns}
+        data={types}
+        isLoading={isLoading}
+        rowActions={rowActions}
+        pageSize={5}
+      />
+
+      {editModalOpen && selectedType && (
+        <Modal
+          isOpen={editModalOpen}
+          onClose={() => setEditModalOpen(false)}
+          title="Modifier le type de service"
+        >
+          <EditTypeServiceModal
+            type={selectedType}
+            onClose={() => {
+              setEditModalOpen(false)
+              setSelectedType(null)
+            }}
+            onUpdated={() => {
+              refetch()
+              setRefreshKey(prev => prev + 1)
+            }}
+          />
+        </Modal>
+      )}
+    </div>
+  )
 }
 
 export default TypeServiceTable

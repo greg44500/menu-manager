@@ -35,9 +35,11 @@ classroomSchema.virtual('virtualName').get(function() {
     
     if (this.diploma) parts.push(this.diploma);
     if (this.category) parts.push(this.category);
+    if (this.alternationNumber) parts.push(this.alternationNumber);
+    if (this.group) parts.push(this.group);
     if (this.certificationSession) parts.push(this.certificationSession);
   
-    return parts.join('');  // Concatène les valeurs disponibles
+    return parts.join(' ');  // Concatène les valeurs disponibles
   });
 
 // Activer les champs virtuels lors de la conversion en JSON ou en objet

@@ -1,7 +1,7 @@
 // src/pages/progressions/AssignTeachersModal.jsx - VERSION AVEC PRÉ-COCHAGE
 import { useEffect, useState, useMemo } from 'react';
 import Modal from '../../components/common/Modal';
-import { useGetAllTeachersQuery } from '../../store/api/usersApi';
+import { useGetTeachersOnlyQuery } from '../../store/api/usersApi';
 import { useAssignTeachersMutation, useGetProgressionByIdQuery } from '../../store/api/progressionsApi';
 import { ChefHat, Utensils, Users, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -17,11 +17,14 @@ import toast from 'react-hot-toast';
  */
 
 const AssignTeachersModal = ({ isOpen, onClose, progressionId, onSuccess }) => {
-    const { data: teacherApiData, isLoading: isLoadingTeachers } = useGetAllTeachersQuery();
-    const { data: progressionData, isLoading: isLoadingProgression, refetch } = useGetProgressionByIdQuery(progressionId, {
+    const { data: teacherApiData, isLoading: isLoadingTeachers, refetch: refetchTeachers } = useGetTeachersOnlyQuery();
+    const { data: progressionData, isLoading: isLoadingProgression, refetch: refetchProgression } = useGetProgressionByIdQuery(progressionId, {
         skip: !progressionId || !isOpen
     });
     const [assignTeachers, { isLoading: isSubmitting }] = useAssignTeachersMutation();
+
+
+console.log("🎓 Formateurs chargés :", teacherApiData)
 
     // États séparés pour chaque spécialisation
     const [selectedCuisine, setSelectedCuisine] = useState([]);
@@ -45,6 +48,12 @@ const AssignTeachersModal = ({ isOpen, onClose, progressionId, onSuccess }) => {
             service: sortTeachers(allTeachers.filter(t => t.specialization === 'service')),
         };
     }, [teacherApiData]);
+    // REFETCH DES UTILISATEURS AVEC ISTEACHER:TRUE
+    useEffect(() => {
+        if (isOpen) {
+            refetchTeachers()
+        }
+    }, [isOpen, refetchTeachers])
 
     // PRÉ-COCHAGE DES FORMATEURS EXISTANTS
     useEffect(() => {
@@ -88,7 +97,7 @@ const AssignTeachersModal = ({ isOpen, onClose, progressionId, onSuccess }) => {
                 id: progressionId,
                 teachers: allSelectedTeachers
             }).unwrap();
-            await refetch(); // <- récupère les données mises à jour
+            await refetchProgression(); // <- récupère les données mises à jour
             // 🧠 Mise à jour des états internes
             setInitialCuisine([...selectedCuisine]);
             setInitialService([...selectedService]);

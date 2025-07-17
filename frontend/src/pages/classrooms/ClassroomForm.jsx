@@ -81,7 +81,18 @@ const ClassroomForm = ({ classroom, mode = 'create', onSuccess }) => {
       </div>
 
       <div className="form-group">
-        <label className="label label-required">Groupe</label>
+        <label className="label">Numéro d’alternances</label>
+        <input
+          className='input'
+          type="number"
+          {...register('alternationNumber')}
+          placeholder="1 à 3"
+        />
+        {errors.alternationNumber && <p className="form-error">{errors.alternationNumber.message}</p>}
+      </div>
+
+      <div className="form-group">
+        <label className="label">Groupe</label>
         <select className='input'{...register('group')}>
           <option value="">Sélectionner un groupe</option>
           {groups.map((g) => (
@@ -100,17 +111,6 @@ const ClassroomForm = ({ classroom, mode = 'create', onSuccess }) => {
           placeholder="2025"
         />
         {errors.certificationSession && <p className="form-error">{errors.certificationSession.message}</p>}
-      </div>
-
-      <div className="form-group">
-        <label className="label label-required">Numéro d’alternances</label>
-        <input
-          className='input'
-          type="number"
-          {...register('alternationNumber')}
-          placeholder="1 à 3"
-        />
-        {errors.alternationNumber && <p className="form-error">{errors.alternationNumber.message}</p>}
       </div>
 
       <div className="flex justify-end gap-2">

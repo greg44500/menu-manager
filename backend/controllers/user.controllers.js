@@ -296,6 +296,20 @@ const deleteUser = asyncHandler(async (req, res, next) => {
   });
 });
 
+// **@desc : Récupérer les utilisateurs où isTeacher = true
+// **@method :   GET /api/users/teachers
+// **@Access  Private/Admin
+const getAllTeachersOnly = asyncHandler(async (req, res, next) => {
+  // CORRECTION : assigner le résultat de la requête à une variable
+  const teachersOnly = await UserModel.find({isTeacher: true});
+  
+  res.status(200).json({ 
+    success: true, 
+    count: teachersOnly.length, 
+    data: teachersOnly 
+  });
+});
+
 module.exports = {
   getUserProfile,
   updatePassword,
@@ -306,5 +320,6 @@ module.exports = {
   getAllUsers,
   getUserById,
   updateUser,
-  deleteUser
+  deleteUser,
+  getAllTeachersOnly
 };

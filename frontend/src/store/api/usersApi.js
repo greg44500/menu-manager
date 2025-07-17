@@ -1,4 +1,5 @@
 // frontend/src/store/api/usersApi.js - VERSION FINALISÉE
+
 import { baseApi } from './baseApi'
 
 export const usersApi = baseApi.injectEndpoints({
@@ -84,11 +85,11 @@ export const usersApi = baseApi.injectEndpoints({
         method: 'PUT',
         body: userData,
       }),
-      invalidatesTags: (result, error, { id }) => [
+      invalidatesTags: [(result, error, { id }) => [
         { type: 'User', id },
         'User',
         'UserProfile'
-      ],
+      ]],
       transformResponse: (response) => response.data,
       transformErrorResponse: (response) => ({
         status: response.status,
@@ -180,19 +181,31 @@ export const usersApi = baseApi.injectEndpoints({
     // ============================================================================
     
     // 🎯 RÉCUPÉRER TOUS LES FORMATEURS (utilise getAllUsers avec filtre côté client)
-    getAllTeachers: builder.query({
-      query: () => '/users',
-      providesTags: ['User'],
-      transformResponse: (response) => {
-        const allUsers = response.data || []
-        const teachers = allUsers.filter(user => user.role === 'user')
-        
-        return {
-          teachers,
-          count: teachers.length
-        }
-      },
-    }),
+   getAllTeachers: builder.query({
+  query: () => '/users',
+  providesTags: ['User'],
+  transformResponse: (response) => {
+    const allUsers = response.data || []
+    const teachers = allUsers.filter(user => user.role === 'user' && user.isTeacher === true)
+
+    return {
+      teachers,
+      count: teachers.length
+    }
+  },
+}),
+getTeachersOnly: builder.query({
+  query: () => '/users/teachers',
+  providesTags: ['User'],
+  transformResponse: (response) => {
+    const teachers = response.data || []
+    return {
+      teachers,
+      count: teachers.length
+    }
+  }
+}),
+
     
     // 🔍 RECHERCHER DES UTILISATEURS PAR CRITÈRES
     searchUsers: builder.query({
@@ -237,6 +250,7 @@ export const usersApi = baseApi.injectEndpoints({
 export const {
   // Queries
   useGetAllUsersQuery,
+  useGetTeachersOnlyQuery,
   useGetUserProfileQuery,
   useGetUserByIdQuery,
   useGetUserStatsQuery,

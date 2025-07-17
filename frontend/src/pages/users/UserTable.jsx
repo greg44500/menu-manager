@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useGetAllUsersQuery, useDeleteUserMutation } from '../../store/api/usersApi'
-import { Trash2, Edit3, User } from 'lucide-react'
+import { Trash2, Edit3 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import UserModal from './UserModal'
+import DataTable from '../../components/common/DataTable'
 
 const UserTable = () => {
   const { data, isLoading, error, refetch } = useGetAllUsersQuery()
@@ -12,7 +13,7 @@ const UserTable = () => {
   const [modalMode, setModalMode] = useState('create')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState(null)
-  
+
   const handleDelete = async (id) => {
     if (!window.confirm('Voulez-vous vraiment supprimer cet utilisateur ?')) return
     try {
@@ -24,161 +25,105 @@ const UserTable = () => {
     }
   }
 
-  const getRoleBadge = (role) => {
-    const roles = {
-      superAdmin: { label: 'Super Admin', class: 'badge-error' },
-      manager: { label: 'Manager', class: 'badge-warning' },
-      user: { label: 'Formateur', class: 'badge-info' },
-    }
-    const conf = roles[role] || roles.user
-    return <span className={`badge ${conf.class}`}>{conf.label}</span>
-  }
+  const columns = useMemo(() => [
+    {
+      accessorKey: 'fullname',
+      header: 'Utilisateur',
+      cell: ({ row }) => {
+        const user = row.original
+        return (
+          <div className="flex items-center gap-3">
+            <p className="user-info-identity">
+              {user.firstname} {user.lastname}
+            </p>
 
-  const getStatusBadge = (isActive) => (
-    <span className={`badge ${isActive ? 'badge-success' : 'badge-error'}`}>
-      <span style={{
-        width: '6px',
-        height: '6px',
-        borderRadius: '50%',
-        backgroundColor: 'currentColor',
-        marginRight: '6px',
-        display: 'inline-block'
-      }}></span>
-      {isActive ? 'Actif' : 'Inactif'}
-    </span>
+          </div>
+        )
+      },
+    },
+    {
+      accessorKey: 'email',
+      header: 'Email',
+      cell: ({ row }) => <p className="text-sm truncate max-w-[200px]">{row.original.email}</p>,
+    },
+    {
+      accessorKey: 'role',
+      header: 'Rôle',
+      enableSorting: true,
+      cell: ({ row }) => {
+        const role = row.original.role
+        const roles = {
+          superAdmin: { label: 'Super Admin', className: 'badge-error' },
+          manager: { label: 'Manager', className: 'badge-warning' },
+          user: { label: 'Formateur', className: 'badge-info' },
+        }
+        const conf = roles[role] || roles.user
+        return <span className={`badge ${conf.className}`}>{conf.label}</span>
+      },
+    },
+    {
+      accessorKey: 'specialization',
+      header: 'Spécialisation',
+      enableSorting: true,
+      cell: ({ row }) => <span className="badge badge-neutral">{row.original.specialization}</span>,
+    },
+    {
+      accessorKey: 'isActive',
+      header: 'Statut',
+      cell: ({ row }) => (
+        <span className={`badge ${row.original.isActive ? 'badge-success' : 'badge-error'}`}>
+          <span className="dot" /> {row.original.isActive ? 'Actif' : 'Inactif'}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'isTeacher',
+      header: 'Formateur',
+      cell: ({ row }) => <span className="badge badge-neutral">{row.original.isTeacher ? 'Oui' : 'Non'}</span>,
+    },
+  ], [])
+
+  const rowActions = (user) => (
+    <div className="flex justify-end gap-2">
+      <button
+        title="Modifier"
+        className="icon-button"
+        onClick={() => {
+          setModalMode('edit')
+          setSelectedUser(user)
+          setIsModalOpen(true)
+        }}
+      >
+        <Edit3 size={16} />
+      </button>
+      <button
+        title="Supprimer"
+        className="icon-button"
+        onClick={() => handleDelete(user._id)}
+      >
+        <Trash2 size={16} />
+      </button>
+    </div>
   )
-
-  if (isLoading) {
-    return (
-      <div className="flex-center" style={{ height: '16rem', color: 'var(--text-muted)' }}>
-        <div className="loading-spinner" style={{ width: '3rem', height: '3rem', borderWidth: '3px' }} />
-        <span className="ml-4">Chargement des utilisateurs...</span>
-      </div>
-    )
-  }
-
   if (error) {
     return (
-      <div className="alert alert-error">
-        <p style={{ fontWeight: '600' }}>Erreur de chargement des utilisateurs</p>
-        <p>{error.data?.message || 'Une erreur est survenue'}</p>
+      <div className="text-center badge-error">
+        Erreur lors du chargement des utilisateurs : {error?.data?.message || 'Erreur inconnue'}
       </div>
     )
   }
-
+ const sortedUSers = [...users].sort((a, b) =>
+        a.lastname.localeCompare(b.lastname)
+    )
   return (
     <div className="card theme-transition">
-      <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-        <table style={{ width: '100%', minWidth: '700px' }}>
-          <thead style={{ backgroundColor: 'var(--surface-hover)', borderBottom: '1px solid var(--border)' }}>
-            <tr>
-              {['Utilisateur', 'Email', 'Rôle', 'Spécialisation', 'Statut', 'Formateur', 'Actions'].map((title, idx) => (
-                <th key={idx} style={{
-                  padding: '1rem 1.5rem',
-                  textAlign: idx === 6 ? 'right' : 'left',
-                  fontSize: '0.75rem',
-                  fontWeight: '600',
-                  color: 'var(--text-secondary)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                  minWidth: '120px'
-                }}>{title}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {users.length === 0 ? (
-              <tr>
-                <td colSpan="7" style={{ padding: '3rem 1.5rem', textAlign: 'center' }}>
-                  <div className="flex-center" style={{ flexDirection: 'column', gap: '12px' }}>
-                    <div style={{ padding: '12px', backgroundColor: 'var(--surface-alt)', borderRadius: '50%' }}>
-                      <User size={32} style={{ color: 'var(--text-muted)' }} />
-                    </div>
-                    <div>
-                      <p style={{ color: 'var(--text-primary)', fontWeight: '500', marginBottom: '4px' }}>Aucun utilisateur</p>
-                      <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Commencez par en créer un</p>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            ) : users.map((user) => (
-              <tr key={user._id} style={{ borderBottom: '1px solid var(--border)' }}>
-                <td style={{ padding: '1rem 1.5rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{
-                      width: '40px',
-                      height: '40px',
-                      background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'white',
-                      fontWeight: '600'
-                    }}>
-                      {user.firstname?.[0]}{user.lastname?.[0]}
-                    </div>
-                    <div style={{ minWidth: 0 }}>
-                      <p style={{
-                        color: 'var(--text-primary)',
-                        fontWeight: '500',
-                        margin: 0,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
-                      }}>
-                        {user.firstname} {user.lastname}
-                      </p>
-                    </div>
-                  </div>
-                </td>
-                <td style={{ padding: '1rem 1.5rem' }}>
-                  <p style={{
-                    color: 'var(--text-primary)',
-                    fontSize: '0.875rem',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    maxWidth: '200px'
-                  }}>{user.email}</p>
-                </td>
-                <td style={{ padding: '1rem 1.5rem' }}>{getRoleBadge(user.role)}</td>
-                <td style={{ padding: '1rem 1.5rem' }}>
-                  <span className="badge badge-neutral">{user.specialization}</span>
-                </td>
-                <td style={{ padding: '1rem 1.5rem' }}>{getStatusBadge(user.isActive)}</td>
-                <td style={{ padding: '1rem 1.5rem' }}>
-                  <span className="badge badge-neutral">
-                    {user.isTeacher ? 'Oui' : 'Non'}
-                  </span>
-                </td>
-                <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                    <button
-                      title="Modifier"
-                      className="icon-button"
-                      onClick={() => {
-                        setModalMode('edit')
-                        setSelectedUser(user)
-                        setIsModalOpen(true)
-                      }}
-                    >
-                      <Edit3 size={16} />
-                    </button>
-                    <button
-                      title="Supprimer"
-                      className="icon-button"
-                      onClick={() => handleDelete(user._id)}
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        columns={columns}
+        data={sortedUSers}
+        isLoading={isLoading}
+        rowActions={rowActions}
+        pageSize={5}
+      />
 
       <UserModal
         isOpen={isModalOpen}

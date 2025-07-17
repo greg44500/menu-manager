@@ -5,7 +5,7 @@ import { progressionSchema } from '../../validation/progressionSchema';
 import { useUpdateProgressionMutation, useGetProgressionByIdQuery } from '../../store/api/progressionsApi';
 import { useGetAllClassroomsQuery } from '../../store/api/classroomsApi';
 import toast from 'react-hot-toast';
-import { ChefHat, Utensils, Users } from 'lucide-react';
+import { ChefHat, Utensils, Users, Check } from 'lucide-react';
 
 const ProgressionFormEdit = ({ progression, onSuccess, onClose }) => {
     const [assignedTeachers, setAssignedTeachers] = useState([])
@@ -113,22 +113,44 @@ const ProgressionFormEdit = ({ progression, onSuccess, onClose }) => {
                 <label className="label label-required label-icon">
                     <Users size={16} className="text-muted" />
                     <span>Classes assignées</span>
+                    {selectedClassrooms.length > 0 && (
+                        <span className="badge badge-primary">
+                            {selectedClassrooms.length} sélectionnée{selectedClassrooms.length > 1 ? 's' : ''}
+                        </span>
+                    )}
                 </label>
-                <div className="scroll-box bg-gray-50 border border-gray-200 rounded-md max-h-48 overflow-y-auto p-2">
-                    {classrooms.map(c => (
-                        <label key={c._id} className="checkbox-item block">
-                            <input
-                                type="checkbox"
-                                value={c._id}
-                                checked={selectedClassrooms.includes(c._id)}
-                                onChange={handleCheckboxChange}
-                            />
-                            <span className="ml-2">{c.name || c.virtualName || `Classe ${c._id}`}</span>
-                        </label>
-                    ))}
+
+                <div className="teacher-list">
+                    {classrooms.length === 0 ? (
+                        <p className="empty-state">Aucune classe disponible</p>
+                    ) : (
+                        <div className="teacher-grid">
+                            {classrooms.map(c => {
+                                const isSelected = selectedClassrooms.includes(c._id)
+                                return (
+                                    <label
+                                        key={c._id}
+                                        className={`teacher-item ${isSelected ? 'teacher-item-selected' : ''}`}
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={isSelected}
+                                            onChange={(e) => handleCheckboxChange(e)}
+                                            value={c._id}
+                                            className="teacher-checkbox"
+                                        />
+                                        <span className="teacher-name">{c.name || c.virtualName}</span>
+                                        {isSelected && <Check size={14} className="teacher-check" />}
+                                    </label>
+                                )
+                            })}
+                        </div>
+                    )}
                 </div>
+                <p className="field-help">{classrooms.length} classe{classrooms.length > 1 ? 's' : ''} disponible{classrooms.length > 1 ? 's' : ''}</p>
                 {errors.classrooms && <p className="form-error">{errors.classrooms.message}</p>}
             </div>
+
 
             <div className="form-group">
                 <label className="label label-required">Semaines concernées</label>

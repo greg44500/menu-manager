@@ -611,6 +611,8 @@
   gap: 1.5rem;
 }
 
+
+
 /* === LISTE DES FORMATEURS === */
 .teacher-list {
   border: 1px solid var(--border);
@@ -778,4 +780,92 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+/* === DATATABLE CLASSNAMES ===*/
+/* DataTable.css - Table stylisée pour tanstack/react-table */
+
+.datatable-container {
+  overflow-x: auto;
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background-color: var(--surface);
+}
+
+.datatable {
+  width: 100%;
+  min-width: 700px;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.datatable-thead {
+  background-color: var(--surface-hover);
+  border-bottom: 1px solid var(--border);
+}
+
+.datatable-th {
+  padding: 1rem 1.25rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.datatable-th-actions {
+  text-align: right;
+}
+
+.datatable-tr {
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.2s ease;
+}
+
+.datatable-tr:hover {
+  background-color: var(--surface-hover);
+}
+
+.datatable-td {
+  padding: 1rem 1.25rem;
+  color: var(--text-primary);
+  vertical-align: top;
+}
+
+.datatable-td-actions {
+  text-align: right;
+}
+
+.datatable-empty {
+  padding: 2rem 1.25rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.datatable-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 10rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.loader {
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin-right: 0.5rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
