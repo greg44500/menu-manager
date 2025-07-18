@@ -149,10 +149,10 @@ const SuperAdminDashboard = () => {
               variant="success"
             />
             <StatCard
-              title="Menus"
+              title="Services"
               count={stats?.menusCount || 0}
               icon={<Utensils size={24} />}
-              onClick={() => setActiveSection('menus')}
+              onClick={() => setActiveSection('services')}
               clickable
               variant="warning"
             />

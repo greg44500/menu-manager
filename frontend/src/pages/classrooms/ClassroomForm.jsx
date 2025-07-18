@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { classroomSchema } from '../../validation/classroomSchema'
 import { useCreateClassroomMutation, useUpdateClassroomMutation } from '../../store/api/classroomsApi';
+import toast from 'react-hot-toast';
 
 
 
@@ -11,7 +12,7 @@ const diplomas = ['CAP', 'BAC', 'BP', 'BTS', 'CS'];
 const categories = ['CUIS', 'CSHCR', 'CSR', 'AC', 'ACSR', 'MHR', 'CDR', 'BAR', 'SOM'];
 const groups = ['A', 'B', 'C'];
 
-const ClassroomForm = ({ classroom, mode = 'create', onSuccess }) => {
+const ClassroomForm = ({ classroom, mode = 'create', onSuccess, onClose }) => {
   const [createClassroom, { isLoading: isCreating }] = useCreateClassroomMutation();
   const [updateClassroom, { isLoading: isUpdating }] = useUpdateClassroomMutation();
 
@@ -50,9 +51,10 @@ const ClassroomForm = ({ classroom, mode = 'create', onSuccess }) => {
       } else {
         await createClassroom(data).unwrap();
       }
-      onSuccess();
+      onSuccess?.();
+      onClose?.();
     } catch (error) {
-      console.error('Erreur lors de la soumission du formulaire :', error);
+      toast.error('Erreur lors de la soumission du formulaire :', error);
     }
   };
 

@@ -4,49 +4,76 @@ const Progression = require('../models/progression.model');
 const Service = require("../models/service.model")
 const Menu = require("../models/menu.model")
 
-// **@desc    Obtenir tous les services
-// **@route   GET /api/progressions/:progressionId/services
-// **@access  Admin, Manager
+// @desc    Obtenir tous les services enrichis d'une progression
+// @route   GET /api/progressions/:progressionId/services
+// @access  Admin, Manager
+// @route   GET /api/progressions/:progressionId/services
 const getServices = asyncHandler(async (req, res) => {
-    const {
-        progressionId
-    } = req.params;
+  const { progressionId } = req.params;
 
-    // Vérifier si l'ID est valide
-    if (!mongoose.Types.ObjectId.isValid(progressionId)) {
-        res.status(400);
-        throw new Error('ID de progression invalide');
-    }
+  if (!mongoose.Types.ObjectId.isValid(progressionId)) {
+    res.status(400);
+    throw new Error('ID de progression invalide');
+  }
 
-    // Récupérer la progression avec les services populés
-    const progression = await Progression.findById(progressionId)
-        .populate({
-            path: 'services', //
-            select: 'items isMenuValidate isRestaurant author'
-        })
-        .lean();
+  // Récupération de la progression et des services liés
+  const progression = await Progression.findById(progressionId)
+  .populate({
+    path: 'services.service',
+    select: 'weekNumber serviceDate classrooms teachers',
+    populate: [
+      { 
+        path: 'classrooms', 
+        select: 'diploma category alternationNumber group certificationSession'
+      },
+      { 
+        path: 'teachers', 
+        select: 'firstname lastname email specialization' 
+      }
+    ]
+  })
+  .lean({ virtuals: true })  // ← AJOUTE CETTE LIGNE
 
-    if (!progression) {
-        res.status(404);
-        throw new Error('Progression non trouvée');
-    }
+  if (!progression) {
+    res.status(404);
+    throw new Error('Progression non trouvée');
+  }
+console.log('🔍 DEBUG - Progression brute:', JSON.stringify(progression, null, 2));
 
-    // Filtrer par numéro de semaine si spécifié
-    const {
-        weekNumber
-    } = req.query;
-    let services = progression.services;
+  const full = progression
 
-    if (weekNumber) {
-        services = services.filter(service => service.weekNumber === parseInt(weekNumber));
-    }
+  console.log('🔍 DEBUG - Services dans progression:', full.services?.length);
+if (full.services?.[0]) {
+  console.log('🔍 DEBUG - Premier service:', JSON.stringify(full.services[0], null, 2));
+}
 
-    res.status(200).json({
-        success: true,
-        count: services.length,
-        data: services.length ? services : []
-    });
+ const services = full.services
+.filter(s => !!s.service)
+.map(s => ({
+  _id: s.service._id,
+  weekNumber: s.weekNumber,
+  serviceDate: s.service.serviceDate,
+  classrooms: s.service.classrooms?.map(classroom => ({
+    _id: classroom._id,
+    virtualName: `${classroom.diploma}-${classroom.category}-${classroom.alternationNumber}${classroom.group}-${classroom.certificationSession}`,
+    diploma: classroom.diploma,
+    category: classroom.category
+  })) || [],
+  teachers: s.service.teachers?.map(teacher => ({
+    _id: teacher._id,
+    firstname: teacher.firstname,
+    lastname: teacher.lastname,
+    fullName: `${teacher.firstname} ${teacher.lastname}`,
+    specialization: teacher.specialization
+  })) || [],
+}));
+  res.status(200).json({
+    success: true,
+    count: services.length,
+    data: services,
+  });
 });
+
 
 // ** @desc    Obtenir un service spécifique par son ID
 // ** @route   GET /api/progressions/:progressionId/services/:serviceId

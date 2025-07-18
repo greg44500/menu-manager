@@ -2,6 +2,7 @@
 import UserSection from '../../pages/dashboard/UserSection'
 import ClassroomSection from '../classrooms/ClassroomSection'
 import ProgressionSection from '../progressions/ProgressionSection'
+import ServiceSection from '../services/ServiceSection'
 
 const DashboardSection = ({
   section,
@@ -24,6 +25,10 @@ const DashboardSection = ({
 
       {section === 'progressions' && (
         <ProgressionSection onOpenModal={() => { }} />
+      )}
+
+       {section === 'services' && (
+        <ServiceSection onOpenModal={() => { }} />
       )}
     </>
   )

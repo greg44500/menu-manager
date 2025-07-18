@@ -45,7 +45,13 @@ const ProgressionTable = () => {
             cell: ({ row }) => {
                 const classrooms = row.original.classrooms
                 if (!classrooms || !Array.isArray(classrooms) || classrooms.length === 0) return '-'
-                return <span>{classrooms.map(c => c.virtualName || c.name).join(', ')}</span>
+                return <span>{classrooms.map(c =>
+                    c.virtualName ??
+                    [c.diploma, c.category, c.alternationNumber, c.group, c.certificationSession]
+                        .filter(Boolean)
+                        .join(' ')
+                ).join(', ')}
+                </span>
             },
         },
         {

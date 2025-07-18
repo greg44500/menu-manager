@@ -298,34 +298,25 @@ const getProgressionById = asyncHandler(async (req, res) => {
 // @route   GET /api/progressions
 // @access  Admin, Manager
 const getAllProgressions = asyncHandler(async (req, res) => {
-    const progressions = await Progression.find()
-        .populate({
-    path: 'classrooms',
-    select: 'name diploma category certificationSession',
-    options: { virtuals: true }
-  })
-  .populate('teachers', 'firstname lastname email')
-  .populate('services.service', 'type date')
-  .populate({
-    path: 'services',
-    select: 'items isMenuValidate isRestaurant author'
-  })
-  .lean({ virtuals: true }) // ← ESSENTIEL POUR CHAMPS VIRTUELS
+  const progressions = await Progression.find()
+    .populate({
+      path: 'classrooms',
+      // Pas besoin de select si tu veux tous les champs, sinon sélectionne ceux utiles
+      select: 'diploma category alternationNumber group certificationSession',
+    })
+    .populate('teachers', 'firstname lastname email')
+    .populate('services.service', 'type date')
+    .populate({
+      path: 'services',
+      select: 'items isMenuValidate isRestaurant author'
+    })
+    .lean({ virtuals: true }); // ← Active les champs virtuels comme virtualName
 
-  for (const prog of progressions) {
-  if (Array.isArray(prog.classrooms)) {
-    prog.classrooms = prog.classrooms.map(cls => ({
-      ...cls,
-      virtualName: `${cls.diploma || ''}${cls.category || ''}${cls.alternanceNumber || ''}${cls.group || ''}${cls.certificationSession || ''}`
-    }));
-  }
-}
-
-    res.status(200).json({
-        success: true,
-        count: progressions.length,
-        data : progressions.length ? progressions : [] 
-    });
+  res.status(200).json({
+    success: true,
+    count: progressions.length,
+    data: progressions.length ? progressions : []
+  });
 });
 
 // @desc    Obtenir les progressions par classe
@@ -418,6 +409,10 @@ const assignTeachersToProgression = asyncHandler(async (req, res) => {
       },
     }
   );
+  await Service.updateMany(
+  { _id: { $in: progression.services.map(s => s.service) } },
+  { $set: { teachers: teachers } }
+);
 
   // Ajouter les nouveaux formateurs
   if (teachers.length) {
