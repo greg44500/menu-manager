@@ -33,23 +33,24 @@ export const progressionsApi = baseApi.injectEndpoints({
         body,
       }),
       invalidatesTags: (result, error, { id }) => [
-        { type: 'Progression', id }, // <- invalidation ciblée
+        { type: 'Progression', id },
         'Progressions',
+        { type: 'Services', id } // ✅ invalide les services liés à la progression
       ],
     }),
 
     //Assigner un formateur à une progression
-   assignTeachers: builder.mutation({
-  query: ({ id, teachers }) => ({
-    url: `/progressions/${id}/assign-teachers`,
-    method: 'PUT',
-    body: { teachers },
-  }),
-  invalidatesTags: (result, error, { id }) => [
-    { type: 'Progression', id },  // <> invalide cette progression
-    'Progressions',                // invalide aussi la liste
-  ],
-}),
+    assignTeachers: builder.mutation({
+      query: ({ id, teachers }) => ({
+        url: `/progressions/${id}/assign-teachers`,
+        method: 'PUT',
+        body: { teachers },
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: 'Progression', id },  // <> invalide cette progression
+        'Progressions',                // invalide aussi la liste
+      ],
+    }),
 
     // Supprimer une progression
     deleteProgression: builder.mutation({

@@ -17,7 +17,7 @@ import SuperAdminDashboard from '../pages/dashboard/SuperAdminDashboard'
 import DashboardManager from '../pages/dashboard/DashboardManager'
 import DashboardUser from '../pages/dashboard/DashboardUser'
 import ClassroomList from '../pages/classrooms/ClassroomList'
-import ProgressionList from '../pages/progressions/ProgressionList'
+import ProgressionList from '../pages/services/ServicesList'
 import UserList from '../pages/users/UserList'
 import MenuList from '../pages/menus/MenuList'
 import UserProfile from '../pages/users/UserProfile'
@@ -26,6 +26,7 @@ import SettingsDashboard from '../pages/settings/SettingsDashboard'
 
 // Page 404
 import NotFound from '../components/common/NotFound'
+import ServicesList from '../pages/services/ServicesList'
 
 // CONFIGURATION DES ROUTES
 export const router = createBrowserRouter([
@@ -100,22 +101,21 @@ export const router = createBrowserRouter([
         element: <ChangePassword />
       },
 
-      // GESTION DES CLASSES (superAdmin et manager uniquement)
+      // // GESTION DES CLASSES (superAdmin et manager uniquement)
+      // {
+      //   path: 'classrooms',
+      //   element: (
+      //     <ProtectedRoute requiredRoles={['superAdmin', 'manager']}>
+      //       <ClassroomList />
+      //     </ProtectedRoute>
+      //   )
+      // },
+      // GESTION DES SeRVICES (accessible Admin et Manager)
       {
-        path: 'classrooms',
+        path: 'services',
         element: (
           <ProtectedRoute requiredRoles={['superAdmin', 'manager']}>
-            <ClassroomList />
-          </ProtectedRoute>
-        )
-      },
-
-      // GESTION DES PROGRESSIONS (accessible à tous les rôles)
-      {
-        path: 'progressions',
-        element: (
-          <ProtectedRoute requiredRoles={['superAdmin', 'manager', 'user']}>
-            <ProgressionList />
+            <ServicesList />
           </ProtectedRoute>
         )
       },

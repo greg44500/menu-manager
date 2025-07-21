@@ -52,8 +52,8 @@ const Layout = () => {
   const getNavigationItems = () => {
     const baseItems = [
       { path: '/dashboard', label: 'DASHBOARD', icon: <House size={24} strokeWidth={1.25} /> },
-      { path: '/classrooms', label: 'CLASSES', icon: <GraduationCap size={24} strokeWidth={1.25} /> },
-      { path: '/progressions', label: 'PROGRESSIONS', icon: <CalendarCog size={24} strokeWidth={1.25} /> },
+      // { path: '/classrooms', label: 'CLASSES', icon: <GraduationCap size={24} strokeWidth={1.25} /> },
+      { path: '/services', label: 'SERVICES', icon: <CalendarCog size={24} strokeWidth={1.25} /> },
       { path: '/menus', label: 'MENUS', icon: <Utensils size={24} strokeWidth={1.25} /> },
       { path: '/settings', label: 'PARAMÉTRAGES', icon: <Settings size={24} strokeWidth={1.25} /> }
     ]

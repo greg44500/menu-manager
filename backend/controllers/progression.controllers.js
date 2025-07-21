@@ -4,14 +4,14 @@ const Service = require('../models/service.model');
 const Classroom = require('../models/classroom.model');
 const User = require('../models/user.model');
 const {
-    validateObjectId
+  validateObjectId
 } = require('../helpers/user.helper');
 
 
- //** @desc    Créer une nouvelle progression avec génération automatique des services
- //** @route   POST /api/progressions
- //** @access  Admin / Manager (via middleware)
- 
+//** @desc    Créer une nouvelle progression avec génération automatique des services
+//** @route   POST /api/progressions
+//** @access  Admin / Manager (via middleware)
+
 const createProgression = asyncHandler(async (req, res) => {
   const { title, classrooms, teachers, weekNumbers } = req.body;
 
@@ -109,8 +109,6 @@ const updateProgression = asyncHandler(async (req, res) => {
   progression.classrooms = classrooms;
   progression.teachers = Array.isArray(teachers) ? teachers : [];
   progression.weekNumbers = weekNumbers;
-console.log('Teacher',progression.teachers, teachers)
-  await progression.save();
 
   // Nettoyage des anciens formateurs dans les anciennes classes
   await Classroom.updateMany(
@@ -177,17 +175,26 @@ console.log('Teacher',progression.teachers, teachers)
       service: newService._id,
     });
   }
-
+  // Mettre à jour les services existants avec les nouveaux teachers/classrooms
+  await Service.updateMany(
+    { _id: { $in: progression.services.map(s => s.service) } },
+    {
+      $set: {
+        teachers: teachers || [],
+        classrooms: classrooms || []
+      }
+    }
+  )
   await progression.save();
 
- const updatedProgression = await Progression.findById(progression._id)
-  .populate('teachers', 'firstname lastname email specialization')
-  .populate('classrooms', 'name'); // Ajoute aussi classrooms si besoin
+  const updatedProgression = await Progression.findById(progression._id)
+    .populate('teachers', 'firstname lastname email specialization')
+    .populate('classrooms', 'name'); // Ajoute aussi classrooms si besoin
 
-res.status(200).json({
-  message: 'Progression mise à jour avec succès',
-  progression: updatedProgression,
-});
+  res.status(200).json({
+    message: 'Progression mise à jour avec succès',
+    progression: updatedProgression,
+  });
 });
 
 
@@ -195,103 +202,103 @@ res.status(200).json({
 // **@route   DELETE /api/progressions/:id
 // **@access  Admin uniquement (géré par middleware)
 const deleteOneProgression = asyncHandler(async (req, res) => {
-    const {
-        id
-    } = req.params;
+  const {
+    id
+  } = req.params;
 
-    // Vérifier si la progression existe
-    const progression = await Progression.findById(id);
-    if (!progression) {
-        res.status(404);
-        throw new Error('Progression non trouvée');
+  // Vérifier si la progression existe
+  const progression = await Progression.findById(id);
+  if (!progression) {
+    res.status(404);
+    throw new Error('Progression non trouvée');
+  }
+
+  // Suppression des services liés à la progression
+  await Service.deleteMany({
+    _id: {
+      $in: progression.services.map(s => s.service)
     }
+  });
 
-    // Suppression des services liés à la progression
-    await Service.deleteMany({
-        _id: {
-            $in: progression.services.map(s => s.service)
-        }
-    });
+  // Mise à jour des formateurs et classes pour retirer la progression
+  await Classroom.updateMany({
+    _id: {
+      $in: progression.classrooms
+    }
+  }, {
+    $pull: {
+      assignedProgressions: id
+    }
+  });
 
-    // Mise à jour des formateurs et classes pour retirer la progression
-    await Classroom.updateMany({
-        _id: {
-            $in: progression.classrooms
-        }
-    }, {
-        $pull: {
-            assignedProgressions: id
-        }
-    });
+  await User.updateMany({
+    _id: {
+      $in: progression.teachers
+    }
+  }, {
+    $pull: {
+      assignedProgressions: id
+    }
+  });
 
-    await User.updateMany({
-        _id: {
-            $in: progression.teachers
-        }
-    }, {
-        $pull: {
-            assignedProgressions: id
-        }
-    });
+  // Suppression de la progression
+  await progression.deleteOne();
 
-    // Suppression de la progression
-    await progression.deleteOne();
-
-    res.status(200).json({
-        message: 'Progression supprimée avec succès'
-    });
+  res.status(200).json({
+    message: 'Progression supprimée avec succès'
+  });
 });
 
 // **@desc    Supprimer toutes les progressions - RAZ
 // **@route   DELETE /api/progressions
 // **@access  Admin uniquement (géré par middleware)
 const deleteAllProgressions = asyncHandler(async (req, res) => {
-    // Suppression de tous les services liés aux progressions
-    await Service.deleteMany({});
+  // Suppression de tous les services liés aux progressions
+  await Service.deleteMany({});
 
-    // Suppression des progressions
-    await Progression.deleteMany({});
+  // Suppression des progressions
+  await Progression.deleteMany({});
 
-    // Mise à jour des formateurs et classes pour supprimer toutes les progressions assignées
-    await Classroom.updateMany({}, {
-        $set: {
-            assignedProgressions: []
-        }
-    });
-    await User.updateMany({}, {
-        $set: {
-            assignedProgressions: []
-        }
-    });
+  // Mise à jour des formateurs et classes pour supprimer toutes les progressions assignées
+  await Classroom.updateMany({}, {
+    $set: {
+      assignedProgressions: []
+    }
+  });
+  await User.updateMany({}, {
+    $set: {
+      assignedProgressions: []
+    }
+  });
 
-    res.status(200).json({
-        message: 'Toutes les progressions ont été supprimées'
-    });
+  res.status(200).json({
+    message: 'Toutes les progressions ont été supprimées'
+  });
 });
 
 // @desc    Obtenir une progression par ID
 // @route   GET /api/progressions/:id
 // @access  Admin, Manager, Formateur assigné
 const getProgressionById = asyncHandler(async (req, res) => {
-    const {
-        id
-    } = req.params;
-    const progression = await Progression.findById(id)
-        .populate('classrooms', 'virtualName') //Identifie le nom de la classe (nom virtuel ajouter .lean({virtual: true}))
-        .populate('teachers', 'firstname lastname email specialization')
-        .populate('services.service', 'type date')
-        .populate({
-            path: 'services', //
-            select: 'items isMenuValidate isRestaurant author'
-        })
-        .lean();
+  const {
+    id
+  } = req.params;
+  const progression = await Progression.findById(id)
+    .populate('classrooms', 'virtualName') //Identifie le nom de la classe (nom virtuel ajouter .lean({virtual: true}))
+    .populate('teachers', 'firstname lastname email specialization')
+    .populate('services.service', 'type date')
+    .populate({
+      path: 'services', //
+      select: 'items isMenuValidate isRestaurant author'
+    })
+    .lean();
 
-    if (!progression) {
-        res.status(404);
-        throw new Error("Progression non trouvée");
-    }
+  if (!progression) {
+    res.status(404);
+    throw new Error("Progression non trouvée");
+  }
 
-    res.status(200).json(progression);
+  res.status(200).json(progression);
 });
 
 // @desc    Obtenir toutes les progressions
@@ -304,7 +311,7 @@ const getAllProgressions = asyncHandler(async (req, res) => {
       // Pas besoin de select si tu veux tous les champs, sinon sélectionne ceux utiles
       select: 'diploma category alternationNumber group certificationSession',
     })
-    .populate('teachers', 'firstname lastname email')
+    .populate('teachers', 'firstname lastname email specialization')
     .populate('services.service', 'type date')
     .populate({
       path: 'services',
@@ -323,56 +330,56 @@ const getAllProgressions = asyncHandler(async (req, res) => {
 // @route   GET /api/progressions/classroom/:classroomId
 // @access  Admin, Manager, Formateur assigné
 const getProgressionsByClassroom = asyncHandler(async (req, res) => {
-    const {
-        classroomId
-    } = req.params;
+  const {
+    classroomId
+  } = req.params;
 
-    const progressions = await Progression.find({
-            classrooms: classroomId
-        })
-        .populate('classrooms', 'virtualName')
-        .populate('teachers', 'firstname lastname email')
-        .populate('services.service', 'type date')
-        .populate({
-            path: 'services',
-            select: 'items isMenuValidate isRestaurant author'
-        })
-        .lean();
+  const progressions = await Progression.find({
+    classrooms: classroomId
+  })
+    .populate('classrooms', 'virtualName')
+    .populate('teachers', 'firstname lastname email specialization')
+    .populate('services.service', 'type date')
+    .populate({
+      path: 'services',
+      select: 'items isMenuValidate isRestaurant author'
+    })
+    .lean();
 
-    if (!progressions.length) {
-        res.status(404);
-        throw new Error("Aucune progression trouvée pour cette classe");
-    }
+  if (!progressions.length) {
+    res.status(404);
+    throw new Error("Aucune progression trouvée pour cette classe");
+  }
 
-    res.status(200).json(progressions);
+  res.status(200).json(progressions);
 });
 
 // @desc    Obtenir les progressions par formateur
 // @route   GET /api/progressions/teacher/:teacherId
 // @access  Admin, Manager, Formateur assigné
 const getProgressionsByTeacher = asyncHandler(async (req, res) => {
-    const {
-        teacherId
-    } = req.params;
+  const {
+    teacherId
+  } = req.params;
 
-    const progressions = await Progression.find({
-            teachers: teacherId
-        })
-        .populate('classrooms', 'virtualName')
-        .populate('teachers', 'firstname lastname email')
-        .populate('services.service', 'type date')
-        .populate({
-            path: 'services',
-            select: 'items isMenuValidate isRestaurant author'
-        })
-        .lean();
+  const progressions = await Progression.find({
+    teachers: teacherId
+  })
+    .populate('classrooms', 'virtualName')
+    .populate('teachers', 'firstname lastname email specialization')
+    .populate('services.service', 'type date')
+    .populate({
+      path: 'services',
+      select: 'items isMenuValidate isRestaurant author'
+    })
+    .lean();
 
-    if (!progressions.length) {
-        res.status(404);
-        throw new Error("Aucune progression trouvée pour ce formateur");
-    }
+  if (!progressions.length) {
+    res.status(404);
+    throw new Error("Aucune progression trouvée pour ce formateur");
+  }
 
-    res.status(200).json(progressions);
+  res.status(200).json(progressions);
 });
 
 // @desc    Assigner des formateurs à une progression existante
@@ -410,9 +417,9 @@ const assignTeachersToProgression = asyncHandler(async (req, res) => {
     }
   );
   await Service.updateMany(
-  { _id: { $in: progression.services.map(s => s.service) } },
-  { $set: { teachers: teachers } }
-);
+    { _id: { $in: progression.services.map(s => s.service) } },
+    { $set: { teachers: teachers } }
+  );
 
   // Ajouter les nouveaux formateurs
   if (teachers.length) {
@@ -436,8 +443,8 @@ const assignTeachersToProgression = asyncHandler(async (req, res) => {
   await progression.save();
 
   // 👇 Important : récupérer les infos des enseignants
-await progression.populate('teachers');
-console.log('✅ Teachers enregistrés dans progression:', progression.teachers);
+  await progression.populate('teachers');
+  console.log('✅ Teachers enregistrés dans progression:', progression.teachers);
   res.status(200).json({
     message: "Formateurs assignés avec succès",
     progression,
@@ -446,13 +453,13 @@ console.log('✅ Teachers enregistrés dans progression:', progression.teachers)
 
 
 module.exports = {
-    createProgression,
-    updateProgression,
-    deleteOneProgression,
-    deleteAllProgressions,
-    getProgressionById,
-    getAllProgressions,
-    getProgressionsByClassroom,
-    getProgressionsByTeacher,
-    assignTeachersToProgression
+  createProgression,
+  updateProgression,
+  deleteOneProgression,
+  deleteAllProgressions,
+  getProgressionById,
+  getAllProgressions,
+  getProgressionsByClassroom,
+  getProgressionsByTeacher,
+  assignTeachersToProgression
 }
