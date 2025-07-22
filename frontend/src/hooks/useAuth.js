@@ -75,7 +75,7 @@ export const useAuth = () => {
     } catch (error) {
       // Même en cas d'erreur serveur, on déconnecte côté client
       dispatch(logout())
-      return { success: true }
+      return { error, success: true }
     }
   }
 

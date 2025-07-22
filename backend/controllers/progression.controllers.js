@@ -6,6 +6,7 @@ const User = require('../models/user.model');
 const {
   validateObjectId
 } = require('../helpers/user.helper');
+const { getMondayFromWeek } = require('../utils/dateUtils')
 
 
 //** @desc    Créer une nouvelle progression avec génération automatique des services
@@ -33,6 +34,7 @@ const createProgression = asyncHandler(async (req, res) => {
     weekNumbers.map(async (week) => {
       const newService = await Service.create({
         weekNumber: week,
+        serviceDate: getMondayFromWeek(week),
         classrooms,
         teachers: teachers || [],
         menus: [],
@@ -166,6 +168,7 @@ const updateProgression = asyncHandler(async (req, res) => {
   for (const week of weeksToAdd) {
     const newService = await Service.create({
       weekNumber: week,
+      serviceDate: getMondayFromWeek(week),
       classrooms,
       teachers: teachers || [],
     });

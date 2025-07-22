@@ -5,10 +5,10 @@ export const servicesApi = baseApi.injectEndpoints({
     // Liste des services d'une progression
     getServicesByProgression: builder.query({
       query: (progressionId) => `/progressions/${progressionId}/services`,
-      providesTags: (result, error, id) => [
-        { type: 'Service', id },
-        'Service'
-      ]
+     providesTags: (result, error, progressionId) => [
+  { type: 'Services', id: progressionId },
+  'Services'
+]
     }),
 
     // Détail d'un service

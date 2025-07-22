@@ -827,6 +827,169 @@
   margin-right: 15px;
 }
 
+/* == ProgressBar === */
+/* === AMÉLIORATIONS PROGRESSBAR POUR PROGRESSIONDETAILS === */
+
+/* ProgressBar avec thème adapté */
+.progressbar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem; /* Légèrement plus d'espace */
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.progressbar-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary); /* Cohérent avec votre thème */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progressbar-background {
+  height: 0.875rem; /* Légèrement plus épais pour plus de visibilité */
+  width: 100%;
+  background-color: var(--surface-hover); /* Cohérent avec votre thème */
+  border-radius: 9999px;
+  overflow: hidden;
+  border: 1px solid var(--border-light); /* Bordure subtile */
+}
+
+.progressbar-fill {
+  background: linear-gradient(90deg, var(--success) 0%, var(--primary) 100%); 
+  /* Gradient entre vert (succès) et orange (primaire) pour plus d'impact */
+  height: 100%;
+  transition: width 0.5s ease-in-out; /* Animation plus lente pour l'effet */
+  position: relative;
+}
+
+/* Effet de brillance sur la barre de progression */
+.progressbar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(255, 255, 255, 0.3) 50%, 
+    transparent 100%
+  );
+  animation: shimmer 2s infinite;
+}
+
+.progressbar-percentage {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: right;
+  font-weight: 600; /* Plus lisible */
+  margin-top: 0.25rem;
+}
+
+/* === STYLES POUR LA GRILLE SUMMARY === */
+
+/* Assurer que la grille s'adapte bien à la 4ème carte */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  font-size: 0.875rem;
+}
+
+/* Styles pour les contours colorés existants */
+.outline-orange {
+  border: 2px solid var(--warning);
+  background-color: var(--warning-bg);
+}
+
+.outline-blue {
+  border: 2px solid var(--info);
+  background-color: var(--info-bg);
+}
+
+.outline-green {
+  border: 2px solid var(--success);
+  background-color: var(--success-bg);
+}
+
+/* === RESPONSIVE IMPROVEMENTS === */
+@media (max-width: 768px) {
+  .summary-grid {
+    grid-template-columns: 1fr; /* Une colonne sur mobile */
+    gap: 0.75rem;
+  }
+  
+  .progressbar-label {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  
+  .progressbar-percentage {
+    text-align: left;
+  }
+}
+
+/* === ANIMATION SHIMMER AMÉLIORÉE === */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Pause l'animation si l'utilisateur préfère moins de mouvement */
+@media (prefers-reduced-motion: reduce) {
+  .progressbar-fill::after {
+    animation: none;
+  }
+  
+  .progressbar-fill {
+    transition-duration: 0.2s;
+  }
+}
+
+
+/* === CSS POUR LES INFORMATIONS ADDITIONNELLES DE SERVICE === */
+
+.service-info {
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Alternative avec responsive pour mobile */
+.service-info-responsive {
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Version mobile-friendly qui stack verticalement si nécessaire */
+@media (max-width: 480px) {
+  .service-info-responsive {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+}
+
 /* === DATATABLE CLASSNAMES ===*/
 /* DataTable.css - Table stylisée pour tanstack/react-table */
 

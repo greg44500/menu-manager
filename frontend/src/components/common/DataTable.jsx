@@ -6,7 +6,7 @@ import {
     flexRender,
 } from '@tanstack/react-table'
 
-const DataTable = ({ columns, data = [], isLoading = false, rowActions = null, pageSize = 5 }) => {
+const DataTable = ({ columns, data = [], isLoading = false, rowActions = null, pageSize = 8 }) => {
 
     const table = useReactTable({
         columns,

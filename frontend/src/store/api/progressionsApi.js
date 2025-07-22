@@ -35,7 +35,7 @@ export const progressionsApi = baseApi.injectEndpoints({
       invalidatesTags: (result, error, { id }) => [
         { type: 'Progression', id },
         'Progressions',
-        { type: 'Services', id } // ✅ invalide les services liés à la progression
+        { type: 'Services', id } // ici le tag utilisé dans servicesApi
       ],
     }),
 

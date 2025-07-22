@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const Progression = require('../models/progression.model');
 const Service = require("../models/service.model")
 const Menu = require("../models/menu.model")
+const { getMondayFromWeek } = require('../utils/dateUtils')
 
 // @desc    Obtenir tous les services enrichis d'une progression
 // @route   GET /api/progressions/:progressionId/services
