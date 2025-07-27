@@ -14,9 +14,10 @@ const classroomRoutes = require("./routes/classroom.routes.js")
 const locationRoutes = require("./routes/location.routes.js")
 const productionTypeRoutes = require("./routes/typeService.routes.js")
 const serviceRoutes = require("./routes/service.routes.js")
-const typeServiceRoutes = require ('./routes/typeService.routes')
+const typeServiceRoutes = require('./routes/typeService.routes')
 const itemRoutes = require("./routes/items.routes.js")
-const menuRoutes = require ("./routes/menu.routes.js")
+const menuRoutes = require("./routes/menu.routes.js")
+const calendarRoutes = require("./routes/calendar.routes.js")
 const errorHandler = require("./middlewares/errorHandler")
 const morgan = require('morgan')
 
@@ -26,14 +27,14 @@ app.use(express.json());
 
 // Ajoutez ceci au début de votre app.js, avant les autres middlewares
 app.use((req, res, next) => {
-    console.log(`${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
-    next();
-  });
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
+  next();
+});
 app.use(errorHandler)
 
 app.use(morgan("dev"))
 app.use(bodyParser.urlencoded({
-    extended: true
+  extended: true
 }));
 
 app.use(cors({
@@ -51,6 +52,7 @@ connectDB(); //Methode de connexion MongoDB
 
 // **MAIN ROUTES 
 app.use("/api/auth", authRoutes);
+app.use("/api/calendars", calendarRoutes)
 app.use("/api/users", userRoutes);
 app.use("/api/progressions", progressionRoutes)
 app.use("/api/classrooms", classroomRoutes)
@@ -64,5 +66,5 @@ app.use('/api/menus', menuRoutes)
 
 
 app.listen(port, () => {
-    console.log(`listening on port: ${port}`);
+  console.log(`listening on port: ${port}`);
 });

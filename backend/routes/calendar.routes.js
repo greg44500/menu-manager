@@ -10,9 +10,9 @@ const { authenticateUser, authorizeRoles } = require('../middlewares/auth.middle
 
 router.route('/')
     // GET all calendars (accessible à tous)
-    .get(getAllCalendars)
+    .get(authenticateUser, getAllCalendars)
     // POST new calendar (manager & superAdmin only)
-    .post(createCalendar);// Ajout authenticateUser, authorizeRoles(["user", "manager", "sueperAdmin"]), 
+    .post(authenticateUser, authorizeRoles(["manager", "superAdmin"]), createCalendar);
 
 router.route('/:id')
     // PUT update calendar (manager & superAdmin only)

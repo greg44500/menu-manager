@@ -1,5 +1,5 @@
 // frontend/src/store/api/settingsApi.js
-import { baseApi } from './baseApi'
+import { baseApi } from '../../store/api/baseApi'
 
 export const settingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -14,30 +14,30 @@ export const settingsApi = baseApi.injectEndpoints({
           console.log('🔍 DEBUG - Réponses API:')
           console.log('- Types services:', typesServices)
           console.log('- Locations:', locations)
-  
+
 
           // 🔧 CLARIFICATION DES 3 TYPES DE DONNÉES
           const stats = {
             // Types de services : petit-déjeuner, déjeuner, dîner, cocktail...
             typesServicesCount: typesServices?.data?.data?.length || 0,
-            
+
             // Ateliers/locaux : cuisine, salle, bar, cave...
-            locationsCount: locations?.data?.data?.length || 
-                           locations?.data?.length || 
-                           (Array.isArray(locations?.data) ? locations.data.length : 0),
+            locationsCount: locations?.data?.data?.length ||
+              locations?.data?.length ||
+              (Array.isArray(locations?.data) ? locations.data.length : 0),
 
           }
 
           console.log('📊 Stats calculées:', stats)
           return { data: stats }
-          
+
         } catch (error) {
           console.error('❌ Erreur settingsApi:', error)
-          return { 
-            error: { 
-              message: 'Erreur lors du chargement des paramétrages', 
-              details: error 
-            } 
+          return {
+            error: {
+              message: 'Erreur lors du chargement des paramétrages',
+              details: error
+            }
           }
         }
       },

@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useGetAllUsersQuery } from '../../store/api/usersApi'
+import { useGetAllProgressionsQuery } from '../../store/api/progressionsApi' // ✅ AJOUT
 // import { useGetAllClassroomsQuery } from '../../store/api/classroomsApi'
 import { useGetDashboardStatsQuery } from '../../store/api/dashboardApi'
 import StatCard from '../../components/common/StatCard'
@@ -26,9 +27,18 @@ const SuperAdminDashboard = () => {
 
   const { user: currentUser } = useSelector(state => state.auth)
 
+  // ✅ AJOUT : Récupération de la session active
+  const activeCalendarId = useSelector(state => state.calendarSession?.activeCalendarId)
+
   const usersQuery = useGetAllUsersQuery(undefined, {
     skip: !showUserModal,
     refetchOnMountOrArgChange: true
+  })
+
+  // ✅ AJOUT : Query des progressions pour la session active
+  const progressionsQuery = useGetAllProgressionsQuery(activeCalendarId, {
+    refetchOnMountOrArgChange: true,
+    skip: !activeCalendarId
   })
 
   // const classroomsQuery = useGetAllClassroomsQuery(undefined, {
@@ -46,6 +56,19 @@ const SuperAdminDashboard = () => {
   const usersData = usersQuery?.data;
   const usersLoading = usersQuery?.isLoading;
   const usersError = usersQuery?.error;
+
+  // ✅ CALCUL : Nombre de progressions pour la session active
+  const activeSessionProgressionsCount = (() => {
+    if (!activeCalendarId) return 0
+    if (progressionsQuery.isLoading) return 0
+    if (progressionsQuery.error) return 0
+
+    const progressions = progressionsQuery.data?.data ||
+      progressionsQuery.data?.progressions ||
+      progressionsQuery.data || []
+
+    return Array.isArray(progressions) ? progressions.length : 0
+  })()
 
   if (statsLoading) {
     return (
@@ -140,13 +163,15 @@ const SuperAdminDashboard = () => {
               clickable
               variant="info"
             />
+            {/* ✅ FIX : StatCard avec count de la session active */}
             <StatCard
               title="Progressions"
-              count={stats?.progressionsCount || 0}
+              count={activeCalendarId ? activeSessionProgressionsCount : (stats?.progressionsCount || 0)}
               icon={<BarChart2 size={24} />}
               onClick={() => setActiveSection('progressions')}
               clickable
               variant="success"
+              loading={activeCalendarId ? progressionsQuery.isLoading : statsLoading}
             />
             <StatCard
               title="Services"
@@ -187,6 +212,8 @@ const SuperAdminDashboard = () => {
           onSuccess={() => {
             setShowUserModal(false);
             refetch();
+            // ✅ AJOUT : Refresh des progressions aussi
+            if (progressionsQuery.refetch) progressionsQuery.refetch();
           }}
         />
       )}
@@ -205,6 +232,8 @@ const SuperAdminDashboard = () => {
             setShowClassroomModal(false);
             setEditingClassroom(null);
             refetch();
+            // ✅ AJOUT : Refresh des progressions aussi
+            if (progressionsQuery.refetch) progressionsQuery.refetch();
           }}
         />
       )}
@@ -233,7 +262,9 @@ const SuperAdminDashboard = () => {
             <p><strong>Stats Error:</strong> {statsIsError ? 'true' : 'false'}</p>
             <p><strong>Users Count:</strong> {stats?.usersCount}</p>
             <p><strong>Classrooms Count:</strong> {stats?.classroomsCount}</p>
-            <p><strong>Progressions Count:</strong> {stats?.progressionsCount}</p>
+            <p><strong>Progressions Count (Global):</strong> {stats?.progressionsCount}</p>
+            <p><strong>Progressions Count (Session):</strong> {activeSessionProgressionsCount}</p>
+            <p><strong>Active Calendar ID:</strong> {activeCalendarId || 'null'}</p>
             <p><strong>Menus Count:</strong> {stats?.menusCount}</p>
             <hr style={{ margin: '1rem 0', borderColor: 'var(--border)' }} />
             <p><strong>Modal Open:</strong> {showUserModal ? 'true' : 'false'}</p>

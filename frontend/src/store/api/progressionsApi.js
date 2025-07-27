@@ -1,11 +1,11 @@
 // src/store/api/progressionsApi.js
-import { baseApi } from "./baseApi"; // Assure-toi que apiSlice.js est bien configuré
+import { baseApi } from "../api/baseApi"; // Assure-toi que apiSlice.js est bien configuré
 
 export const progressionsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Récupérer toutes les progressions
     getAllProgressions: builder.query({
-      query: () => '/progressions',
+     query: (calendarId) => `/progressions${calendarId ? '?calendarId=' + calendarId : ''}`,
       providesTags: ['Progression'],
     }),
 

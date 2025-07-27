@@ -14,12 +14,17 @@ const { getMondayFromWeek } = require('../utils/dateUtils')
 //** @access  Admin / Manager (via middleware)
 
 const createProgression = asyncHandler(async (req, res) => {
-  const { title, classrooms, teachers, weekNumbers } = req.body;
+  const { title, classrooms, teachers, weekNumbers, calendar } = req.body;
 
   // Validation des champs obligatoires
   if (!title?.length || !classrooms?.length || !weekNumbers?.length) {
     res.status(400);
     throw new Error('Titre, classes et semaines sont requis.');
+  }
+
+  if (!calendar) {
+    res.status(400);
+    throw new Error('Le champ calendar (session) est requis.');
   }
 
   // Vérifier si une progression existe déjà avec ce titre
@@ -38,6 +43,7 @@ const createProgression = asyncHandler(async (req, res) => {
         classrooms,
         teachers: teachers || [],
         menus: [],
+        calendar,
       });
 
       return {
@@ -55,7 +61,9 @@ const createProgression = asyncHandler(async (req, res) => {
     teachers: teachers || [],
     weekNumbers,
     services: createdServices,
+    calendar
   });
+  console.log("DEBUG", progression)
 
   // Mise à jour des classes : Ajout des formateurs assignés si fournis
   if (teachers?.length) {
@@ -81,6 +89,7 @@ const createProgression = asyncHandler(async (req, res) => {
   }
 
   res.status(201).json(progression);
+
 });
 
 
@@ -304,14 +313,22 @@ const getProgressionById = asyncHandler(async (req, res) => {
   res.status(200).json(progression);
 });
 
-// @desc    Obtenir toutes les progressions
-// @route   GET /api/progressions
+// @desc    Obtenir toutes les progressions (filtrable par calendarId)
+// @route   GET /api/progressions?calendarId=xxxx
 // @access  Admin, Manager
 const getAllProgressions = asyncHandler(async (req, res) => {
-  const progressions = await Progression.find()
+  // Récupère le paramètre de query ?calendarId=xxxx
+  const { calendarId } = req.query;
+
+  // Prépare le filtre selon la présence du paramètre
+  const filter = {};
+  if (calendarId) {
+    filter.calendar = calendarId;
+  }
+
+  const progressions = await Progression.find(filter)
     .populate({
       path: 'classrooms',
-      // Pas besoin de select si tu veux tous les champs, sinon sélectionne ceux utiles
       select: 'diploma category alternationNumber group certificationSession',
     })
     .populate('teachers', 'firstname lastname email specialization')

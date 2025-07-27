@@ -1,5 +1,7 @@
-// src/pages/progressions/ProgressionForm.jsx - VERSION CORRIGÉE
+// src/pages/progressions/ProgressionForm.jsx
+
 import { useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { progressionSchema } from '../../validation/progressionSchema';
@@ -9,20 +11,26 @@ import toast from 'react-hot-toast';
 import { Users, CalendarDays } from 'lucide-react';
 
 /**
- * FORMULAIRE DE CRÉATION DE PROGRESSION - VERSION SIMPLIFIÉE
- * 
- * LOGIQUE CORRIGÉE :
- * - Seulement : Titre + Classes + Semaines
- * - PAS de sélection de formateurs (se fait via modale séparée)
- * - Utilise le style terracotta existant
+ * FORMULAIRE DE CRÉATION DE PROGRESSION (session-aware, ultra maintenable)
+ * ------------------------------------------------------------------------
+ * - Injection automatique de la session (calendarId) sélectionnée via Redux.
+ * - Validation UX complète : titre, classes, semaines.
+ * - Design ultra cohérent, prêt pour évolution (modularisation, hooks custom).
  */
 
-const ProgressionForm = ({ onSuccess, onClose}) => {
+const ProgressionForm = ({ onSuccess, onClose }) => {
+    // --- MUTATION RTK QUERY (création progression) ---
     const [createProgression, { isLoading }] = useCreateProgressionMutation();
-    const { data: classroomsData } = useGetAllClassroomsQuery();
 
+    // --- RÉCUPÉRATION DES CLASSES EN BASE ---
+    const { data: classroomsData } = useGetAllClassroomsQuery();
     const classrooms = useMemo(() => classroomsData?.classrooms || [], [classroomsData]);
 
+    // --- SESSION ACTIVE (calendarId) ---
+    // Récupère la session (calendar) active sélectionnée dans Redux.
+    const activeCalendarId = useSelector(state => state.calendarSession.activeCalendarId);
+
+    // --- FORM HOOK + VALIDATION ---
     const {
         register,
         handleSubmit,
@@ -38,14 +46,23 @@ const ProgressionForm = ({ onSuccess, onClose}) => {
         }
     });
 
+    // --- SUIVI DES CLASSES SÉLECTIONNÉES ---
     const selectedClassrooms = watch('classrooms') || [];
 
+    // --- HANDLER SOUMISSION ---
     const onSubmit = async (data) => {
+        // 1. Vérifie la présence d'une session active (UX)
+        if (!activeCalendarId) {
+            toast.error('Aucune session active sélectionnée : impossible de créer la progression.');
+            return;
+        }
+        // 2. Construit le payload API (calendar injecté)
         const payload = {
             title: data.title,
             classrooms: data.classrooms,
-            teachers: [], // ← Vide à la création
-            weekNumbers: data.weekNumbers
+            teachers: [],          // <-- toujours vide à la création (voir section assignation)
+            weekNumbers: data.weekNumbers,
+            calendar: activeCalendarId, // <-- session active injectée ici
         };
 
         try {
@@ -58,10 +75,10 @@ const ProgressionForm = ({ onSuccess, onClose}) => {
         }
     };
 
+    // --- UI PRINCIPALE DU FORMULAIRE ---
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 gap-6">
-
-            {/* TITRE */}
+            {/* -------- TITRE -------- */}
             <div className="form-control">
                 <label className="label label-required label-icon">
                     Titre de la progression
@@ -78,7 +95,7 @@ const ProgressionForm = ({ onSuccess, onClose}) => {
                 )}
             </div>
 
-            {/* CLASSES */}
+            {/* -------- CLASSES -------- */}
             <div className="form-control">
                 <label className="label label-required label-icon">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -113,7 +130,7 @@ const ProgressionForm = ({ onSuccess, onClose}) => {
                 </p>
             </div>
 
-            {/* SEMAINES */}
+            {/* -------- SEMAINES -------- */}
             <div className="form-control">
                 <label className="label label-required label-icon">
                     <CalendarDays size={16} className="text-muted" />
@@ -141,8 +158,8 @@ const ProgressionForm = ({ onSuccess, onClose}) => {
                 </p>
             </div>
 
-            {/* INFO FORMATEURS */}
-            <div className="card card-summary" >
+            {/* -------- INFO FORMATEURS -------- */}
+            <div className="card card-summary">
                 <div className="card-content">
                     <div className='label-icon'>
                         <Users size={16} style={{ color: 'var(--primary)' }} />
@@ -160,7 +177,7 @@ const ProgressionForm = ({ onSuccess, onClose}) => {
                 </div>
             </div>
 
-            {/* BOUTONS */}
+            {/* -------- BOUTONS ACTION -------- */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', paddingTop: '1rem' }}>
                 <button
                     type="button"
@@ -170,7 +187,6 @@ const ProgressionForm = ({ onSuccess, onClose}) => {
                 >
                     Annuler
                 </button>
-
                 <button
                     type="submit"
                     className={`btn btn-primary ${isLoading ? 'btn-loading' : ''}`}

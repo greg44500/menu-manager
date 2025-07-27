@@ -38,17 +38,21 @@ exports.authenticateUser = async (req, res, next) => {
     //       message: "Votre mot de passe est temporaire. Veuillez le modifier avant de continuer.",
     //       requirePasswordChange: true // Flag pour utiliser coté Client
     //     });
-        
+
     //     // Ou rediriger vers la page de changement de mot de passe
     //     // return res.redirect('/change-password');
     //   }
-    
-  
+
+
     req.user = {
       id: decoded.userId,
       role: user.role
     };
 
+    console.log('ROLE CHECK:', req.user.role); // <-- Ici, APRES avoir défini req.user
+
+    console.log('Headers reçus :', req.headers)
+    console.log('Decoded user:', user)
     // Vérifie si la session existe en base de données 
     req.session = session;
     next();

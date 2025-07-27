@@ -5,6 +5,8 @@ import { setupListeners } from '@reduxjs/toolkit/query'
 // Import des slices
 import authSlice from './slices/authSlice'
 import dashboardReducer from './slices/dashboardSlice'
+import calendarSessionReducer from './slices/calendarSessionSlice';
+
 // Import de l'API de base (RTK Query)
 import { baseApi } from './api/baseApi'
 
@@ -12,6 +14,7 @@ import { baseApi } from './api/baseApi'
 import './api/authApi' // Enregistre les endpoints auth dans baseApi
 import './api/dashboardApi' // Enregistre les endpoints dashboard dans baseApi
 import './api/settingsApi'
+import './api/calendarApi'
 
 // 🏪 CONFIGURATION DU STORE PRINCIPAL
 export const store = configureStore({
@@ -19,7 +22,8 @@ export const store = configureStore({
     // Gestion de l'authentification
     auth: authSlice,
     dashboard: dashboardReducer,
-    
+    calendarSession: calendarSessionReducer,
+
     // API centralisée avec RTK Query
     // POURQUOI ? RTK Query gère automatiquement :
     // - Le cache des données
@@ -27,7 +31,7 @@ export const store = configureStore({
     // - La synchronisation des données
     [baseApi.reducerPath]: baseApi.reducer,
   },
-  
+
   // MIDDLEWARE
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -40,11 +44,11 @@ export const store = configureStore({
         ],
       },
     })
-    // ⚡ Middleware RTK Query pour les appels API automatiques
-    .concat(baseApi.middleware),
-    
+      // ⚡ Middleware RTK Query pour les appels API automatiques
+      .concat(baseApi.middleware),
+
   // DevTools en développement uniquement
- devTools: import.meta.env.MODE !== 'production'
+  devTools: import.meta.env.MODE !== 'production'
 })
 
 // 🔄 LISTENERS RTK QUERY

@@ -2,13 +2,13 @@
 import { useState } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
+import SessionSelector from '../common/SessionSelector'
 import toast from 'react-hot-toast'
 import ThemeToggle from '../common/ThemeToggle'
 import {
   Menu,
   ChevronLeft,
   House,
-  GraduationCap,
   CalendarCog,
   Utensils,
   Users,
@@ -116,7 +116,8 @@ const Layout = () => {
         }}>
           {/* Toggle thème */}
           <ThemeToggle size="md" />
-
+          {/*session Selector */}
+          <SessionSelector/>
           {/* Infos utilisateur */}
           <div className='user-info-container'>
             <div className='user-info-avatar'>

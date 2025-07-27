@@ -1,11 +1,36 @@
 const asyncHandler = require('express-async-handler');
-const AcademicCalendar = require('../models/academicCalendar.model');
+const AcademicCalendar = require('../models/calendar.model.js');
 
 // @desc    Créer un calendrier académique
 // @route   POST /api/calendars
 // @access  Private (SuperAdmin/Manager)
 const createCalendar = asyncHandler(async (req, res) => {
-  const calendar = await AcademicCalendar.create({ ...req.body, createdBy: req.user._id });
+  const { label, startDate, endDate, active, holidays, events } = req.body;
+
+  // Validation minimale : label, startDate, endDate requis
+  if (!label || !startDate || !endDate) {
+    res.status(400);
+    throw new Error("Le nom, la date de début et la date de fin sont obligatoires");
+  }
+
+  // Vérifie qu'il n'existe pas déjà un calendrier avec ce label
+  const exists = await AcademicCalendar.findOne({ label });
+  if (exists) {
+    res.status(409);
+    throw new Error("Un calendrier avec ce nom existe déjà");
+  }
+
+  // Création
+  const calendar = await AcademicCalendar.create({
+    label,
+    startDate,
+    endDate,
+    active: !!active,
+    holidays: holidays || [],
+    events: events || [],
+    createdBy: req.user.id
+  });
+
   res.status(201).json({ message: "Calendrier créé", data: calendar });
 });
 
@@ -13,7 +38,7 @@ const createCalendar = asyncHandler(async (req, res) => {
 // @route   GET /api/calendars
 // @access  Public
 const getAllCalendars = asyncHandler(async (req, res) => {
-  const calendars = await AcademicCalendar.find().sort({ startYear: -1 });
+  const calendars = await AcademicCalendar.find().sort({ startDate: -1 });
   res.status(200).json({ data: calendars });
 });
 
@@ -21,7 +46,21 @@ const getAllCalendars = asyncHandler(async (req, res) => {
 // @route   PUT /api/calendars/:id
 // @access  Private (SuperAdmin/Manager)
 const updateCalendar = asyncHandler(async (req, res) => {
-  const calendar = await AcademicCalendar.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  const { label, startDate, endDate, active, holidays, events } = req.body;
+
+  const calendar = await AcademicCalendar.findByIdAndUpdate(
+    req.params.id,
+    {
+      label,
+      startDate,
+      endDate,
+      active: !!active,
+      holidays: holidays || [],
+      events: events || [],
+    },
+    { new: true }
+  );
+
   if (!calendar) {
     res.status(404);
     throw new Error("Calendrier introuvable");

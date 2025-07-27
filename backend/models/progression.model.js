@@ -2,10 +2,16 @@ const mongoose = require('mongoose');
 const Service = require('./service.model'); // Import du modèle Service
 
 const progressionSchema = new mongoose.Schema({
-    title: {type: String, unique:true, required: true},
+    calendar: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'AcademicCalendar',
+        required: true
+
+    },
+    title: { type: String, unique: true, required: true },
     classrooms: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Classroom', required: true }],
     teachers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }],
-    
+
     weekNumbers: [{ type: Number, required: true }], // Stocke uniquement les numéros de semaines
 
     services: [{
