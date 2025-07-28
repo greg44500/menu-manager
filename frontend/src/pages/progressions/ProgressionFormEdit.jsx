@@ -1,199 +1,160 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { progressionSchema } from '../../validation/progressionSchema';
 import { useUpdateProgressionMutation, useGetProgressionByIdQuery } from '../../store/api/progressionsApi';
 import { useGetAllClassroomsQuery } from '../../store/api/classroomsApi';
+import { useGetAllCalendarsQuery } from '../../store/api/calendarApi';
+import { useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
-import { ChefHat, Utensils, Users, Check } from 'lucide-react';
+import { getWeeksOfSession } from '../../utils/weeks';
 
 const ProgressionFormEdit = ({ progression, onSuccess, onClose }) => {
-    const [assignedTeachers, setAssignedTeachers] = useState([])
-    const [weekInput, setWeekInput] = useState('');
-
+    // RTK QUERY: Update progression
     const [updateProgression, { isLoading }] = useUpdateProgressionMutation();
-    const { data: classroomsData } = useGetAllClassroomsQuery();
-    const { data: progressionRefreshed, refetch } = useGetProgressionByIdQuery(progression._id, { skip: !progression?._id });
 
+    // RTK QUERY: Get all classrooms
+    const { data: classroomsData } = useGetAllClassroomsQuery();
     const classrooms = useMemo(() => classroomsData?.classrooms || [], [classroomsData]);
 
+    // RTK QUERY: Refresh progression (for teacher updates, if needed)
+    const { data: progressionRefreshed, refetch } = useGetProgressionByIdQuery(progression._id, { skip: !progression?._id });
+
+    // Redux: ID du calendrier actif
+    const activeCalendarId = useSelector(state => state.calendarSession.activeCalendarId);
+
+    // RTK Query : Récupération des calendars (sessions)
+    const { data: calendarsData } = useGetAllCalendarsQuery();
+    const calendars = calendarsData?.calendars || [];
+
+    // Sélection de l'objet calendar actif
+    const activeCalendar = calendars.find(c => c._id === activeCalendarId);
+
+    // Génération dynamique des semaines disponibles selon la session
+    const availableWeeks = useMemo(() => {
+        if (!activeCalendar?.startDate || !activeCalendar?.endDate) return [];
+        return getWeeksOfSession(
+            new Date(activeCalendar.startDate),
+            new Date(activeCalendar.endDate)
+        );
+    }, [activeCalendar?.startDate, activeCalendar?.endDate]);
+
+    // HOOK FORM: initialisation et validation
     const {
         register,
         handleSubmit,
         reset,
-        getValues,
-        setValue,
-        watch,
         formState: { errors }
     } = useForm({
         resolver: yupResolver(progressionSchema),
         defaultValues: {
             title: '',
             classrooms: [],
-            weekNumbers: []
+            weeks: [],
         }
     });
 
-    const selectedClassrooms = watch('classrooms');
-
+    // Effet: initialise le formulaire à l'ouverture ou update progression
     useEffect(() => {
         if (progression && classrooms.length > 0) {
             reset({
                 title: progression.title || '',
                 classrooms: progression.classrooms?.map(c => c._id) || [],
-                weekNumbers: progression.weekNumbers || []
+                weeks: progression.weekList
+                    ? progression.weekList.map(w => JSON.stringify({ weekNumber: w.weekNumber, year: w.year }))
+                    : [],
             });
-            setWeekInput(Array.isArray(progression.weekNumbers) ? progression.weekNumbers.join(',') : '');
         }
     }, [progression, classrooms, reset]);
 
-    useEffect(() => {
-        if (progressionRefreshed?.teachers?.length) {
-            setAssignedTeachers(progressionRefreshed.teachers);
-        }
-    }, [progressionRefreshed?.teachers]);
-
-    const handleCheckboxChange = (e) => {
-        const selected = new Set(getValues('classrooms'));
-        if (e.target.checked) selected.add(e.target.value);
-        else selected.delete(e.target.value);
-        setValue('classrooms', Array.from(selected));
-    };
-
+    // Soumission du formulaire (mise à jour progression)
     const onSubmit = async (data) => {
+        const progressionId = progression?._id || progressionRefreshed?._id;
+        if (!progressionId) {
+            toast.error("ID progression manquant.");
+            return;
+        }
+        // Transforme la sélection des semaines (JSON.parse chaque valeur)
+        let weekList = [];
+        if (Array.isArray(data.weeks)) {
+            weekList = data.weeks.map(w => {
+                try {
+                    return JSON.parse(w);
+                } catch {
+                    return null;
+                }
+            }).filter(Boolean);
+        }
+        const submissionData = {
+            title: data.title,
+            classrooms: Array.isArray(data.classrooms) ? data.classrooms : [],
+            weekList,
+        };
         try {
-            const progressionId = progression?._id || progressionRefreshed?._id;
-            if (!progressionId) {
-                toast.error("ID progression manquant.");
-                return;
-            }
-
-            const classIds = Array.isArray(data.classrooms)
-                ? data.classrooms.map(id => id.toString())
-                : [];
-
-            const parsedWeeks = weekInput
-                .split(',')
-                .map(s => parseInt(s.trim(), 10))
-                .filter(n => !isNaN(n));
-
-            const submissionData = {
-                title: data.title,
-                classrooms: classIds,
-                weekNumbers: parsedWeeks,
-            };
-
-            const teacherIds = assignedTeachers.map(t => t._id);
-            if (teacherIds.length > 0) {
-                submissionData.teachers = teacherIds;
-            }
-
             await updateProgression({ id: progressionId, ...submissionData }).unwrap();
             toast.success('Progression modifiée avec succès !');
             await refetch();
             onSuccess?.();
-
         } catch (err) {
             toast.error(err?.data?.message || 'Erreur lors de la modification');
         }
     };
 
-    const assignedCuisine = assignedTeachers.filter(t => t.specialization === 'cuisine');
-    const assignedService = assignedTeachers.filter(t => t.specialization === 'service');
-
+    // UI du formulaire (aucun changement de style)
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="form-container">
+
+        <form onSubmit={handleSubmit(onSubmit)} >
+            {/* Champ: Titre progression */}
             <div className="form-group">
                 <label className="label label-required">Titre de la progression</label>
                 <input {...register("title")} className={`input ${errors.title ? 'input-error' : ''}`} placeholder="Ex: BP AC 2 2028" />
                 {errors.title && <p className="form-error">{errors.title.message}</p>}
             </div>
 
-            <div className="form-group">
-                <label className="label label-required label-icon">
-                    <Users size={16} className="text-muted" />
-                    <span>Classes assignées</span>
-                    {selectedClassrooms.length > 0 && (
-                        <span className="badge badge-primary">
-                            {selectedClassrooms.length} sélectionnée{selectedClassrooms.length > 1 ? 's' : ''}
-                        </span>
-                    )}
-                </label>
-
-                <div className="teacher-list">
-                    {classrooms.length === 0 ? (
-                        <p className="empty-state">Aucune classe disponible</p>
-                    ) : (
-                        <div className="teacher-grid">
-                            {classrooms.map(c => {
-                                const isSelected = selectedClassrooms.includes(c._id)
-                                return (
-                                    <label
-                                        key={c._id}
-                                        className={`teacher-item ${isSelected ? 'teacher-item-selected' : ''}`}
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            checked={isSelected}
-                                            onChange={(e) => handleCheckboxChange(e)}
-                                            value={c._id}
-                                            className="teacher-checkbox"
-                                        />
-                                        <span className="teacher-name">{c.name || c.virtualName}</span>
-                                        {isSelected && <Check size={14} className="teacher-check" />}
-                                    </label>
-                                )
-                            })}
-                        </div>
-                    )}
+            {/* Champ: Classes assignées */}
+            <label className="label label-required ">Classes assignées</label>
+            <div className="teacher-list">
+                <div className={`checkbox-list ${errors.classrooms ? 'input-error' : ''}`}>
+                    {classrooms.map(cls => (
+                        <label key={cls._id} style={{ display: 'block', marginBottom: 6 }}>
+                            <input
+                                type="checkbox"
+                                value={cls._id}
+                                {...register('classrooms')}
+                                style={{ marginRight: 8 }}
+                            // RHF gère le "checked" si tu utilises bien "defaultValues" et "reset"
+                            />
+                            {cls.name || cls.virtualName}
+                        </label>
+                    ))}
                 </div>
-                <p className="field-help">{classrooms.length} classe{classrooms.length > 1 ? 's' : ''} disponible{classrooms.length > 1 ? 's' : ''}</p>
                 {errors.classrooms && <p className="form-error">{errors.classrooms.message}</p>}
             </div>
 
-
-            <div className="form-group">
-                <label className="label label-required">Semaines concernées</label>
-                <input
-                    type="text"
-                    value={weekInput}
-                    onChange={(e) => setWeekInput(e.target.value)}
-                    className={`input ${errors.weekNumbers ? 'input-error' : ''}`}
-                    placeholder="Ex: 1,2,3,5"
-                />
-                {errors.weekNumbers && <p className="form-error">{errors.weekNumbers.message}</p>}
-            </div>
-
-            <div className="card card-summary">
-                <div className="card-content-form">
-                    <div className="summary-grid">
-                        <div className="summary-section">
-                            <div className="summary-section-header">
-                                <ChefHat size={16} />
-                                <span className="summary-section-title">Formateurs Cuisine</span>
-                            </div>
-                            <ul className="summary-list">
-                                {assignedCuisine.length > 0 ? assignedCuisine.map(t => (
-                                    <li key={t._id}>{t.lastname} {t.firstname}</li>
-                                )) : <p className="summary-empty">Aucun formateur cuisine assigné</p>}
-                            </ul>
-                        </div>
-
-                        <div className="summary-section">
-                            <div className="summary-section-header">
-                                <Utensils size={16} />
-                                <span className="summary-section-title">Formateurs Service</span>
-                            </div>
-                            <ul className="summary-list">
-                                {assignedService.length > 0 ? assignedService.map(t => (
-                                    <li key={t._id}>{t.lastname} {t.firstname}</li>
-                                )) : <p className="summary-empty">Aucun formateur service assigné</p>}
-                            </ul>
-                        </div>
-                    </div>
+            {/* Champ: Semaine(s) de la progression */}
+            <label className="label label-required">Semaines concernées (selon session)</label>
+            <div className="teacher-list">
+                <div className={`checkbox-list ${errors.weeks ? 'input-error' : ''}`}>
+                    {availableWeeks.map(w => {
+                        const valueStr = JSON.stringify({ weekNumber: w.weekNumber, year: w.year });
+                        return (
+                            <label key={valueStr} style={{ display: 'block', marginBottom: 6 }}>
+                                <input
+                                    type="checkbox"
+                                    value={valueStr}
+                                    {...register('weeks')}
+                                    style={{ marginRight: 8 }}
+                                // RHF gère le "checked" selon les valeurs passées à "defaultValues" ou "reset"
+                                />
+                                Semaine {w.weekNumber} ({w.year}) - {w.date.toLocaleDateString('fr-FR')}
+                            </label>
+                        );
+                    })}
                 </div>
+                {errors.weeks && <p className="form-error">{errors.weeks.message}</p>}
             </div>
 
+            {/* BOUTONS ACTION */}
             <div className="form-actions">
                 <button type="submit" className="btn btn-primary" disabled={isLoading}>Mettre à jour</button>
                 <button type="button" className="btn btn-secondary" onClick={onClose}>Annuler</button>

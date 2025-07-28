@@ -1,15 +1,19 @@
-exports.getMondayFromWeek = (weekNumber, startMonth = 8) => {
-    const currentYear = new Date().getFullYear();
-    const startDate = new Date(currentYear, startMonth, 1); // ex: 1er septembre
-    const dayOfWeek = startDate.getDay();
-    const firstMonday = new Date(startDate);
+/**
+ * Calcule la date du lundi de la semaine ISO pour une année civile donnée
+ * @param {Number} weekNumber - Numéro ISO de la semaine (1-based)
+ * @param {Number} year - Année civile
+ * @returns {Date} Date du lundi de la semaine spécifiée
+ */
+function getMondayFromISOWeek(weekNumber, year) {
+  const simple = new Date(year, 0, 1 + (weekNumber - 1) * 7);
+  const dow = simple.getDay();
+  let monday = simple;
+  if (dow <= 4) {
+    monday.setDate(simple.getDate() - simple.getDay() + 1);
+  } else {
+    monday.setDate(simple.getDate() + 8 - simple.getDay());
+  }
+  return monday;
+}
 
-    if (dayOfWeek !== 1) {
-        firstMonday.setDate(startDate.getDate() + ((8 - dayOfWeek) % 7));
-    }
-
-    const serviceDate = new Date(firstMonday);
-    serviceDate.setDate(firstMonday.getDate() + (weekNumber - 1) * 7);
-
-    return serviceDate;
-};
+module.exports.getMondayFromISOWeek = getMondayFromISOWeek;

@@ -6,53 +6,27 @@ const progressionSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'AcademicCalendar',
         required: true
-
     },
     title: { type: String, unique: true, required: true },
     classrooms: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Classroom', required: true }],
     teachers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }],
 
-    weekNumbers: [{ type: Number, required: true }], // Stocke uniquement les numéros de semaines
+    // Nouvelle structure : stockage explicite année + semaine
+    weekList: [{
+        weekNumber: { type: Number, required: true },
+        year: { type: Number, required: true }
+    }],
 
+    // Lien avec tous les services générés pour cette progression
     services: [{
         weekNumber: { type: Number, required: true },
+        year: { type: Number, required: true },
         service: { type: mongoose.Schema.Types.ObjectId, ref: 'Service' }, // Lien vers le Service
     }],
 
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 }, { timestamps: true });
-
-/**
- * 🔄 Middleware : Création automatique des services avant de sauvegarder la progression
- */
-progressionSchema.pre('save', async function (next) {
-    if (!this.isNew) return next(); // Exécuter seulement lors de la création d'une nouvelle progression
-
-    try {
-        const createdServices = await Promise.all(
-            this.weekNumbers.map(async (week) => {
-                const newService = await Service.create({
-                    weekNumber: week,
-                    classrooms: this.classrooms,
-                    teachers: this.teachers,
-                    menus: []
-                });
-
-                return {
-                    weekNumber: week,
-                    service: newService._id,
-                    menu: []
-                };
-            })
-        );
-
-        this.services = createdServices;
-        next();
-    } catch (error) {
-        next(error);
-    }
-});
 
 // Activer les champs virtuels lors de la conversion en JSON ou en objet
 progressionSchema.set("toJSON", { virtuals: true });

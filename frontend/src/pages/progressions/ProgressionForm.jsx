@@ -7,34 +7,42 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { progressionSchema } from '../../validation/progressionSchema';
 import { useCreateProgressionMutation } from '../../store/api/progressionsApi';
 import { useGetAllClassroomsQuery } from '../../store/api/classroomsApi';
+import { useGetAllCalendarsQuery } from '../../store/api/calendarApi';
 import toast from 'react-hot-toast';
-import { Users, CalendarDays } from 'lucide-react';
-
-/**
- * FORMULAIRE DE CRÉATION DE PROGRESSION (session-aware, ultra maintenable)
- * ------------------------------------------------------------------------
- * - Injection automatique de la session (calendarId) sélectionnée via Redux.
- * - Validation UX complète : titre, classes, semaines.
- * - Design ultra cohérent, prêt pour évolution (modularisation, hooks custom).
- */
+import { getWeeksOfSession } from '../../utils/weeks';
 
 const ProgressionForm = ({ onSuccess, onClose }) => {
-    // --- MUTATION RTK QUERY (création progression) ---
+    // RTK Query : Mutation création progression
     const [createProgression, { isLoading }] = useCreateProgressionMutation();
 
-    // --- RÉCUPÉRATION DES CLASSES EN BASE ---
+    // RTK Query : Récupération des classes
     const { data: classroomsData } = useGetAllClassroomsQuery();
     const classrooms = useMemo(() => classroomsData?.classrooms || [], [classroomsData]);
 
-    // --- SESSION ACTIVE (calendarId) ---
-    // Récupère la session (calendar) active sélectionnée dans Redux.
+    // RTK Query : Récupération des calendars (sessions)
+    const { data: calendarsData } = useGetAllCalendarsQuery();
+    const calendars = calendarsData?.calendars || [];
+    console.log('calendars', calendars);
+    // Récupère l’ID du calendar actif depuis Redux
     const activeCalendarId = useSelector(state => state.calendarSession.activeCalendarId);
+    console.log("SESSION ACTIVE", activeCalendarId)
 
-    // --- FORM HOOK + VALIDATION ---
+    // Recherche l’objet calendar actif dans la liste
+    const activeCalendar = calendars.find(c => c._id === activeCalendarId);
+    console.log('activeCalendar', activeCalendar);
+    // Génère dynamiquement la liste des semaines disponibles pour la session active
+    const availableWeeks = useMemo(() => {
+        if (!activeCalendar?.startDate || !activeCalendar?.endDate) return [];
+        return getWeeksOfSession(
+            new Date(activeCalendar.startDate),
+            new Date(activeCalendar.endDate)
+        );
+    }, [activeCalendar?.startDate, activeCalendar?.endDate]);
+
+    // Form Hook + validation
     const {
         register,
         handleSubmit,
-        setValue,
         watch,
         formState: { errors }
     } = useForm({
@@ -42,27 +50,34 @@ const ProgressionForm = ({ onSuccess, onClose }) => {
         defaultValues: {
             title: '',
             classrooms: [],
-            weekNumbers: []
+            weeks: [],
         }
     });
 
-    // --- SUIVI DES CLASSES SÉLECTIONNÉES ---
     const selectedClassrooms = watch('classrooms') || [];
 
-    // --- HANDLER SOUMISSION ---
+    // Handler soumission
     const onSubmit = async (data) => {
-        // 1. Vérifie la présence d'une session active (UX)
-        if (!activeCalendarId) {
+        if (!activeCalendar?._id) {
             toast.error('Aucune session active sélectionnée : impossible de créer la progression.');
             return;
         }
-        // 2. Construit le payload API (calendar injecté)
+        let weekList = [];
+        if (Array.isArray(data.weeks)) {
+            weekList = data.weeks.map(w => {
+                try {
+                    return JSON.parse(w);
+                } catch {
+                    return null;
+                }
+            }).filter(Boolean);
+        }
         const payload = {
             title: data.title,
             classrooms: data.classrooms,
-            teachers: [],          // <-- toujours vide à la création (voir section assignation)
-            weekNumbers: data.weekNumbers,
-            calendar: activeCalendarId, // <-- session active injectée ici
+            teachers: [],
+            weekList,
+            calendar: activeCalendar._id,
         };
 
         try {
@@ -72,17 +87,15 @@ const ProgressionForm = ({ onSuccess, onClose }) => {
             onClose?.();
         } catch (err) {
             toast.error(err?.data?.message || 'Erreur lors de la création');
+            console.log("erreur", err)
         }
     };
 
-    // --- UI PRINCIPALE DU FORMULAIRE ---
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 gap-6">
-            {/* -------- TITRE -------- */}
+            {/* TITRE */}
             <div className="form-control">
-                <label className="label label-required label-icon">
-                    Titre de la progression
-                </label>
+                <label className="label label-required">Titre de la progression</label>
                 <input
                     {...register("title")}
                     className={`input ${errors.title ? 'input-error' : ''}`}
@@ -95,18 +108,15 @@ const ProgressionForm = ({ onSuccess, onClose }) => {
                 )}
             </div>
 
-            {/* -------- CLASSES -------- */}
+            {/* CLASSES */}
             <div className="form-control">
-                <label className="label label-required label-icon">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <Users size={16} className="text-muted" />
-                        <span>Classes assignées</span>
-                        {selectedClassrooms.length > 0 && (
-                            <span className="badge badge-primary">
-                                {selectedClassrooms.length} sélectionnée{selectedClassrooms.length > 1 ? 's' : ''}
-                            </span>
-                        )}
-                    </div>
+                <label className="label label-required">
+                    Classes assignées
+                    {selectedClassrooms.length > 0 && (
+                        <span className="badge badge-primary">
+                            {selectedClassrooms.length} sélectionnée{selectedClassrooms.length > 1 ? 's' : ''}
+                        </span>
+                    )}
                 </label>
                 <select
                     {...register('classrooms')}
@@ -130,43 +140,43 @@ const ProgressionForm = ({ onSuccess, onClose }) => {
                 </p>
             </div>
 
-            {/* -------- SEMAINES -------- */}
-            <div className="form-control">
-                <label className="label label-required label-icon">
-                    <CalendarDays size={16} className="text-muted" />
-                    <span>Semaines de présence en centre</span>
+            {/* SEMAINES */}
+            <div className="teacher-list">
+                <label className="label label-required">
+                    Semaines de présence en centre (selon session)
                 </label>
+              <div className={`checkbox-list ${errors.weeks ? 'input-error' : ''}`}>
+    {availableWeeks.map(w => {
+        const valueStr = JSON.stringify({ weekNumber: w.weekNumber, year: w.year });
+        return (
+            <label key={valueStr} style={{ display: 'block', marginBottom: 6 }}>
                 <input
-                    type="text"
-                    placeholder="ex: 12,13,14,15"
-                    onChange={(e) => {
-                        const parsed = e.target.value
-                            .split(',')
-                            .map(num => parseInt(num.trim(), 10))
-                            .filter(n => !isNaN(n) && n > 0 && n <= 53);
-                        setValue('weekNumbers', parsed);
-                    }}
-                    className={`input ${errors.weekNumbers ? 'input-error' : ''}`}
+                    type="checkbox"
+                    value={valueStr}
+                    {...register('weeks')}
+                    style={{ marginRight: 8 }}
                 />
-                {errors.weekNumbers && (
+                Semaine {w.weekNumber} ({w.year}) - {w.date.toLocaleDateString('fr-FR')}
+            </label>
+        );
+    })}
+</div>
+                {errors.weeks && (
                     <p className="form-error" style={{ color: 'var(--error)' }}>
-                        {errors.weekNumbers.message}
+                        {errors.weeks.message}
                     </p>
                 )}
                 <p className="summary-grid" style={{ color: 'var(--text-muted)' }}>
-                    Séparez les numéros par des virgules (ex: 12, 13, 14)
+                    Les semaines disponibles sont celles de la session sélectionnée
                 </p>
             </div>
 
-            {/* -------- INFO FORMATEURS -------- */}
+            {/* ASSIGNATION FORMATEURS */}
             <div className="card card-summary">
                 <div className="card-content">
-                    <div className='label-icon'>
-                        <Users size={16} style={{ color: 'var(--primary)' }} />
-                        <h4 className='card-title-form'>
-                            Assignation des formateurs
-                        </h4>
-                    </div>
+                    <h4 className='card-title-form'>
+                        Assignation des formateurs
+                    </h4>
                     <p style={{
                         margin: 0,
                         fontSize: '0.875rem',
@@ -177,7 +187,7 @@ const ProgressionForm = ({ onSuccess, onClose }) => {
                 </div>
             </div>
 
-            {/* -------- BOUTONS ACTION -------- */}
+            {/* BOUTONS ACTION */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', paddingTop: '1rem' }}>
                 <button
                     type="button"

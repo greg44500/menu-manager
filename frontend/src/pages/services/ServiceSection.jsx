@@ -1,15 +1,22 @@
 import { useState } from 'react'
-import { Plus, TrendingUp, Utensils, Replace, Edit3, Trash2, FileDown } from 'lucide-react' // ← Ajout de TrendingUp
+import { Plus, TrendingUp, Utensils, Replace, Edit3, Trash2, Calendar } from 'lucide-react'
 import ProgressionSelect from './ProgressionSelect'
 import DataTable from '../../components/common/DataTable'
-import ProgressBar from '../../components/common/ProgressBar' // ← Import de ProgressBar
+import ProgressBar from '../../components/common/ProgressBar'
 import { useGetAllProgressionsQuery } from '../../store/api/progressionsApi'
 import { useGetServicesByProgressionQuery } from '../../store/api/servicesApi'
+import { useGetAllCalendarsQuery } from '../../store/api/calendarApi' // ← Import du calendrier
 import MenuEditorModal from '../menus/MenuEditorModal'
 
 const ServiceSection = () => {
     const [selectedProgressionId, setSelectedProgressionId] = useState(null)
     const [editingService, setEditingService] = useState(null)
+
+    // 📅 RÉCUPÉRATION DU CALENDRIER ACADÉMIQUE
+    const {
+        data: calendarsData,
+        isLoading: loadingCalendars,
+    } = useGetAllCalendarsQuery()
 
     const {
         data: rawProgressions,
@@ -25,30 +32,69 @@ const ServiceSection = () => {
         skip: !selectedProgressionId
     })
 
-    const getMondayFromWeek = (weekNumber, year = new Date().getFullYear()) => {
-        const simple = new Date(year, 0, 1 + (weekNumber - 1) * 7)
-        const dow = simple.getDay()
-        const monday = new Date(simple)
-        if (dow <= 4)
-            monday.setDate(simple.getDate() - simple.getDay() + 1)
-        else
-            monday.setDate(simple.getDate() + 8 - simple.getDay())
-        return monday.toLocaleDateString('fr-FR') // => "21/07/2025"
+    // 🎯 FONCTION POUR TROUVER LA SESSION ACTIVE
+    const getActiveAcademicSession = () => {
+        const calendars = calendarsData?.calendars || []
+        const today = new Date()
+
+        return calendars.find(calendar => {
+            const startDate = new Date(calendar.startDate)
+            const endDate = new Date(calendar.endDate)
+            return today >= startDate && today <= endDate
+        })
     }
+
+    // 📊 FONCTION POUR CALCULER LA DATE AVEC LE CONTEXTE ACADÉMIQUE
+    // const getMondayFromWeek = (weekNumber) => {
+    //     const activeSession = getActiveAcademicSession()
+
+    //     if (!activeSession) {
+    //         // 🚨 FALLBACK si pas de session active
+    //         console.warn('Aucune session académique active trouvée')
+    //         return 'Session non définie'
+    //     }
+
+    //     // 🗓️ EXTRACTION DES ANNÉES DE LA SESSION
+    //     const startDate = new Date(activeSession.startDate)
+    //     const endDate = new Date(activeSession.endDate)
+    //     const startYear = startDate.getFullYear()
+    //     const endYear = endDate.getFullYear()
+
+    //     // 📅 DÉTERMINATION DE L'ANNÉE SELON LA SEMAINE
+    //     // Logic: si la session commence en septembre (semaine ~35), 
+    //     // les semaines 35+ sont dans l'année de début, les semaines 1-34 dans l'année de fin
+    //     const SCHOOL_START_WEEK = 35 // Ajustable selon ton calendrier
+
+    //     const targetYear = weekNumber >= SCHOOL_START_WEEK ? startYear : endYear
+
+    //     // 🎯 CALCUL DE LA DATE DU LUNDI
+    //     const jan1 = new Date(targetYear, 0, 1)
+    //     const daysToAdd = (weekNumber - 1) * 7
+    //     const targetDate = new Date(jan1.getTime() + daysToAdd * 24 * 60 * 60 * 1000)
+
+    //     // Ajuste au lundi
+    //     const dayOfWeek = targetDate.getDay()
+    //     const monday = new Date(targetDate)
+    //     const daysToMonday = dayOfWeek === 0 ? -6 : -(dayOfWeek - 1)
+    //     monday.setDate(targetDate.getDate() + daysToMonday)
+
+    //     return monday.toLocaleDateString('fr-FR')
+    // }
+
     const selectedProgression = progressions.find(p => p._id === selectedProgressionId)
+    const activeSession = getActiveAcademicSession()
 
     const allServices = (services?.data || [])
         .slice()
         .sort((a, b) => {
-            const startWeek = 35; // 🗓️ semaine de démarrage de l'année pédagogique
-            const normalize = (week) => (week < startWeek ? week + 100 : week);
-            return normalize(a.weekNumber) - normalize(b.weekNumber);
-        });
+            const startWeek = 35
+            const normalize = (week) => (week < startWeek ? week + 100 : week)
+            return normalize(a.weekNumber) - normalize(b.weekNumber)
+        })
 
     const uniqueTeachers = selectedProgression?.teachers || []
     const uniqueClasses = selectedProgression?.classrooms || []
     const uniqueWeeks = [...new Set(allServices.map(s => s.weekNumber))]
-
 
     // 🆕 CALCULS POUR LA PROGRESSBAR
     const totalWeeks = uniqueWeeks.length
@@ -57,12 +103,9 @@ const ServiceSection = () => {
     ).length
     const progressPercentage = totalWeeks > 0 ? (completedServices / totalWeeks) * 100 : 0
 
-    console.log("TEACHER", uniqueTeachers)
-    console.log("WEEKS", uniqueWeeks)
-
     return (
-        <div className="main-grid-layout-service ">
-            <div className="left-panel-service ">
+        <div className="main-grid-layout-service">
+            <div className="left-panel-service">
                 <div className="card" style={{ marginBottom: '1.5rem' }}>
                     <div className="card-content">
                         <ProgressionSelect
@@ -71,25 +114,47 @@ const ServiceSection = () => {
                             onChange={setSelectedProgressionId}
                         />
                     </div>
+
+                    {/* 🆕 AFFICHAGE DE LA SESSION ACTIVE */}
+                    {activeSession && (
+                        <div className="card-summary outline-blue service-card">
+                            <div className="card-content-form">
+                                <div className="summary-header summary-header-h4">
+                                    <Calendar size={16} style={{ color: 'var(--info)' }} />
+                                    <h4 style={{ color: 'var(--info)' }}>Session académique</h4>
+                                    <span className="badge badge-info">Active</span>
+                                </div>
+                                <div className="service-info">
+                                    <span><strong>{activeSession.name}</strong></span>
+                                    <span>Du {new Date(activeSession.startDate).toLocaleDateString('fr-FR')} au {new Date(activeSession.endDate).toLocaleDateString('fr-FR')}</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {selectedProgressionId && (
-                        <div >
+                        <div>
                             <div className="card-summary outline-orange service-card">
                                 <div className="card-content-form">
-                                    <div className="summary-header summary-header-h4 ">
-                                        <h4>Formateurs assignés : </h4>
+                                    <div className="summary-header summary-header-h4">
+                                        <h4>Formateurs assignés :</h4>
                                         <span className="badge badge-orange">{uniqueTeachers.length}</span>
                                     </div>
                                     <ul className="summary-list">
                                         {uniqueTeachers.map(t => (
-                                            <li key={t._id}>{t.fullName || `${t.firstname} ${t.lastname}`} <span className="small-tag">({t.specialization})</span></li>
+                                            <li key={t._id}>
+                                                {t.fullName || `${t.firstname} ${t.lastname}`}
+                                                <span className="small-tag">({t.specialization})</span>
+                                            </li>
                                         ))}
                                     </ul>
                                 </div>
                             </div>
+
                             <div className="card-summary outline-orange service-card">
-                                <div className="card-content-form ">
-                                    <div className="summary-header summary-header-h4 ">
-                                        <h4>Classes assignées : </h4>
+                                <div className="card-content-form">
+                                    <div className="summary-header summary-header-h4">
+                                        <h4>Classes assignées :</h4>
                                         <span className="badge badge-info">{uniqueClasses.length}</span>
                                     </div>
                                     <ul className="summary-list">
@@ -109,13 +174,12 @@ const ServiceSection = () => {
                             <div className="card-summary outline-orange service-card">
                                 <div className="card-content-form">
                                     <div className="summary-header summary-header-h4">
-                                        <h4>Semaines programmées : </h4>
+                                        <h4>Semaines programmées :</h4>
                                         <span className="badge badge-green">{uniqueWeeks.length}</span>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* 🆕 NOUVELLE CARTE AVEC PROGRESSBAR */}
                             <div className="card-summary outline-orange service-card">
                                 <div className="card-content-form">
                                     <div className="summary-header summary-header-h4">
@@ -126,14 +190,12 @@ const ServiceSection = () => {
                                         </span>
                                     </div>
 
-                                    {/* 🎯 INTÉGRATION DE LA PROGRESSBAR */}
                                     <ProgressBar
                                         current={completedServices}
                                         total={totalWeeks}
                                         label="Services avec menus créés"
                                     />
 
-                                    {/* Informations additionnelles */}
                                     <div className='service-info'>
                                         <span>Services planifiés : {totalWeeks}</span>
                                         <span>Services complétés : {completedServices}</span>
@@ -144,7 +206,8 @@ const ServiceSection = () => {
                     )}
                 </div>
             </div>
-            <div className="right-panel-service ">
+
+            <div className="right-panel-service">
                 <div className="card">
                     <div className="card-header">
                         <div className='card-header-position'>
@@ -158,12 +221,13 @@ const ServiceSection = () => {
                     <div className="card-content">
                         <DataTable
                             data={allServices}
-                            loading={loadingProgressions || loadingServices}
+                            loading={loadingProgressions || loadingServices || loadingCalendars}
                             columns={[
                                 { header: 'Semaine', accessorKey: 'weekNumber' },
                                 {
-                                    header: 'Date (Lundi estimé)',
-                                    cell: ({ row }) => getMondayFromWeek(row.original.weekNumber)
+                                    header: 'Date (Lundi)',
+                                    accessorKey: 'serviceDate',
+                                    cell: ({ row }) => new Date(row.original.serviceDate).toLocaleDateString('fr-FR')
                                 },
                                 {
                                     header: 'Type',
@@ -224,7 +288,6 @@ const ServiceSection = () => {
                                                         </button>
                                                     </>
                                                 )}
-
                                             </div>
                                         )
                                     }
@@ -236,7 +299,6 @@ const ServiceSection = () => {
                             service={editingService}
                             onClose={() => setEditingService(null)}
                             onSaved={() => {
-                                // Tu peux ici déclencher un refetch de l'API
                                 setEditingService(null)
                             }}
                         />

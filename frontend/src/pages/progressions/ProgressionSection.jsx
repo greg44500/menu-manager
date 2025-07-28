@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import ProgressionTable from './ProgressionTable';
 import ProgressionModal from './ProgressionModal';
+import AssignTeachersModal from './AssignTeachersModal';
+import { useGetAllProgressionsQuery } from '../../store/api/progressionsApi';
 import { useSelector } from 'react-redux';
 
 /**
@@ -21,12 +23,22 @@ const ProgressionSection = () => {
     // --- RÉCUPÉRATION DE LA SESSION ACTIVE ---
     // Récupère l'id de la session (calendarId) sélectionnée dans le store Redux (persisté par le SessionSelector global)
     const activeCalendarId = useSelector(state => state.calendarSession.activeCalendarId);
-
+    const [progressionToAssign, setProgressionToAssign] = useState(null);
+    const { refetch } = useGetAllProgressionsQuery(activeCalendarId);
+    console.log("ActiveCalendarId", activeCalendarId)
     // --- HANDLERS UI (modal création/édition) ---
     const handleOpenModal = () => {
         setModalMode('create');
         setSelectedProgression(null);
         setIsModalOpen(true);
+    };
+
+    const handleOpenAssignTeachersModal = (progression) => {
+        setProgressionToAssign(progression);
+    };
+
+    const handleCloseAssignTeachersModal = () => {
+        setProgressionToAssign(null);
     };
 
     const handleEditProgression = (progression) => {
@@ -66,8 +78,20 @@ const ProgressionSection = () => {
                         calendarId={activeCalendarId} // ← On passe le calendarId ici (important)
                         onEdit={handleEditProgression}
                         refreshTrigger={refreshKey}
+                        onAssignTeachers={handleOpenAssignTeachersModal}
                     />
                 </div>
+                {progressionToAssign && (
+                    <AssignTeachersModal
+                        isOpen={!!progressionToAssign}
+                        progressionId={progressionToAssign._id}
+                        onClose={handleCloseAssignTeachersModal}
+                        onSuccess={() => {
+                            refetch(); // RTK Query refetch de la liste des progressions
+                            handleCloseAssignTeachersModal();
+                        }}
+                    />
+                )}
 
                 {/* MODALE CRÉATION/EDITION */}
                 <ProgressionModal

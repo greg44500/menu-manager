@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useGetAllUsersQuery, useDeleteUserMutation } from '../../store/api/usersApi'
-import { Trash2, Edit3 } from 'lucide-react'
+import { Trash2, Edit3, ChefHat, Utensils } from 'lucide-react'
 import toast from 'react-hot-toast'
 import UserModal from './UserModal'
 import DataTable from '../../components/common/DataTable'
@@ -65,7 +65,17 @@ const UserTable = () => {
       accessorKey: 'specialization',
       header: 'Spécialisation',
       enableSorting: true,
-      cell: ({ row }) => <span className="badge badge-neutral">{row.original.specialization}</span>,
+      cell: ({ row }) => {
+        const value = row.original.specialization
+        const Icon = value === 'service' ? Utensils : value === 'cuisine' ? ChefHat : null
+
+        return (
+          <span className="badge badge-neutral label-icon">
+            {Icon && <Icon size={16} />}
+            {value}
+          </span>
+        )
+      },
     },
     {
       accessorKey: 'isActive',
@@ -112,9 +122,9 @@ const UserTable = () => {
       </div>
     )
   }
- const sortedUSers = [...users].sort((a, b) =>
-        a.lastname.localeCompare(b.lastname)
-    )
+  const sortedUSers = [...users].sort((a, b) =>
+    a.lastname.localeCompare(b.lastname)
+  )
   return (
     <div className="card theme-transition">
       <DataTable
