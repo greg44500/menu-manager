@@ -59,10 +59,10 @@ const ClassroomForm = ({ classroom, mode = 'create', onSuccess, onClose }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-[480px]">
-      <div className="form-group">
+    <form onSubmit={handleSubmit(onSubmit)} className="form-container-classroom">
+      <div>
         <label className="label label-required">Diplôme</label>
-        <select className='input' {...register('diploma')}>
+        <select className='input-classrooms' {...register('diploma')}>
           <option value="">Sélectionner un diplôme</option>
           {diplomas.map((d) => (
             <option key={d} value={d}>{d}</option>
@@ -71,7 +71,7 @@ const ClassroomForm = ({ classroom, mode = 'create', onSuccess, onClose }) => {
         {errors.diploma && <p className="form-error">{errors.diploma.message}</p>}
       </div>
 
-      <div className="form-group">
+      <div>
         <label className="label label-required">Filière</label>
         <select className='input'{...register('category')} >
           <option value="">Sélectionner une filière</option>
@@ -82,7 +82,7 @@ const ClassroomForm = ({ classroom, mode = 'create', onSuccess, onClose }) => {
         {errors.category && <p className="form-error">{errors.category.message}</p>}
       </div>
 
-      <div className="form-group">
+      <div>
         <label className="label">Numéro d’alternances</label>
         <input
           className='input'
@@ -93,7 +93,7 @@ const ClassroomForm = ({ classroom, mode = 'create', onSuccess, onClose }) => {
         {errors.alternationNumber && <p className="form-error">{errors.alternationNumber.message}</p>}
       </div>
 
-      <div className="form-group">
+      <div>
         <label className="label">Groupe</label>
         <select className='input'{...register('group')}>
           <option value="">Sélectionner un groupe</option>
@@ -104,7 +104,7 @@ const ClassroomForm = ({ classroom, mode = 'create', onSuccess, onClose }) => {
         {errors.group && <p className="form-error">{errors.group.message}</p>}
       </div>
 
-      <div className="form-group">
+      <div>
         <label className="label label-required">Année de certification</label>
         <input
           className='input'
@@ -115,7 +115,7 @@ const ClassroomForm = ({ classroom, mode = 'create', onSuccess, onClose }) => {
         {errors.certificationSession && <p className="form-error">{errors.certificationSession.message}</p>}
       </div>
 
-      <div className="flex justify-end gap-2">
+      <div className="form-actions">
         <button
           type="submit"
           className="btn btn-primary"

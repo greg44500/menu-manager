@@ -92,9 +92,16 @@ const ProgressionForm = ({ onSuccess, onClose }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 gap-6">
-            {/* TITRE */}
-            <div className="form-control">
+        <form className='form-container' onSubmit={handleSubmit(onSubmit)}>
+            {/* Bloc info */}
+            <div className="card card-summary mb-4">
+                <div className="card-content-form">
+                    L’assignation des formateurs se fait après la création de la progression.
+                </div>
+            </div>
+
+            {/* Titre (toujours en haut) */}
+            <div className="form-group">
                 <label className="label label-required">Titre de la progression</label>
                 <input
                     {...register("title")}
@@ -102,97 +109,81 @@ const ProgressionForm = ({ onSuccess, onClose }) => {
                     placeholder="ex: BAC CUIS/CSR 2028"
                 />
                 {errors.title && (
-                    <p className="form-error" style={{ color: 'var(--error)' }}>
+                    <p className="form-error">
                         {errors.title.message}
                     </p>
                 )}
             </div>
 
-            {/* CLASSES */}
-            <div className="form-control">
-                <label className="label label-required">
-                    Classes assignées
-                    {selectedClassrooms.length > 0 && (
-                        <span className="badge badge-primary">
-                            {selectedClassrooms.length} sélectionnée{selectedClassrooms.length > 1 ? 's' : ''}
-                        </span>
+            {/* Grille 2 colonnes responsive */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                {/* COLONNE 1 : Classes */}
+                <div>
+                    <label className="label label-required">
+                        Classes assignées
+                        {selectedClassrooms.length > 0 && (
+                            <span className="badge badge-primary" style={{ marginLeft: 8 }}>
+                                {selectedClassrooms.length} sélectionnée{selectedClassrooms.length > 1 ? 's' : ''}
+                            </span>
+                        )}
+                    </label>
+                    <div className="teacher-list">
+                        {classrooms.map(cls => (
+                            <label key={cls._id} style={{ display: 'block', marginBottom: 6 }}>
+                                <input
+                                    type="checkbox"
+                                    value={cls._id}
+                                    {...register('classrooms')}
+                                    style={{ marginRight: 8 }}
+                                />
+                                {cls.name || cls.virtualName}
+                            </label>
+                        ))}
+                    </div>
+                    {errors.classrooms && (
+                        <p className="form-error">{errors.classrooms.message}</p>
                     )}
-                </label>
-                <select
-                    {...register('classrooms')}
-                    multiple
-                    className={`input ${errors.classrooms ? 'input-error' : ''}`}
-                    style={{ minHeight: '120px' }}
-                >
-                    {classrooms.map(cls => (
-                        <option key={cls._id} value={cls._id}>
-                            {cls.name || cls.virtualName}
-                        </option>
-                    ))}
-                </select>
-                {errors.classrooms && (
-                    <p className="form-error" style={{ color: 'var(--error)' }}>
-                        {errors.classrooms.message}
+                    <p className="field-help">
+                        Sélection multiple possible.
                     </p>
-                )}
-                <p className="summary-grid" style={{ color: 'var(--text-muted)' }}>
-                    Maintenir Ctrl (Windows) ou Cmd (Mac) pour sélectionner plusieurs classes
-                </p>
-            </div>
+                </div>
 
-            {/* SEMAINES */}
-            <div className="teacher-list">
-                <label className="label label-required">
-                    Semaines de présence en centre (selon session)
-                </label>
-              <div className={`checkbox-list ${errors.weeks ? 'input-error' : ''}`}>
-    {availableWeeks.map(w => {
-        const valueStr = JSON.stringify({ weekNumber: w.weekNumber, year: w.year });
-        return (
-            <label key={valueStr} style={{ display: 'block', marginBottom: 6 }}>
-                <input
-                    type="checkbox"
-                    value={valueStr}
-                    {...register('weeks')}
-                    style={{ marginRight: 8 }}
-                />
-                Semaine {w.weekNumber} ({w.year}) - {w.date.toLocaleDateString('fr-FR')}
-            </label>
-        );
-    })}
-</div>
-                {errors.weeks && (
-                    <p className="form-error" style={{ color: 'var(--error)' }}>
-                        {errors.weeks.message}
-                    </p>
-                )}
-                <p className="summary-grid" style={{ color: 'var(--text-muted)' }}>
-                    Les semaines disponibles sont celles de la session sélectionnée
-                </p>
-            </div>
-
-            {/* ASSIGNATION FORMATEURS */}
-            <div className="card card-summary">
-                <div className="card-content">
-                    <h4 className='card-title-form'>
-                        Assignation des formateurs
-                    </h4>
-                    <p style={{
-                        margin: 0,
-                        fontSize: '0.875rem',
-                        color: 'var(--text-secondary)'
-                    }}>
-                        Les formateurs seront assignés après la création via le bouton "Assigner formateurs"
+                {/* COLONNE 2 : Semaines */}
+                <div>
+                    <label className="label label-required">
+                        Semaines de présence en centre (selon session)
+                    </label>
+                    <div className="teacher-list">
+                        {availableWeeks.map(w => {
+                            const valueStr = JSON.stringify({ weekNumber: w.weekNumber, year: w.year });
+                            return (
+                                <label key={valueStr} style={{ display: 'block', marginBottom: 6 }}>
+                                    <input
+                                        type="checkbox"
+                                        value={valueStr}
+                                        {...register('weeks')}
+                                        style={{ marginRight: 8 }}
+                                    />
+                                    Semaine {w.weekNumber} ({w.year}) - {w.date.toLocaleDateString('fr-FR')}
+                                </label>
+                            );
+                        })}
+                    </div>
+                    {errors.weeks && (
+                        <p className="form-error">{errors.weeks.message}</p>
+                    )}
+                    <p className="field-help">
+                        Les semaines disponibles sont celles de la session sélectionnée.
                     </p>
                 </div>
             </div>
 
-            {/* BOUTONS ACTION */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', paddingTop: '1rem' }}>
+            {/* Actions : flex à droite, déjà stylé */}
+            <div className="form-actions" style={{ marginTop: 24 }}>
                 <button
                     type="button"
                     onClick={onClose}
-                    className="btn btn-secondary"
+                    className="btn btn-muted"
                     disabled={isLoading}
                 >
                     Annuler
@@ -206,6 +197,7 @@ const ProgressionForm = ({ onSuccess, onClose }) => {
                 </button>
             </div>
         </form>
+
     );
 };
 

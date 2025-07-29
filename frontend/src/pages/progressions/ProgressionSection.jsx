@@ -9,27 +9,36 @@ import { useSelector } from 'react-redux';
 /**
  * SECTION PROGRESSIONS
  * ---------------------
- * Affiche le tableau des progressions pour la session active (calendarId).
- * - Utilise le Redux store pour récupérer la session sélectionnée.
- * - Passe le calendarId à ProgressionTable pour qu'il utilise le hook RTK Query filtré côté backend.
+ * Affiche la liste et la gestion des progressions pour la session active.
+ * - Récupère l'id de session active via Redux.
+ * - Rafraîchit la table automatiquement après chaque mutation grâce à RTK Query (refetch).
+ * - Suppression totale du refreshKey (ancienne méthode).
  */
+
 const ProgressionSection = () => {
     // --- ETATS UI LOCAUX ---
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [modalMode, setModalMode] = useState('create');
-    const [selectedProgression, setSelectedProgression] = useState(null);
-    const [refreshKey, setRefreshKey] = useState(0);
+    const [isModalOpen, setIsModalOpen] = useState(false);         // Contrôle de la modale (création/édition)
+    const [modalMode, setModalMode] = useState('create');          // Mode actuel de la modale (création ou édition)
+    const [selectedProgression, setSelectedProgression] = useState(null); // Progression sélectionnée pour édition
+    const [progressionToAssign, setProgressionToAssign] = useState(null); // Pour la modale d’assignation de formateurs
 
-    // --- RÉCUPÉRATION DE LA SESSION ACTIVE ---
-    // Récupère l'id de la session (calendarId) sélectionnée dans le store Redux (persisté par le SessionSelector global)
+    // --- RÉCUPÉRATION SESSION ACTIVE ---
     const activeCalendarId = useSelector(state => state.calendarSession.activeCalendarId);
-    const [progressionToAssign, setProgressionToAssign] = useState(null);
+
+    // --- QUERY LISTE PROGRESSIONS (RTK QUERY) ---
+    // On récupère uniquement la fonction refetch pour recharger la table à la demande après chaque mutation
     const { refetch } = useGetAllProgressionsQuery(activeCalendarId);
-    console.log("ActiveCalendarId", activeCalendarId)
-    // --- HANDLERS UI (modal création/édition) ---
+
+    // --- HANDLERS UI (ouverture/fermeture modales) ---
     const handleOpenModal = () => {
         setModalMode('create');
         setSelectedProgression(null);
+        setIsModalOpen(true);
+    };
+
+    const handleEditProgression = (progression) => {
+        setModalMode('edit');
+        setSelectedProgression(progression);
         setIsModalOpen(true);
     };
 
@@ -41,22 +50,11 @@ const ProgressionSection = () => {
         setProgressionToAssign(null);
     };
 
-    const handleEditProgression = (progression) => {
-        setModalMode('edit');
-        setSelectedProgression(progression);
-        setIsModalOpen(true);
-    };
-
-    // --- HANDLER DE SUCCÈS (refresh) ---
-    const handleSuccess = () => {
-        setIsModalOpen(false);
-        setRefreshKey(prev => prev + 1); // Permet de rafraîchir la table si besoin
-    };
-
     // --- RENDU PRINCIPAL ---
     return (
         <div style={{ marginBottom: '2rem' }}>
             <div className="card theme-transition">
+                {/* --- EN-TÊTE DU TABLEAU --- */}
                 <div className="card-header">
                     <div className='card-header-position'>
                         <h2 className="card-header-title">
@@ -72,35 +70,41 @@ const ProgressionSection = () => {
                     </div>
                 </div>
 
-                {/* TABLEAU DES PROGRESSIONS FILTRÉES PAR SESSION */}
+                {/* --- TABLEAU DES PROGRESSIONS FILTRÉES PAR SESSION --- */}
                 <div className="card-content">
                     <ProgressionTable
-                        calendarId={activeCalendarId} // ← On passe le calendarId ici (important)
+                        calendarId={activeCalendarId} // ← L’id de session active est passé à la table
                         onEdit={handleEditProgression}
-                        refreshTrigger={refreshKey}
                         onAssignTeachers={handleOpenAssignTeachersModal}
                     />
                 </div>
+
+                {/* --- MODALE ASSIGNATION FORMATEURS --- */}
                 {progressionToAssign && (
                     <AssignTeachersModal
                         isOpen={!!progressionToAssign}
                         progressionId={progressionToAssign._id}
                         onClose={handleCloseAssignTeachersModal}
+                        // Après assignation, on rafraîchit la table (RTK Query)
                         onSuccess={() => {
-                            refetch(); // RTK Query refetch de la liste des progressions
+                            refetch();
                             handleCloseAssignTeachersModal();
                         }}
                     />
                 )}
 
-                {/* MODALE CRÉATION/EDITION */}
+                {/* --- MODALE CRÉATION/EDITION PROGRESSION --- */}
                 <ProgressionModal
                     isOpen={isModalOpen}
                     mode={modalMode}
                     progressionData={selectedProgression}
                     onClose={() => setIsModalOpen(false)}
-                    onSuccess={handleSuccess}
-                    calendarId={activeCalendarId} // ← Passe aussi à la modale (pour la création)
+                    // Après création ou édition, on rafraîchit la table (RTK Query)
+                    onSuccess={() => {
+                        refetch();
+                        setIsModalOpen(false);
+                    }}
+                    calendarId={activeCalendarId}
                 />
             </div>
         </div>

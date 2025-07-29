@@ -47,6 +47,7 @@ const ProgressionModal = ({ isOpen, onClose, progressionData, mode = 'create', o
             onClose={onClose}
             onSuccess={handleSuccess}
             title={mode === 'edit' ? 'Modifier une progression' : 'Créer une progression'}
+            size='large'
         >
             {mode === 'edit' ? (
                 <ProgressionFormEdit

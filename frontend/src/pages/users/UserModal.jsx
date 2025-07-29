@@ -10,6 +10,7 @@ const UserModal = ({ mode = 'create', isOpen, onClose, userData, onSuccess }) =>
       title={isEdit ? 'Modifier un utilisateur' : 'Ajouter un utilisateur'}
       isOpen={isOpen}
       onClose={onClose}
+      size='large'
     >
       {isEdit ? (
         <UserEditForm

@@ -10,7 +10,7 @@ const diplomas = ['CAP', 'BAC', 'BP', 'BTS', 'CS'];
 const categories = ['CUIS', 'CSHCR', 'CSR', 'AC', 'ACSR', 'MHR', 'CDR', 'BAR', 'SOM'];
 const groups = ['A', 'B', 'C'];
 
-const ClassroomFormEdit = ({ classroom, onSuccess }) => {
+const ClassroomFormEdit = ({ classroom, onSuccess, onClose }) => {
   const [updateClassroom, { isLoading: isUpdating }] = useUpdateClassroomMutation();
   const { data: usersData } = useGetAllUsersQuery();
   const users = usersData?.users || [];
@@ -125,7 +125,8 @@ const ClassroomFormEdit = ({ classroom, onSuccess }) => {
         {errors.assignedTeachers && <p className="form-error">{errors.assignedTeachers.message}</p>}
       </div>
 
-      <div className="flex justify-end gap-2">
+      <div className="form-actions">
+        <button type="button" className="btn btn-muted" onClick={onClose}>Annuler</button>
         <button
           type="submit"
           className="btn btn-primary"

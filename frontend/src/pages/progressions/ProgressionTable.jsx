@@ -2,8 +2,7 @@
 
 import { useDispatch } from 'react-redux'
 import DataTable from '../../components/common/DataTable'
-import { Edit3, Trash2, UserRoundPlus} from 'lucide-react'
-import ProgressionModal from './ProgressionModal'
+import { Edit3, Trash2, UserRoundPlus } from 'lucide-react'
 import toast from 'react-hot-toast'
 import {
     useGetAllProgressionsQuery,
@@ -72,14 +71,26 @@ const ProgressionTable = ({ calendarId, onEdit, onAssignTeachers }) => { // ✅ 
             accessorKey: 'classrooms',
             header: 'Classes',
             cell: ({ row }) => {
-                const classrooms = row.original.classrooms || []
-                if (Array.isArray(classrooms)) {
-                    return classrooms.map(c =>
-                        typeof c === 'string' ? c : c?.name || c?.virtualName ||
-                            `${c?.diploma + ' ' || ''} ${c?.category + ' ' || ''}${c?.alternationNumber || ''}${c?.group + ' ' || ''}${c?.certificationSession || ''}` || 'Classe'
-                    ).join(', ')
+                const classrooms = row.original.classrooms || [];
+                if (Array.isArray(classrooms) && classrooms.length > 0) {
+                    return (
+                        <ul className="table-list-vertical">
+                            {classrooms.map((c, idx) => {
+                                if (typeof c === 'string') {
+                                    return <li key={c}>{c}</li>;
+                                }
+                                const label = c?.name
+                                    || c?.virtualName
+                                    || [c?.diploma, c?.category, c?.alternationNumber, c?.group, c?.certificationSession]
+                                        .filter(Boolean)
+                                        .join(' ')
+                                    || 'Classe';
+                                return <li key={c._id || idx}>{label}</li>;
+                            })}
+                        </ul>
+                    );
                 }
-                return 'Aucune classe'
+                return <span style={{ color: '#888' }}>Aucune classe</span>;
             }
         },
         {
@@ -88,7 +99,7 @@ const ProgressionTable = ({ calendarId, onEdit, onAssignTeachers }) => { // ✅ 
             cell: ({ row }) => {
                 const weeks = row.original.weekList || [];
                 return Array.isArray(weeks) && weeks.length
-                    ? weeks.map(w => `S${w.weekNumber} (${w.year})`).join(', ')
+                    ? weeks.map(w => `S${w.weekNumber}`).join(', ')
                     : 'Aucune';
             }
         },
@@ -96,13 +107,22 @@ const ProgressionTable = ({ calendarId, onEdit, onAssignTeachers }) => { // ✅ 
             accessorKey: 'teachers',
             header: 'Formateurs',
             cell: ({ row }) => {
-                const teachers = row.original.teachers || []
-                if (Array.isArray(teachers)) {
-                    return teachers.map(t =>
-                        typeof t === 'string' ? t : `${t?.firstname || ''} ${t?.lastname || ''}`.trim()
-                    ).join(', ')
+                const teachers = row.original.teachers || [];
+                if (Array.isArray(teachers) && teachers.length > 0) {
+                    return (
+                        <ul className='table-list-vertical'>
+                            {teachers.map((t, idx) =>
+                                <li key={typeof t === 'string' ? t : t._id || idx}>
+                                    {typeof t === 'string'
+                                        ? t
+                                        : `${t.firstname || ''} ${t.lastname || ''}`.trim()
+                                    }
+                                </li>
+                            )}
+                        </ul>
+                    );
                 }
-                return 'Non assigné'
+                return <span className='badge-info'>Pas d'assignation</span>;
             }
         }
     ]
