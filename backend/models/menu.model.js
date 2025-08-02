@@ -6,22 +6,23 @@ const menuSchema = new mongoose.Schema({
         ref: "Service",
         required: true
     },
-    items: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Item"
-    }],
-    isMenuValidate : {
+    sections: {
+        AB: [{ type: mongoose.Schema.Types.ObjectId, ref: "Item" }],
+        Entrée: [{ type: mongoose.Schema.Types.ObjectId, ref: "Item" }],
+        Plat: [{ type: mongoose.Schema.Types.ObjectId, ref: "Item" }],
+        Fromage: [{ type: mongoose.Schema.Types.ObjectId, ref: "Item" }],
+        Dessert: [{ type: mongoose.Schema.Types.ObjectId, ref: "Item" }],
+        Boisson: [{ type: mongoose.Schema.Types.ObjectId, ref: "Item" }]
+    },
+    isMenuValidate: {
         type: Boolean,
         default: false
     },
-    isRestaurant : {
-        type: Boolean, 
+    isRestaurant: {
+        type: Boolean,
         default: false
     },
-    author: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-    },
+    authors: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 }, {
     timestamps: true
 });

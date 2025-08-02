@@ -116,7 +116,7 @@ const ProgressionForm = ({ onSuccess, onClose }) => {
             </div>
 
             {/* Grille 2 colonnes responsive */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+            <div className='form-container-2col'>
                 {/* COLONNE 1 : Classes */}
                 <div>
                     <label className="label label-required">

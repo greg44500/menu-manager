@@ -24,7 +24,7 @@ const AssignTeachersModal = ({ isOpen, onClose, progressionId, onSuccess }) => {
     const [assignTeachers, { isLoading: isSubmitting }] = useAssignTeachersMutation();
 
 
-console.log("🎓 Formateurs chargés :", teacherApiData)
+    console.log("🎓 Formateurs chargés :", teacherApiData)
 
     // États séparés pour chaque spécialisation
     const [selectedCuisine, setSelectedCuisine] = useState([]);
@@ -162,157 +162,139 @@ console.log("🎓 Formateurs chargés :", teacherApiData)
             isOpen={isOpen}
             onClose={onClose}
             title="Assigner des formateurs"
-            size="lg"
         >
-            <div className="form-container">
-
-                {/* ÉTAT ACTUEL */}
+            <form className="form-container" style={{ maxWidth: 700, minWidth: 340 }}>
+                {/* Etat actuel au-dessus, sur toute la largeur */}
                 {totalInitial > 0 && (
-                    <div className="card" style={{ backgroundColor: 'var(--info-bg)', border: '1px solid var(--info)' }}>
+                    <div className="card card-summary mb-4" style={{ backgroundColor: 'var(--info-bg)', border: '1px solid var(--info)' }}>
                         <div className="card-content-form">
                             <div className="summary-header">
                                 <Users size={16} style={{ color: 'var(--info)' }} />
-                                <h4 style={{ margin: 0, color: 'var(--info)', fontSize: '0.875rem', fontWeight: '600' }}>
+                                <h4 className="card-title-form" style={{ color: 'var(--info)' }}>
                                     Formateurs actuellement assignés
                                 </h4>
                                 <span className="badge badge-info">
                                     {totalInitial} formateur{totalInitial > 1 ? 's' : ''}
                                 </span>
                             </div>
-                            <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--info)' }}>
-                                Cuisine: {initialCuisine.length} • Service: {initialService.length}
+                            <p className="field-help" style={{ color: 'var(--info)' }}>
+                                Cuisine : {initialCuisine.length} &nbsp;•&nbsp; Service : {initialService.length}
                             </p>
                         </div>
                     </div>
                 )}
 
-                {/* SECTION FORMATEURS CUISINE */}
-                <div className="form-group">
-                    <label className="label label-icon">
-                        <ChefHat size={18} />
-                        <span>Formateurs Cuisine</span>
-                        {selectedCuisine.length > 0 && (
-                            <span className="badge badge-warning">
-                                {selectedCuisine.length} sélectionné{selectedCuisine.length > 1 ? 's' : ''}
-                            </span>
-                        )}
-                    </label>
-
-                    <div className="teacher-list">
-                        {isLoading ? (
-                            <div className="loading-container">
-                                <div className="loading-spinner" />
-                                <span>Chargement...</span>
-                            </div>
-                        ) : teachersBySpecialization.cuisine.length === 0 ? (
-                            <p className="empty-state">Aucun formateur cuisine disponible</p>
-                        ) : (
-                            <div className="teacher-grid">
-                                {teachersBySpecialization.cuisine.map(teacher => {
-                                    const isSelected = selectedCuisine.includes(teacher._id);
-                                    const wasInitiallySelected = initialCuisine.includes(teacher._id);
-
-                                    return (
-                                        <label
-                                            key={teacher._id}
-                                            className={`teacher-item ${isSelected ? 'teacher-item-selected' : ''}`}
-                                        >
-                                            <input
-                                                type="checkbox"
-                                                checked={isSelected}
-                                                onChange={() => toggleCuisineTeacher(teacher._id)}
-                                                className="teacher-checkbox"
-                                            />
-                                            <span className="teacher-name">
-                                                {teacher.lastname} {teacher.firstname}
-                                                {wasInitiallySelected && (
-                                                    <span style={{
-                                                        fontSize: '0.75rem',
-                                                        color: 'var(--info)',
-                                                        marginLeft: '0.5rem'
-                                                    }}>
-                                                        (déjà assigné)
-                                                    </span>
-                                                )}
-                                            </span>
-                                            {isSelected && (
-                                                <Check size={14} className="teacher-check" />
-                                            )}
-                                        </label>
-                                    );
-                                })}
-                            </div>
-                        )}
+                {/* Grille 2 colonnes pour Cuisine/Service */}
+                <div className='form-container-2col'>
+                    {/* CUISINE */}
+                    <div className="form-group">
+                        <label className="label label-icon">
+                            <ChefHat size={18} />
+                            <span>Formateurs Cuisine</span>
+                            {selectedCuisine.length > 0 && (
+                                <span className="badge badge-warning" style={{ marginLeft: 8 }}>
+                                    {selectedCuisine.length} sélectionné{selectedCuisine.length > 1 ? 's' : ''}
+                                </span>
+                            )}
+                        </label>
+                        <div className="teacher-list">
+                            {isLoading ? (
+                                <div className="loading-container"><div className="loading-spinner" /><span>Chargement...</span></div>
+                            ) : teachersBySpecialization.cuisine.length === 0 ? (
+                                <p className="empty-state">Aucun formateur cuisine</p>
+                            ) : (
+                                <div className="teacher-grid">
+                                    {teachersBySpecialization.cuisine.map(teacher => {
+                                        const isSelected = selectedCuisine.includes(teacher._id);
+                                        const wasInitiallySelected = initialCuisine.includes(teacher._id);
+                                        return (
+                                            <label
+                                                key={teacher._id}
+                                                className={`teacher-item ${isSelected ? 'teacher-item-selected' : ''}`}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isSelected}
+                                                    onChange={() => toggleCuisineTeacher(teacher._id)}
+                                                    className="teacher-checkbox"
+                                                />
+                                                <span className="teacher-name">
+                                                    {teacher.lastname} {teacher.firstname}
+                                                    {wasInitiallySelected &&
+                                                        <span style={{
+                                                            fontSize: '0.75rem',
+                                                            color: 'var(--info)',
+                                                            marginLeft: '0.5rem'
+                                                        }}>(déjà assigné)</span>
+                                                    }
+                                                </span>
+                                                {isSelected && <Check size={14} className="teacher-check" />}
+                                            </label>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                        <p className="field-help">
+                            {teachersBySpecialization.cuisine.length} formateur{teachersBySpecialization.cuisine.length > 1 ? 's' : ''} disponible{teachersBySpecialization.cuisine.length > 1 ? 's' : ''}
+                        </p>
                     </div>
-                    <p className="field-help">
-                        {teachersBySpecialization.cuisine.length} formateur{teachersBySpecialization.cuisine.length > 1 ? 's' : ''} disponible{teachersBySpecialization.cuisine.length > 1 ? 's' : ''}
-                    </p>
+                    {/* SERVICE */}
+                    <div className="form-group">
+                        <label className="label label-icon">
+                            <Utensils size={18} />
+                            <span>Formateurs Service</span>
+                            {selectedService.length > 0 && (
+                                <span className="badge badge-info" style={{ marginLeft: 8 }}>
+                                    {selectedService.length} sélectionné{selectedService.length > 1 ? 's' : ''}
+                                </span>
+                            )}
+                        </label>
+                        <div className="teacher-list">
+                            {isLoading ? (
+                                <div className="loading-container"><div className="loading-spinner" /><span>Chargement...</span></div>
+                            ) : teachersBySpecialization.service.length === 0 ? (
+                                <p className="empty-state">Aucun formateur service</p>
+                            ) : (
+                                <div className="teacher-grid">
+                                    {teachersBySpecialization.service.map(teacher => {
+                                        const isSelected = selectedService.includes(teacher._id);
+                                        const wasInitiallySelected = initialService.includes(teacher._id);
+                                        return (
+                                            <label
+                                                key={teacher._id}
+                                                className={`teacher-item ${isSelected ? 'teacher-item-selected' : ''}`}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isSelected}
+                                                    onChange={() => toggleServiceTeacher(teacher._id)}
+                                                    className="teacher-checkbox"
+                                                />
+                                                <span className="teacher-name">
+                                                    {teacher.lastname} {teacher.firstname}
+                                                    {wasInitiallySelected &&
+                                                        <span style={{
+                                                            fontSize: '0.75rem',
+                                                            color: 'var(--info)',
+                                                            marginLeft: '0.5rem'
+                                                        }}>(déjà assigné)</span>
+                                                    }
+                                                </span>
+                                                {isSelected && <Check size={14} className="teacher-check" />}
+                                            </label>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                        <p className="field-help">
+                            {teachersBySpecialization.service.length} formateur{teachersBySpecialization.service.length > 1 ? 's' : ''} disponible{teachersBySpecialization.service.length > 1 ? 's' : ''}
+                        </p>
+                    </div>
                 </div>
 
-                {/* SECTION FORMATEURS SERVICE */}
-                <div className="form-group">
-                    <label className="label label-icon">
-                        <Utensils size={18} />
-                        <span>Formateurs Service</span>
-                        {selectedService.length > 0 && (
-                            <span className="badge badge-info">
-                                {selectedService.length} sélectionné{selectedService.length > 1 ? 's' : ''}
-                            </span>
-                        )}
-                    </label>
-
-                    <div className="teacher-list">
-                        {isLoading ? (
-                            <div className="loading-container">
-                                <div className="loading-spinner" />
-                                <span>Chargement...</span>
-                            </div>
-                        ) : teachersBySpecialization.service.length === 0 ? (
-                            <p className="empty-state">Aucun formateur service disponible</p>
-                        ) : (
-                            <div className="teacher-grid">
-                                {teachersBySpecialization.service.map(teacher => {
-                                    const isSelected = selectedService.includes(teacher._id);
-                                    const wasInitiallySelected = initialService.includes(teacher._id);
-
-                                    return (
-                                        <label
-                                            key={teacher._id}
-                                            className={`teacher-item ${isSelected ? 'teacher-item-selected' : ''}`}
-                                        >
-                                            <input
-                                                type="checkbox"
-                                                checked={isSelected}
-                                                onChange={() => toggleServiceTeacher(teacher._id)}
-                                                className="teacher-checkbox"
-                                            />
-                                            <span className="teacher-name">
-                                                {teacher.lastname} {teacher.firstname}
-                                                {wasInitiallySelected && (
-                                                    <span style={{
-                                                        fontSize: '0.75rem',
-                                                        color: 'var(--info)',
-                                                        marginLeft: '0.5rem'
-                                                    }}>
-                                                        (déjà assigné)
-                                                    </span>
-                                                )}
-                                            </span>
-                                            {isSelected && (
-                                                <Check size={14} className="teacher-check" />
-                                            )}
-                                        </label>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </div>
-                    <p className="field-help">
-                        {teachersBySpecialization.service.length} formateur{teachersBySpecialization.service.length > 1 ? 's' : ''} disponible{teachersBySpecialization.service.length > 1 ? 's' : ''}
-                    </p>
-                </div>
-
-                {/* TABLEAU DE SYNTHÈSE */}
+                {/* Synthèse équipe, sous la grille, toute la largeur */}
                 {totalSelected > 0 && (
                     <div className="card card-summary">
                         <div className="card-content-form">
@@ -325,9 +307,8 @@ console.log("🎓 Formateurs chargés :", teacherApiData)
                                     {totalSelected} formateur{totalSelected > 1 ? 's' : ''}
                                 </span>
                             </div>
-
                             <div className="summary-grid">
-                                {/* RÉSUMÉ CUISINE */}
+                                {/* Résumé cuisine */}
                                 <div className="summary-section">
                                     <div className="summary-section-header">
                                         <ChefHat size={14} />
@@ -335,20 +316,18 @@ console.log("🎓 Formateurs chargés :", teacherApiData)
                                             Cuisine ({selectedCuisine.length})
                                         </span>
                                     </div>
-                                    {selectedCuisineTeachers.length === 0 ? (
-                                        <p className="summary-empty">Aucun</p>
-                                    ) : (
-                                        <ul className="summary-list">
+                                    {selectedCuisineTeachers.length === 0
+                                        ? <p className="summary-empty">Aucun</p>
+                                        : <ul className="summary-list">
                                             {selectedCuisineTeachers.map(teacher => (
                                                 <li key={teacher._id}>
                                                     {teacher.firstname} {teacher.lastname}
                                                 </li>
                                             ))}
                                         </ul>
-                                    )}
+                                    }
                                 </div>
-
-                                {/* RÉSUMÉ SERVICE */}
+                                {/* Résumé service */}
                                 <div className="summary-section">
                                     <div className="summary-section-header">
                                         <Utensils size={14} />
@@ -356,21 +335,19 @@ console.log("🎓 Formateurs chargés :", teacherApiData)
                                             Service ({selectedService.length})
                                         </span>
                                     </div>
-                                    {selectedServiceTeachers.length === 0 ? (
-                                        <p className="summary-empty">Aucun</p>
-                                    ) : (
-                                        <ul className="summary-list">
+                                    {selectedServiceTeachers.length === 0
+                                        ? <p className="summary-empty">Aucun</p>
+                                        : <ul className="summary-list">
                                             {selectedServiceTeachers.map(teacher => (
                                                 <li key={teacher._id}>
                                                     {teacher.firstname} {teacher.lastname}
                                                 </li>
                                             ))}
                                         </ul>
-                                    )}
+                                    }
                                 </div>
                             </div>
-
-                            {/* INDICATION DES CHANGEMENTS */}
+                            {/* Indication des changements */}
                             {hasChanges && (
                                 <div style={{
                                     marginTop: '1rem',
@@ -393,7 +370,7 @@ console.log("🎓 Formateurs chargés :", teacherApiData)
                     </div>
                 )}
 
-                {/* BOUTONS */}
+                {/* Actions alignées bas droite */}
                 <div className="form-actions">
                     <button
                         type="button"
@@ -403,7 +380,6 @@ console.log("🎓 Formateurs chargés :", teacherApiData)
                     >
                         Annuler
                     </button>
-
                     <button
                         type="button"
                         onClick={handleSubmit}
@@ -415,8 +391,9 @@ console.log("🎓 Formateurs chargés :", teacherApiData)
                                 `Assigner ${totalSelected} formateur${totalSelected > 1 ? 's' : ''}`}
                     </button>
                 </div>
-            </div>
+            </form>
         </Modal>
+
     );
 };
 

@@ -10,69 +10,87 @@ const { getMondayFromWeek } = require('../utils/dateUtils')
 // @access  Admin, Manager
 // @route   GET /api/progressions/:progressionId/services
 const getServices = asyncHandler(async (req, res) => {
-  const { progressionId } = req.params;
+    const { progressionId } = req.params;
 
-  if (!mongoose.Types.ObjectId.isValid(progressionId)) {
-    res.status(400);
-    throw new Error('ID de progression invalide');
-  }
+    if (!mongoose.Types.ObjectId.isValid(progressionId)) {
+        res.status(400);
+        throw new Error('ID de progression invalide');
+    }
 
-  // Récupération de la progression et des services liés
-  const progression = await Progression.findById(progressionId)
-  .populate({
-    path: 'services.service',
-    select: 'weekNumber serviceDate classrooms teachers',
-    populate: [
-      { 
-        path: 'classrooms', 
-        select: 'diploma category alternationNumber group certificationSession'
-      },
-      { 
-        path: 'teachers', 
-        select: 'firstname lastname email specialization' 
-      }
-    ]
-  })
-  .lean({ virtuals: true })  // ← AJOUTE CETTE LIGNE
+    // Récupérer la progression et les services liés
+    const progression = await Progression.findById(progressionId)
+        .populate({
+            path: 'services.service',
+            select: 'weekNumber serviceDate classrooms teachers',
+            populate: [
+                {
+                    path: 'classrooms',
+                    select: 'diploma category alternationNumber group certificationSession'
+                },
+                {
+                    path: 'teachers',
+                    select: 'firstname lastname email specialization'
+                }
+            ]
+        })
+        .lean({ virtuals: true });
 
-  if (!progression) {
-    res.status(404);
-    throw new Error('Progression non trouvée');
-  }
-console.log('🔍 DEBUG - Progression brute:', JSON.stringify(progression, null, 2));
+    if (!progression) {
+        res.status(404);
+        throw new Error('Progression non trouvée');
+    }
 
-  const full = progression
+    // 1. Récupérer les IDs des services présents dans la progression
+    const serviceIds = (progression.services || [])
+        .filter(s => !!s.service)
+        .map(s => s.service._id);
 
-  console.log('🔍 DEBUG - Services dans progression:', full.services?.length);
-if (full.services?.[0]) {
-  console.log('🔍 DEBUG - Premier service:', JSON.stringify(full.services[0], null, 2));
-}
+    // 2. Récupérer tous les menus associés à ces services, AVEC population des sections/items
+    const menus = await Menu.find({ service: { $in: serviceIds } })
+        .populate([
+            { path: 'sections.AB', model: 'Item', select: 'name _id' },
+            { path: 'sections.Entrée', model: 'Item', select: 'name _id' },
+            { path: 'sections.Plat', model: 'Item', select: 'name _id' },
+            { path: 'sections.Fromage', model: 'Item', select: 'name _id' },
+            { path: 'sections.Dessert', model: 'Item', select: 'name _id' },
+            { path: 'sections.Boisson', model: 'Item', select: 'name _id' },
+        ])
+        .lean();
 
- const services = full.services
-.filter(s => !!s.service)
-.map(s => ({
-  _id: s.service._id,
-  weekNumber: s.weekNumber,
-  serviceDate: s.service.serviceDate,
-  classrooms: s.service.classrooms?.map(classroom => ({
-    _id: classroom._id,
-    virtualName: `${classroom.diploma}-${classroom.category}-${classroom.alternationNumber}${classroom.group}-${classroom.certificationSession}`,
-    diploma: classroom.diploma,
-    category: classroom.category
-  })) || [],
-  teachers: s.service.teachers?.map(teacher => ({
-    _id: teacher._id,
-    firstname: teacher.firstname,
-    lastname: teacher.lastname,
-    fullName: `${teacher.firstname} ${teacher.lastname}`,
-    specialization: teacher.specialization
-  })) || [],
-}));
-  res.status(200).json({
-    success: true,
-    count: services.length,
-    data: services,
-  });
+    // Map serviceId -> menu enrichi
+    const menuMap = {};
+    menus.forEach(menu => {
+        menuMap[menu.service.toString()] = menu;
+    });
+
+    // 3. Mapper les services enrichis du menu (si existe)
+    const services = (progression.services || [])
+        .filter(s => !!s.service)
+        .map(s => ({
+            _id: s.service._id,
+            weekNumber: s.weekNumber,
+            serviceDate: s.service.serviceDate,
+            classrooms: s.service.classrooms?.map(classroom => ({
+                _id: classroom._id,
+                virtualName: `${classroom.diploma}-${classroom.category}-${classroom.alternationNumber}${classroom.group}-${classroom.certificationSession}`,
+                diploma: classroom.diploma,
+                category: classroom.category
+            })) || [],
+            teachers: s.service.teachers?.map(teacher => ({
+                _id: teacher._id,
+                firstname: teacher.firstname,
+                lastname: teacher.lastname,
+                fullName: `${teacher.firstname} ${teacher.lastname}`,
+                specialization: teacher.specialization
+            })) || [],
+            menu: menuMap[s.service._id.toString()] || null, // Menu enrichi des items
+        }));
+
+    return res.status(200).json({
+        success: true,
+        count: services.length,
+        data: services,
+    });
 });
 
 

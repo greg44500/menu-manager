@@ -9,13 +9,10 @@ const itemSchema = new mongoose.Schema({
     },
     category: {
         type: String,
-        enum: ["AB", "Entrée", "Plat", "Fromage", "Dessert", "Boisson"],
+        enum: ["AB", "Entrée", "Plat", "Fromage", "Dessert", "Cocktail"],
         required: true
     },
-    author: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User", // Le formateur qui a créé l'item
-    },
+    authors: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
 
 }, {
     timestamps: true

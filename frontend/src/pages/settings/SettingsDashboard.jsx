@@ -75,7 +75,7 @@ const SettingsDashboard = () => {
             title: 'Calendriers',
             icon: <CalendarDays size={24} />,
             count: stats.calendarCount,
-            variant: 'info',
+            variant: 'success',
             section: 'calendrier'
         }
     ]

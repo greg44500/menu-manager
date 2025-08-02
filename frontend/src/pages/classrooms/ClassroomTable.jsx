@@ -102,7 +102,8 @@ const ClassroomTable = ({ onEdit }) => {
     }
 
     return (
-        <div className="card theme-transition">
+        <>
+
             <DataTable
                 columns={columns}
                 data={classrooms}
@@ -120,7 +121,7 @@ const ClassroomTable = ({ onEdit }) => {
                     onSuccess={refetch}
                 />
             )}
-        </div>
+        </>
     )
 }
 

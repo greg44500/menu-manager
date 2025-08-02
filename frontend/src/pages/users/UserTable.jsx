@@ -126,7 +126,7 @@ const UserTable = () => {
     a.lastname.localeCompare(b.lastname)
   )
   return (
-    <div className="card theme-transition">
+    <>
       <DataTable
         columns={columns}
         data={sortedUSers}
@@ -142,7 +142,7 @@ const UserTable = () => {
         userData={selectedUser}
         onSuccess={refetch}
       />
-    </div>
+    </>
   )
 }
 

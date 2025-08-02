@@ -19,23 +19,28 @@ const SessionSelector = () => {
 
   // Liste des sessions (calendriers)
   const calendars = useMemo(() => data?.calendars || [], [data]);
+  // 👉 **Filtre les sessions actives uniquement**
+  const activeCalendars = useMemo(
+    () => calendars.filter(c => c.active),
+    [calendars]
+  );
 
   // Sélection initiale (si aucune session active, sélectionne la première dispo)
   useEffect(() => {
-    if (!activeCalendarId && calendars.length > 0) {
+    if (!activeCalendarId && activeCalendars.length > 0) {
       dispatch(
         setActiveCalendar({
-          id: calendars[0]._id,
-          label: calendars[0].label,
+          id: activeCalendars[0]._id,
+          label: activeCalendars[0].label,
         })
       );
     }
-  }, [activeCalendarId, calendars, dispatch]);
+  }, [activeCalendarId, activeCalendars, dispatch]);
 
   // Handler sur le changement de select
   const handleChange = (e) => {
     const selectedId = e.target.value;
-    const selectedCalendar = calendars.find((c) => c._id === selectedId);
+    const selectedCalendar = activeCalendars.find((c) => c._id === selectedId);
     if (selectedCalendar) {
       dispatch(
         setActiveCalendar({
@@ -60,7 +65,7 @@ const SessionSelector = () => {
         onChange={handleChange}
         className="session-select"
       >
-        {calendars.map((calendar) => (
+        {activeCalendars.map((calendar) => (
           <option key={calendar._id} value={calendar._id}>
             {calendar.label}
           </option>

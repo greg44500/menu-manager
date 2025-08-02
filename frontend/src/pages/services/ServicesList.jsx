@@ -1,23 +1,14 @@
-import ServiceSection from "./ServiceSection"
+// ServicesList.jsx
+// Point d'entrée de la page Services. Affiche le titre et le composant principal ServiceSection.
+// Conserve un code minimal, réutilisable.
 
-const ServicesList = () => {
-  return (
-    <div>
-      <h1 style={{
-        fontSize: '2rem',
-        fontWeight: '600',
-        color: 'var(--primary)',
-        marginBottom: '1rem'
-      }}>
-        Gestion des Services
-      </h1>
-      <div className="card">
-        <div className="card-content">
-          <ServiceSection />
-        </div>
-      </div>
-    </div>
-  )
-}
+import ServiceSection from './ServiceSection'
+
+const ServicesList = () => (
+  <div>
+    <h1 className="title">Gestion des services</h1>
+    <ServiceSection />
+  </div>
+)
 
 export default ServicesList

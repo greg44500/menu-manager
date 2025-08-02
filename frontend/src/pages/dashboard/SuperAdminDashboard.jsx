@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useGetAllUsersQuery } from '../../store/api/usersApi'
-import { useGetAllProgressionsQuery } from '../../store/api/progressionsApi' // ✅ AJOUT
+import { useGetAllProgressionsQuery } from '../../store/api/progressionsApi'
 // import { useGetAllClassroomsQuery } from '../../store/api/classroomsApi'
 import { useGetDashboardStatsQuery } from '../../store/api/dashboardApi'
 import StatCard from '../../components/common/StatCard'
@@ -27,7 +27,7 @@ const SuperAdminDashboard = () => {
 
   const { user: currentUser } = useSelector(state => state.auth)
 
-  // ✅ AJOUT : Récupération de la session active
+  //  AJOUT : Récupération de la session active
   const activeCalendarId = useSelector(state => state.calendarSession?.activeCalendarId)
 
   const usersQuery = useGetAllUsersQuery(undefined, {
@@ -35,7 +35,7 @@ const SuperAdminDashboard = () => {
     refetchOnMountOrArgChange: true
   })
 
-  // ✅ AJOUT : Query des progressions pour la session active
+  //  AJOUT : Query des progressions pour la session active
   const progressionsQuery = useGetAllProgressionsQuery(activeCalendarId, {
     refetchOnMountOrArgChange: true,
     skip: !activeCalendarId
@@ -57,7 +57,7 @@ const SuperAdminDashboard = () => {
   const usersLoading = usersQuery?.isLoading;
   const usersError = usersQuery?.error;
 
-  // ✅ CALCUL : Nombre de progressions pour la session active
+  //  CALCUL : Nombre de progressions pour la session active
   const activeSessionProgressionsCount = (() => {
     if (!activeCalendarId) return 0
     if (progressionsQuery.isLoading) return 0
@@ -128,7 +128,7 @@ const SuperAdminDashboard = () => {
         Tableau de Bord Administrateur
       </h1>
 
-      {/* 🟦 STATISTIQUES GÉNÉRALES */}
+      {/* STATISTIQUES GÉNÉRALES */}
       <div className="card" style={{ marginBottom: '2rem' }}>
         <div className="card-header">
           <h2 style={{
@@ -163,7 +163,7 @@ const SuperAdminDashboard = () => {
               clickable
               variant="info"
             />
-            {/* ✅ FIX : StatCard avec count de la session active */}
+            {/*  FIX : StatCard avec count de la session active */}
             <StatCard
               title="Progressions"
               count={activeCalendarId ? activeSessionProgressionsCount : (stats?.progressionsCount || 0)}
@@ -185,7 +185,7 @@ const SuperAdminDashboard = () => {
         </div>
       </div>
 
-      {/* 🧩 SECTION DYNAMIQUE AFFICHÉE SELON LA STATCARD */}
+      {/*  SECTION DYNAMIQUE AFFICHÉE SELON LA STATCARD */}
       {activeSection && (
         <div className="mt-6">
           <DashboardSection
@@ -203,7 +203,7 @@ const SuperAdminDashboard = () => {
         </div>
       )}
 
-      {/* ⚡ MODALE AJOUT UTILISATEUR */}
+      {/*  MODALE AJOUT UTILISATEUR */}
       {showUserModal && (
         <UserModal
           isOpen={true}
@@ -212,13 +212,13 @@ const SuperAdminDashboard = () => {
           onSuccess={() => {
             setShowUserModal(false);
             refetch();
-            // ✅ AJOUT : Refresh des progressions aussi
+            //  AJOUT : Refresh des progressions aussi
             if (progressionsQuery.refetch) progressionsQuery.refetch();
           }}
         />
       )}
 
-      {/* ⚡ MODALE AJOUT/ÉDITION CLASSE */}
+      {/*  MODALE AJOUT/ÉDITION CLASSE */}
       {showClassroomModal && (
         <ClassroomModal
           isOpen
@@ -232,13 +232,13 @@ const SuperAdminDashboard = () => {
             setShowClassroomModal(false);
             setEditingClassroom(null);
             refetch();
-            // ✅ AJOUT : Refresh des progressions aussi
+            //  AJOUT : Refresh des progressions aussi
             if (progressionsQuery.refetch) progressionsQuery.refetch();
           }}
         />
       )}
 
-      {/* 🔍 INFOS DE DEBUG */}
+      {/* 🔍 INFOS DE DEBUG
       <div className="card" style={{ marginBottom: '2rem' }}>
         <div className="card-header">
           <h2 style={{
@@ -274,7 +274,7 @@ const SuperAdminDashboard = () => {
             <p><strong>Current User:</strong> {currentUser?.firstname} {currentUser?.lastname}</p>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   )
 }
