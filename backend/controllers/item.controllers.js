@@ -1,48 +1,53 @@
 const asyncHandler = require("express-async-handler");
 const mongoose = require("mongoose");
 const Item = require("../models/item.model");
-const { validateObjectId } = require("../helpers/user.helper");
+const normalizeName = require("../helpers/normalizeName");
+const { isValidObjectId } = require("../helpers/user.helper");
 const UserModel = require("../models/user.model");
 // Ajout du modèle d'historique pour le suivi et la traçabilité
 const ItemHistory = require("../models/history.model");
 
 /**
- * @desc    Créer un nouvel item (unique)
+ * @desc    Créer un nouvel item (unicité avancée sur nom, normalisation et singulier/pluriel)
  * @route   POST /api/items
  * @method  POST
  * @access  Privé (formateur assigné/remplaçant, manager, admin)
- * ----------- Bloc création item -----------
  */
 const createItem = asyncHandler(async (req, res) => {
+    // === 1. Extraction et vérification des champs requis ===
     const { name, category } = req.body;
 
-    // Vérification des champs obligatoires
     if (!name || !category) {
         res.status(400);
         throw new Error("Tous les champs sont requis.");
     }
 
-    // Vérifier l'unicité de l'item
-    const itemExists = await Item.findOne({ name: name.trim() });
+    // === 2. Normalisation du nom (casse, accents, espaces, pluriel) via helper ===
+    const nameNormalized = normalizeName(name);
+
+    // === 3. Vérification unicité sur le champ normalisé ===
+    const itemExists = await Item.findOne({ nameNormalized });
     if (itemExists) {
         res.status(400);
-        throw new Error("Cet item existe déjà.");
+        throw new Error(
+            "Cet item existe déjà (même nom, insensible à la casse, aux accents, au pluriel et aux espaces)."
+        );
     }
 
-    // Création de l'item avec gestion co-auteurs (toujours tableau)
+    // === 4. Création de l'item (enregistrement du nom normalisé pour les futures vérifications) ===
     const item = await Item.create({
         name: name.trim(),
+        nameNormalized,
         category,
-        authors: [req.user.id]
+        authors: [req.user.id],
     });
 
-    // Ajout de l'item à l'historique du user
-    await UserModel.findByIdAndUpdate(
-        req.user.id,
-        { $push: { createdItemsMenus: item._id } }
-    );
+    // === 5. Mise à jour de l'historique de l'utilisateur ===
+    await UserModel.findByIdAndUpdate(req.user.id, {
+        $push: { createdItemsMenus: item._id },
+    });
 
-    // Traçabilité : log de création dans ItemHistory
+    // === 6. Traçabilité : log dans ItemHistory (pour audit/rollback) ===
     await ItemHistory.create({
         entity: item._id,
         entityType: "item",
@@ -50,9 +55,10 @@ const createItem = asyncHandler(async (req, res) => {
         author: req.user.id,
         date: new Date(),
         changes: { ...item._doc },
-        comment: "Création de l'item"
+        comment: "Création de l'item",
     });
 
+    // === 7. Réponse à l'API (succès) ===
     res.status(201).json(item);
 });
 
@@ -100,7 +106,7 @@ const getItemsByUsers = asyncHandler(async (req, res) => {
  */
 const getItemById = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    if (!validateObjectId(id)) {
+    if (!isValidObjectId(id)) {
         res.status(400);
         throw new Error("ID invalide.");
     }
@@ -177,51 +183,63 @@ const updateItem = asyncHandler(async (req, res) => {
 });
 
 /**
- * @desc    Supprimer un item (seul un admin, manager ou co-auteur peut le faire)
+ * @desc    Supprime un item (superAdmin, manager ou co-auteur uniquement)
  * @route   DELETE /api/items/:id
- * @method  DELETE
- * @access  Privé (admin, manager, co-auteur)
- * ----------- Bloc suppression -----------
+ * @access  Privé (superAdmin, manager, co-auteur)
  */
 const deleteItem = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    if (!validateObjectId(id)) {
-        res.status(400);
-        throw new Error("ID invalide.");
-    }
-    const item = await Item.findById(id);
-    if (!item) {
-        res.status(404);
-        throw new Error("Item non trouvé.");
+
+    // 1. Validation de l'ID MongoDB
+    if (!isValidObjectId(id)) {
+        return res.status(400).json({ message: "ID d'item invalide." });
     }
 
-    // Vérification des droits de suppression
+    // 2. Recherche de l'item à supprimer
+    const item = await Item.findById(id);
+    if (!item) {
+        return res.status(404).json({ message: "Item non trouvé." });
+    }
+
+    // 3. Vérification des droits : superAdmin, manager ou co-auteur
+    const currentUserId = req.user.id?.toString() || req.user._id?.toString();
+    const isCoAuthor = Array.isArray(item.authors) && item.authors.some(authorId =>
+        authorId?.toString() === currentUserId
+    );
     const isAllowed =
         req.user.role === "superAdmin" ||
         req.user.role === "manager" ||
-        (item.authors && item.authors.map(a => a.toString()).includes(req.user.id));
+        isCoAuthor;
+
     if (!isAllowed) {
-        res.status(403);
-        throw new Error("Accès refusé.");
+        return res.status(403).json({ message: "Accès refusé. Droits insuffisants." });
     }
 
-    // Traçabilité : log de suppression avant la suppression effective
-    await ItemHistory.create({
-        entity: item._id,
-        entityType: "item",
-        action: "delete",
-        author: req.user.id,
-        date: new Date(),
-        changes: { ...item._doc },
-        comment: "Suppression de l'item"
-    });
+    // 4. Historique : log avant suppression effective (erreur non bloquante)
+    try {
+        await ItemHistory.create({
+            entity: item._id,
+            entityType: "item",
+            action: "delete",
+            author: currentUserId,
+            date: new Date(),
+            changes: { ...item._doc },
+            comment: "Suppression de l'item"
+        });
+    } catch (err) {
+        // Le log d'historique ne doit pas bloquer la suppression : log côté serveur
+        console.error(`[ItemHistory] Erreur lors du log de suppression (item ${id}):`, err);
+    }
 
-    await item.deleteOne();
-    res.status(200).json({
-        message: "Item supprimé avec succès."
-    });
+    // 5. Suppression effective de l'item
+    try {
+        await item.deleteOne();
+        return res.status(200).json({ message: "Item supprimé avec succès." });
+    } catch (err) {
+        console.error(`[Item] Erreur lors de la suppression (item ${id}):`, err);
+        return res.status(500).json({ message: "Erreur serveur lors de la suppression de l'item." });
+    }
 });
-
 module.exports = {
     createItem,
     getAllItems,

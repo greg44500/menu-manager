@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Save, TrendingUp } from 'lucide-react'
+// ⚡️ Utilise bien la version ESM de ton helper côté frontend !
+import { normalizeName } from '@/utils/normalizeName'
 
 const SmartAutocomplete = ({
     category,
@@ -18,7 +20,7 @@ const SmartAutocomplete = ({
     const inputRef = useRef(null)
     const listRef = useRef(null)
 
-    // Recherche floue très simple
+    // Recherche floue simple
     const fuzzyMatch = (text, pattern) => {
         let patternIndex = 0
         for (let i = 0; i < text.length && patternIndex < pattern.length; i++) {
@@ -29,8 +31,18 @@ const SmartAutocomplete = ({
         return patternIndex === pattern.length
     }
 
-    // Items filtrés (suggestions)
+    // ========================
+    // Bloc logique métier : Détection d'un item existant (nom normalisé + catégorie)
+    // ========================
     const searchTerm = inputValue.trim().toLowerCase()
+    const normalizedSearchTerm = normalizeName(inputValue)
+
+    const itemExists = items.some(item =>
+        item.category === category &&
+        normalizeName(item.name) === normalizedSearchTerm
+    )
+
+    // Filtre suggestions (hors items sélectionnés et non strict sur la casse)
     const filteredItems = items
         .filter(item => {
             if (!item?.name) return false
@@ -43,11 +55,6 @@ const SmartAutocomplete = ({
             return fuzzyMatch(itemName, searchTerm)
         })
         .slice(0, 8)
-
-    const itemExists = items.some(item =>
-        item?.name?.toLowerCase().trim() === searchTerm &&
-        item.category === category
-    )
 
     // Sélection d'un item
     const handleSelectItem = (item) => {
@@ -62,9 +69,10 @@ const SmartAutocomplete = ({
         }, 300)
     }
 
-    // Création d'un nouvel item
+    // Création d'un nouvel item avec blocage anti-doublon
     const handleCreateItem = async () => {
         const trimmedValue = inputValue.trim()
+        // Utilise la logique anti-doublon avec normalizeName et category !
         if (!trimmedValue || itemExists || isCreating) return
         setIsCreating(true)
         try {
@@ -80,7 +88,7 @@ const SmartAutocomplete = ({
         }
     }
 
-    // Gestion clavier
+    // Gestion clavier (prend en compte le blocage création)
     const handleKeyDown = (e) => {
         if (!isOpen) {
             if (e.key === 'ArrowDown') {
@@ -195,7 +203,7 @@ const SmartAutocomplete = ({
                         </div>
                     ))}
 
-                    {/* Création d'un nouvel item */}
+                    {/* Création d'un nouvel item : BLOQUÉ si doublon */}
                     {searchTerm && !itemExists && (
                         <div
                             className={
@@ -214,10 +222,10 @@ const SmartAutocomplete = ({
                         </div>
                     )}
 
-                    {/* States d'absence */}
+                    {/* States d'absence ou doublon */}
                     {filteredItems.length === 0 && itemExists && (
-                        <div className="autocomplete-empty">
-                            Cet item existe déjà !
+                        <div className="autocomplete-empty autocomplete-error">
+                            Cet item existe déjà&nbsp;!
                         </div>
                     )}
                     {filteredItems.length === 0 && !itemExists && searchTerm && (

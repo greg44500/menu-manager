@@ -16,7 +16,7 @@ import DashboardRouter from '../pages/dashboard/DashboardRouter'
 import SuperAdminDashboard from '../pages/dashboard/SuperAdminDashboard'
 import DashboardManager from '../pages/dashboard/DashboardManager'
 import DashboardUser from '../pages/dashboard/DashboardUser'
-import ClassroomList from '../pages/classrooms/ClassroomList'
+import ItemList from '../pages/items/ItemList'
 import ProgressionList from '../pages/services/ServicesList'
 import UserList from '../pages/users/UserList'
 import MenuList from '../pages/menus/MenuList'
@@ -101,16 +101,16 @@ export const router = createBrowserRouter([
         element: <ChangePassword />
       },
 
-      // // GESTION DES CLASSES (superAdmin et manager uniquement)
-      // {
-      //   path: 'classrooms',
-      //   element: (
-      //     <ProtectedRoute requiredRoles={['superAdmin', 'manager']}>
-      //       <ClassroomList />
-      //     </ProtectedRoute>
-      //   )
-      // },
-      // GESTION DES SeRVICES (accessible Admin et Manager)
+      // // GESTION DES ITEMS (superAdmin et manager uniquement)
+      {
+        path: 'Items',
+        element: (
+          <ProtectedRoute requiredRoles={['superAdmin', 'manager']}>
+            <ItemList />
+          </ProtectedRoute>
+        )
+      },
+      // GESTION DES SERVICES (accessible Admin et Manager)
       {
         path: 'services',
         element: (

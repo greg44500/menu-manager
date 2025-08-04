@@ -1,14 +1,17 @@
 import { useState, useMemo } from 'react'
+import { useSelector } from 'react-redux'
 import { useGetAllUsersQuery, useDeleteUserMutation } from '../../store/api/usersApi'
-import { Trash2, Edit3, ChefHat, Utensils } from 'lucide-react'
+import { Trash2, Edit3, ChefHat, Utensils, User } from 'lucide-react'
 import toast from 'react-hot-toast'
 import UserModal from './UserModal'
 import DataTable from '../../components/common/DataTable'
+
 
 const UserTable = () => {
   const { data, isLoading, error, refetch } = useGetAllUsersQuery()
   const users = data?.users || []
   const [deleteUser] = useDeleteUserMutation()
+  const currentUser = useSelector(state => state.auth.user)
 
   const [modalMode, setModalMode] = useState('create')
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -31,12 +34,15 @@ const UserTable = () => {
       header: 'Utilisateur',
       cell: ({ row }) => {
         const user = row.original
+        const isYou = currentUser && String(user._id) === String(currentUser.id) // ← Conversion
         return (
           <div className="flex items-center gap-3">
             <p className="user-info-identity">
-              {user.firstname} {user.lastname}
+              {isYou
+                ? <span className='you'>VOUS <User /></span>
+                : `${user.firstname} ${user.lastname}`
+              }
             </p>
-
           </div>
         )
       },
@@ -91,7 +97,7 @@ const UserTable = () => {
       header: 'Formateur',
       cell: ({ row }) => <span className="badge badge-neutral">{row.original.isTeacher ? 'Oui' : 'Non'}</span>,
     },
-  ], [])
+  ], [currentUser])
 
   const rowActions = (user) => (
     <div className="flex justify-end gap-2">

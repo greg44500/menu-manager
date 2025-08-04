@@ -157,10 +157,10 @@ const MenuEditorModal = ({
             }
             if (menu) {
                 await updateMenu({ id: menu._id, ...payload }).unwrap()
-                toast.success('Menu mis à jour avec succès', { duration: 3000 })
+                toast.success('Menu mis à jour avec succès')
             } else {
                 await createMenu(payload).unwrap()
-                toast.success('Menu créé avec succès', { duration: 3000 })
+                toast.success('Menu créé avec succès')
             }
             onSaved?.()
             onClose()

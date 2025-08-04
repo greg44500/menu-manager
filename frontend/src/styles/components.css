@@ -1,7 +1,13 @@
 /* ==========================================================================
    COMPONENTS.CSS - Version restaurée et optimisée
    ========================================================================== */
-
+/* === TITLE PAGE === */
+.title-primary {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 1rem;
+}
 /* === BOUTONS === */
 .btn {
   padding: 0.625rem 1.25rem;
@@ -360,6 +366,17 @@
 }
 
 /* === BADGES === */
+
+.you {
+  color: var(--primary);
+  display: flex;
+  gap: 0.5rem
+}
+
+.you:hover {
+  color:#16a34a
+}
+
 .badge {
   display: inline-flex;
   align-items: center;
@@ -428,6 +445,14 @@
 
 
 /* === INPUTS === */
+.input-search-display {
+  margin-bottom: 5px;
+  display: flex;
+  justify-content: space-between;
+  max-width: 600px;
+}
+
+
 .input {
   width: 100%;
   padding: 0.5rem 0.75rem;

@@ -6,7 +6,7 @@ import ServiceSection from './ServiceSection'
 
 const ServicesList = () => (
   <div>
-    <h1 className="title">Gestion des services</h1>
+    <h1 className="title-primary">Gestion des services</h1>
     <ServiceSection />
   </div>
 )
