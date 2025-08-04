@@ -14,6 +14,16 @@ export const classroomsApi = baseApi.injectEndpoints({
       })
     }),
 
+    // RÉCUPÉRER LES CLASSES D'UN FORMATEUR
+    getClassroomsByTeacher: builder.query({
+      query: (teacherId) => `/classrooms/teacher/${teacherId}`,
+      providesTags: ['Classroom'],
+      transformResponse: (response) => ({
+        classrooms: response.data || [],
+        count: response.count || 0,
+      })
+    }),
+
     // ➕ CRÉER UNE CLASSE
     createClassroom: builder.mutation({
       query: (data) => ({
@@ -61,5 +71,6 @@ export const {
   useCreateClassroomMutation,
   useUpdateClassroomMutation,
   useGetClassroomByIdQuery,
-  useDeleteClassroomMutation
+  useDeleteClassroomMutation,
+  useGetClassroomsByTeacherQuery
 } = classroomsApi;

@@ -5,7 +5,7 @@ export const progressionsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Récupérer toutes les progressions
     getAllProgressions: builder.query({
-     query: (calendarId) => `/progressions${calendarId ? '?calendarId=' + calendarId : ''}`,
+      query: (calendarId) => `/progressions${calendarId ? '?calendarId=' + calendarId : ''}`,
       providesTags: ['Progression'],
     }),
 
@@ -60,6 +60,13 @@ export const progressionsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Progression'],
     }),
+
+    // Progression par formateur
+    getProgressionsByTeacher: builder.query({
+      query: (teacherId) => `/progressions/teacher/${teacherId}`,
+      providesTags: ['Progression'],
+      transformResponse: (response) => response || [], // Ton contrôleur retourne directement le tableau
+    }),
   }),
 });
 
@@ -70,4 +77,5 @@ export const {
   useUpdateProgressionMutation,
   useDeleteProgressionMutation,
   useAssignTeachersMutation,
+  useGetProgressionsByTeacherQuery
 } = progressionsApi;

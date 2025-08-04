@@ -308,7 +308,7 @@ const getProgressionById = asyncHandler(async (req, res) => {
       path: 'services', //
       select: 'items isMenuValidate isRestaurant author'
     })
-    .lean();
+    .lean({ virtuals: true }); // ← Active les champs virtuels comme virtualName
 
   if (!progression) {
     res.status(404);
@@ -369,7 +369,7 @@ const getProgressionsByClassroom = asyncHandler(async (req, res) => {
       path: 'services',
       select: 'items isMenuValidate isRestaurant author'
     })
-    .lean();
+    .lean({ virtuals: true }); // ← Active les champs virtuels comme virtualName
 
   if (!progressions.length) {
     res.status(404);
@@ -397,7 +397,7 @@ const getProgressionsByTeacher = asyncHandler(async (req, res) => {
       path: 'services',
       select: 'items isMenuValidate isRestaurant author'
     })
-    .lean();
+
 
   if (!progressions.length) {
     res.status(404);

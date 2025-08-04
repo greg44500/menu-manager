@@ -11,7 +11,8 @@ const {
     getOneClassroom,
     getAllClassrooms,
     deleteOneClassroom,
-    deleteAllClassrooms
+    deleteAllClassrooms,
+    getClassroomsByTeacher
 } = require('../controllers/classroom.controllers');
 
 // CLASSROOMS CRUD 
@@ -20,6 +21,7 @@ router.put('/update-classroom/:id', updateClassroom); //authenticateUser, author
 
 router.get('/:id', getOneClassroom) //authenticateUser
 router.get('/', getAllClassrooms ); //authenticateUser
+router.get('/teacher/:teacherId', getClassroomsByTeacher); //authenticateUser
 
 // SPECIAL MANAGER AND SUPERADMIN
 router.delete('/:id',deleteOneClassroom ) //authenticateUser, authorizeRoles(['superAdmin', 'manager'])

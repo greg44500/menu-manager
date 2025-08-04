@@ -195,7 +195,7 @@ const StatCard = ({
         )}
       </div>
 
-      {/* ✨ EFFET DE BRILLANCE AU HOVER */}
+      {/*  EFFET DE BRILLANCE AU HOVER */}
       {clickable && (
         <div
           style={{

@@ -2,53 +2,66 @@
 
 import { useDispatch } from 'react-redux'
 import DataTable from '../../components/common/DataTable'
-import { Edit3, Trash2, UserRoundPlus } from 'lucide-react'
+import { Edit3, Trash2, UserRoundPlus, Eye } from 'lucide-react'
 import toast from 'react-hot-toast'
 import {
     useGetAllProgressionsQuery,
     useDeleteProgressionMutation
 } from '../../store/api/progressionsApi'
-import { baseApi } from '../../store/api/baseApi' // ✅ AJOUT : Pour l'invalidation
+import { baseApi } from '../../store/api/baseApi'
 
 /**
- * TABLEAU DES PROGRESSIONS - VERSION FONCTIONNELLE FINALE
- * -------------------------------------------------------
- * ✅ FIX : Suppression de l'import util inexistant
- * ✅ FIX : Utilisation de await refetch() pour forcer la mise à jour
- * ✅ FIX : Gestion correcte des données de réponse
+ * TABLEAU DES PROGRESSIONS - VERSION FLEXIBLE
+ * ------------------------------------------
+ * ✅ NOUVEAU : Support des données externes (dashboard user)
+ * ✅ NOUVEAU : Mode lecture seule
+ * ✅ CONSERVÉ : Toutes les fonctionnalités admin existantes
  */
-const ProgressionTable = ({ calendarId, onEdit, onAssignTeachers }) => { // ✅ AJOUT : Prop onEdit
-    const dispatch = useDispatch() // ✅ AJOUT : Pour invalider le cache
+const ProgressionTable = ({
+    // ---- NOUVELLES PROPS (dashboard user) ----
+    data: externalData,        // Données externes pré-filtrées
+    readOnly = false,          // Mode lecture seule
+    onRowClick,                // Handler pour clic sur ligne
+    emptyMessage,              // Message personnalisé si vide
 
-    // --- RTK Query : Récupère les progressions filtrées par calendarId ---
-    const { data, isLoading, error, refetch } = useGetAllProgressionsQuery(calendarId, {
-        refetchOnMountOrArgChange: true,
-        refetchOnFocus: true,
+    // ---- PROPS EXISTANTES (dashboard admin) ----
+    calendarId,                // Pour requête API
+    onEdit,
+    onAssignTeachers
+}) => {
+    const dispatch = useDispatch()
+
+    // ✅ LOGIQUE ADAPTATIVE : Requête API seulement si pas de données externes
+    const { data: apiData, isLoading, error, refetch } = useGetAllProgressionsQuery(calendarId, {
+        skip: !!externalData,                    // Skip si données fournies
+        refetchOnMountOrArgChange: !externalData,
+        refetchOnFocus: !externalData,
     })
 
-    // Adaptez selon la structure de votre réponse API
-    const progressions = data?.data || data?.progressions || data || []
+    // ✅ PRIORITÉ AUX DONNÉES EXTERNES
+    const progressions = externalData || apiData?.data || apiData?.progressions || apiData || []
+    const isExternalMode = !!externalData
 
-    // --- Mutation suppression ---
+    // --- Mutation suppression (seulement en mode admin) ---
     const [deleteProgression, { isLoading: isDeleting }] = useDeleteProgressionMutation()
 
-    // ✅ SOLUTION : Utilise la fonction du parent pour ouvrir la modal d'édition
+    // ✅ HANDLERS CONDITIONNELS
     const handleEdit = (progression) => {
-        if (onEdit) {
-            onEdit(progression) // ← Délègue au parent (ProgressionSection)
+        if (readOnly && onRowClick) {
+            onRowClick(progression)  // Mode user : ouvre modal de consultation
+        } else if (onEdit) {
+            onEdit(progression)      // Mode admin : ouvre modal d'édition
         }
     }
 
-    // ✅ SOLUTION OPTIMALE : Suppression avec cache invalidation
     const handleDelete = async (progression) => {
+        if (readOnly) return // Pas de suppression en mode lecture seule
+
         if (!window.confirm(`Supprimer la progression "${progression.title}" ?`)) return
 
         try {
             await deleteProgression(progression._id).unwrap()
-
-            // ✅ SOLUTION OPTIMALE : Invalide le cache via baseApi
             dispatch(baseApi.util.invalidateTags(['Progression']))
-
             toast.success('Progression supprimée')
         } catch (err) {
             console.error('Delete error:', err)
@@ -56,7 +69,7 @@ const ProgressionTable = ({ calendarId, onEdit, onAssignTeachers }) => { // ✅ 
         }
     }
 
-    // --- Définition des colonnes adaptées à vos données ---
+    // --- Colonnes (identiques) ---
     const columns = [
         {
             accessorKey: 'title',
@@ -94,12 +107,12 @@ const ProgressionTable = ({ calendarId, onEdit, onAssignTeachers }) => { // ✅ 
             }
         },
         {
-            accessorKey: 'weekList',
+            accessorKey: 'weekNumbers',  // ✅ CORRECTION : weekNumbers au lieu de weekList
             header: 'Semaines',
             cell: ({ row }) => {
-                const weeks = row.original.weekList || [];
+                const weeks = row.original.weekNumbers || [];
                 return Array.isArray(weeks) && weeks.length
-                    ? weeks.map(w => `S${w.weekNumber}`).join(', ')
+                    ? weeks.map(w => `S${w}`).join(', ')
                     : 'Aucune';
             }
         },
@@ -127,37 +140,55 @@ const ProgressionTable = ({ calendarId, onEdit, onAssignTeachers }) => { // ✅ 
         }
     ]
 
-    // Actions par ligne (éditer, supprimer)
-    const rowActions = (progression) => (
-        <div className="flex gap-2">
-            <button
-                className="icon-button"
-                title="Assigner des formateurs"
-                onClick={() => onAssignTeachers(progression)}
-            >
-                <UserRoundPlus size={18} />
-            </button>
-            <button
-                className="icon-button"
-                title="Éditer"
-                onClick={() => handleEdit(progression)}
-                disabled={isDeleting}
-            >
-                <Edit3 size={18} />
-            </button>
-            <button
-                className="icon-button"
-                title="Supprimer"
-                onClick={() => handleDelete(progression)}
-                disabled={isDeleting}
-            >
-                <Trash2 size={18} />
-            </button>
-        </div>
-    )
+    // ✅ ACTIONS CONDITIONNELLES SELON LE MODE
+    const rowActions = (progression) => {
+        if (readOnly) {
+            // Mode user : seulement consultation
+            return (
+                <div className="flex gap-2">
+                    <button
+                        className="icon-button"
+                        title="Voir les détails"
+                        onClick={() => handleEdit(progression)}
+                    >
+                        <Eye size={18} />
+                    </button>
+                </div>
+            )
+        }
 
-    // --- États de chargement et d'erreur ---
-    if (isLoading) {
+        // Mode admin : toutes les actions
+        return (
+            <div className="flex gap-2">
+                <button
+                    className="icon-button"
+                    title="Assigner des formateurs"
+                    onClick={() => onAssignTeachers?.(progression)}
+                >
+                    <UserRoundPlus size={18} />
+                </button>
+                <button
+                    className="icon-button"
+                    title="Éditer"
+                    onClick={() => handleEdit(progression)}
+                    disabled={isDeleting}
+                >
+                    <Edit3 size={18} />
+                </button>
+                <button
+                    className="icon-button"
+                    title="Supprimer"
+                    onClick={() => handleDelete(progression)}
+                    disabled={isDeleting}
+                >
+                    <Trash2 size={18} />
+                </button>
+            </div>
+        )
+    }
+
+    // ✅ GESTION DU LOADING (seulement en mode API)
+    if (!isExternalMode && isLoading) {
         return (
             <div className="datatable-loading">
                 <div className="loader" /> Chargement des progressions...
@@ -165,7 +196,8 @@ const ProgressionTable = ({ calendarId, onEdit, onAssignTeachers }) => { // ✅ 
         )
     }
 
-    if (error) {
+    // ✅ GESTION DES ERREURS (seulement en mode API)
+    if (!isExternalMode && error) {
         console.error('❌ Error loading progressions:', error)
         return (
             <div className="alert alert-error">
@@ -181,21 +213,25 @@ const ProgressionTable = ({ calendarId, onEdit, onAssignTeachers }) => { // ✅ 
         )
     }
 
-    // ✅ DEBUG : Vérification des données avant rendu
+    // ✅ MESSAGE VIDE PERSONNALISÉ
     if (progressions.length === 0) {
         return (
             <div className="text-center py-8">
                 <p className="text-muted mb-4">
-                    {calendarId
-                        ? `Aucune progression trouvée pour la session sélectionnée`
-                        : `Aucune session sélectionnée`
+                    {emptyMessage ||
+                        (calendarId
+                            ? `Aucune progression trouvée pour la session sélectionnée`
+                            : `Aucune session sélectionnée`
+                        )
                     }
                 </p>
-                <div className="text-sm text-muted bg-gray-50 p-3 rounded">
-                    <strong>Debug Info:</strong><br />
-                    Calendar ID: {calendarId || 'null'}<br />
-                    Data: {JSON.stringify(data, null, 2)}
-                </div>
+                {!isExternalMode && (
+                    <div className="text-sm text-muted bg-gray-50 p-3 rounded">
+                        <strong>Debug Info:</strong><br />
+                        Calendar ID: {calendarId || 'null'}<br />
+                        Data: {JSON.stringify(apiData, null, 2)}
+                    </div>
+                )}
             </div>
         )
     }
@@ -205,7 +241,7 @@ const ProgressionTable = ({ calendarId, onEdit, onAssignTeachers }) => { // ✅ 
         <DataTable
             columns={columns}
             data={progressions}
-            isLoading={isLoading}
+            isLoading={!isExternalMode && isLoading}
             rowActions={rowActions}
             pageSize={10}
         />

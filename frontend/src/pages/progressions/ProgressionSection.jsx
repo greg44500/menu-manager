@@ -52,7 +52,7 @@ const ProgressionSection = () => {
 
     // --- RENDU PRINCIPAL ---
     return (
-        <div style={{ marginBottom: '2rem' }}>
+        <div>
             <div className="card theme-transition">
                 {/* --- EN-TÊTE DU TABLEAU --- */}
                 <div className="card-header">

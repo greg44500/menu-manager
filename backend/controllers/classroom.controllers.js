@@ -46,6 +46,7 @@ const createClassroom = asyncHandler(async (req, res, next) => {
             name: virtualName
         });
 
+
         const savedClassroom = await newClassroom.save();
 
         return res.status(201).json({
@@ -128,21 +129,53 @@ const getOneClassroom = asyncHandler(async (req, res, next) => {
         data: searchClassroom
     })
 })
+
+// **@desc : Get classrooms assigned to a teacher
+// **@Method : GET /api/classrooms/teacher/:teacherId
+// **@Access : Admin, Manager, Formateur assigné
+const getClassroomsByTeacher = asyncHandler(async (req, res, next) => {
+    const { teacherId } = req.params;
+
+    // Validation de l'ID
+    if (!isValidObjectId(teacherId)) {
+        return next(new Error("ID Formateur invalide"));
+    }
+
+    // Recherche des classes où le formateur est assigné
+    const classrooms = await Classroom.find({
+        assignedTeachers: teacherId
+    })
+        .populate('assignedTeachers', 'firstname lastname email specialization')
+
+
+    // Vérification si des classes sont trouvées
+    if (!classrooms.length) {
+        res.status(404);
+        throw new Error("Aucune classe trouvée pour ce formateur");
+    }
+
+    res.status(200).json({
+        success: true,
+        count: classrooms.length,
+        data: classrooms
+    });
+});
+
 // **@desc : Get All Classrooms
 // **@Method : GET /api/classrooms/get-all-classrooms
 // ** @Access : superAdmin, manager
 const getAllClassrooms = asyncHandler(async (req, res) => {
-  const classrooms = await Classroom.find()
-  .populate('assignedTeachers', 'firstname lastname')
-    .sort({
-      createdAt: -1
-    });
+    const classrooms = await Classroom.find()
+        .populate('assignedTeachers', 'firstname lastname')
+        .sort({
+            createdAt: -1
+        });
 
-  res.status(200).json({
-  success: true,
-  count: classrooms.length,
-  classrooms,
-  });
+    res.status(200).json({
+        success: true,
+        count: classrooms.length,
+        classrooms,
+    });
 });
 
 
@@ -167,11 +200,11 @@ const deleteOneClassroom = asyncHandler(async (req, res, next) => {
     })
 })
 
-// **@desc : Delete One Classroom
+// **@desc : Delete All Classroom
 // **@Method : DELETE /api/classrooms/:id
 // ** @Access : superAdmin, manager
 const deleteAllClassrooms = asyncHandler(async (req, res, next) => {
-  
+
     const classroomToDelete = await Classroom.deleteMany()
 
     if (!classroomToDelete) {
@@ -193,4 +226,5 @@ module.exports = {
     getAllClassrooms,
     deleteOneClassroom,
     deleteAllClassrooms,
+    getClassroomsByTeacher
 }
