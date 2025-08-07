@@ -1,17 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { yupResolver } from '@hookform/resolvers/yup'
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 import Modal from '../../components/common/Modal'
+import { useSelector } from 'react-redux'
 import { useGetItemsQuery, useCreateItemMutation } from '@/store/api/itemApi'
 import { useCreateMenuMutation, useUpdateMenuMutation } from '@/store/api/menuApi'
-import { useSelector } from 'react-redux'
 import { toast } from 'react-hot-toast'
 import { menuSchema } from '../../validation/menuSchema'
-import SmartAutocomplete from '../../components/common/SmartAutocomplete'
-import ItemPill from '../../components/common/ItemPill'
-import { Utensils, LockIcon } from 'lucide-react'
+import MenuColumnEditor from './MenuColumnEditor'
+import { SECTIONS_CONFIG, SECTIONS_ORDER } from './sectionConfig'
+import { useForm } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
+import { X, GripVertical } from 'lucide-react'
 
-// -------- FONCTION UTILITAIRE EN DEHORS DU COMPOSANT --------
+// =================== FONCTION UTILITAIRE ===================
 function sectionsToIdList(sections = {}) {
     const result = {}
     Object.entries(sections).forEach(([key, items]) => {
@@ -22,18 +23,7 @@ function sectionsToIdList(sections = {}) {
     return result
 }
 
-// ----------- CONFIGURATION SECTIONS -----------
-const SECTIONS_CONFIG = {
-    'AB': { label: 'AB', color: 'var(--warning)', bgColor: 'var(--warning-bg)' },
-    'Entrée': { label: 'Entrées', color: 'var(--warning)', bgColor: 'var(--warning-bg)' },
-    'Plat': { label: 'Plats', color: 'var(--warning)', bgColor: 'var(--warning-bg)' },
-    'Fromage': { label: 'Fromages', color: 'var(--warning)', bgColor: 'var(--warning-bg)' },
-    'Dessert': { label: 'Desserts', color: 'var(--warning)', bgColor: 'var(--warning-bg)' },
-    'Boisson': { label: 'Boissons', color: 'var(--warning)', bgColor: 'var(--warning-bg)' },
-}
-const SECTIONS_ORDER = ['AB', 'Entrée', 'Plat', 'Fromage', 'Dessert', 'Boisson']
-
-// -------------- LE COMPOSANT ---------------
+// =================== COMPONENT ============================
 const MenuEditorModal = ({
     isOpen,
     onClose,
@@ -42,50 +32,27 @@ const MenuEditorModal = ({
     progression,
     onSaved,
 }) => {
+    // --- Sélecteurs Redux & Data API ---
     const { user } = useSelector(state => state.auth)
-    // Sécurise la lecture du role même si user pas encore dispo
-    const isManager = ['manager', 'superAdmin'].includes(user?.role);
-    // Sécurise progression
-    const authors = progression?.teachers || [];
-    console.log("DEBUG", authors, isManager)
-
-    // Data RTK Query
     const { data: itemsData, isLoading: itemsLoading } = useGetItemsQuery()
     const itemsList = itemsData?.items || []
     const [createItem] = useCreateItemMutation()
     const [createMenu, { isLoading: isCreating }] = useCreateMenuMutation()
     const [updateMenu, { isLoading: isUpdating }] = useUpdateMenuMutation()
 
-    // State
-    const [activeSections, setActiveSections] = useState([])
+    // --- État unifié pour le Drag & Drop ---
+    const [dragState, setDragState] = useState({
+        bank: [],
+        cuisine: [],
+        service: []
+    })
 
 
 
-    // Date service
-    const serviceDate = service?.serviceDate || null
-    const date = serviceDate
-        ? new Date(serviceDate).toLocaleDateString('fr-FR', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-        })
-        : 'date inconnue'
-
-    // Détecte les sections actives selon menu courant ou par défaut
-    const defaultSections = useMemo(() => {
-        if (menu && menu.sections) {
-            return Object.keys(menu.sections).filter(key =>
-                menu.sections[key] && menu.sections[key].length > 0
-            )
-        }
-        return ['Entrée', 'Plat', 'Dessert']
-    }, [menu])
-
-    // Formulaire RHF
+    // RHF pour la gestion du contenu des sections
     const {
         handleSubmit,
         setValue,
-        reset,
         watch,
         formState: { errors }
     } = useForm({
@@ -95,66 +62,133 @@ const MenuEditorModal = ({
         }
     })
 
-    // Set sections actives lors du changement de menu
+    // --- Initialisation du drag state ---
     useEffect(() => {
-        setActiveSections(defaultSections)
-    }, [defaultSections])
+        if (menu && menu.sections) {
+            const usedSections = Object.keys(menu.sections).filter(key =>
+                menu.sections[key] && menu.sections[key].length > 0
+            )
 
-    // Reset form lorsque menu change (édition/nouveau)
-    useEffect(() => {
-        reset({
-            sections: sectionsToIdList(menu?.sections || {}),
-        })
-    }, [menu, reset])
+            // Répartition intelligente des sections
+            const cuisineSections = []
+            const serviceSections = []
 
-    // Suivi des sections du formulaire
+            usedSections.forEach(sectionKey => {
+                // Logique de répartition basée sur le type de section
+                if (['Entrée', 'Plat', 'Fromage'].includes(sectionKey)) {
+                    cuisineSections.push(sectionKey)
+                } else if (['AB', 'Dessert', 'Boisson'].includes(sectionKey)) {
+                    serviceSections.push(sectionKey)
+                } else {
+                    // Par défaut, on met dans cuisine
+                    cuisineSections.push(sectionKey)
+                }
+            })
+
+            // Sections disponibles dans la banque
+            const bankSections = SECTIONS_ORDER.filter(key => !usedSections.includes(key))
+
+            setDragState({
+                bank: bankSections,
+                cuisine: cuisineSections,
+                service: serviceSections
+            })
+        } else {
+            // État initial pour un nouveau menu
+            setDragState({
+                bank: SECTIONS_ORDER.filter(key => !['Entrée', 'Plat', 'Dessert'].includes(key)),
+                cuisine: ['Entrée', 'Plat'],
+                service: ['Dessert']
+            })
+        }
+    }, [menu])
+
+    // --- RHF: suivi dynamique des items ---
     const sectionsValue = watch('sections')
     const formSections = useMemo(() => sectionsValue || {}, [sectionsValue])
 
-    // Ajouter/enlever une section
-    const handleSectionToggle = (sectionKey) => {
-        setActiveSections(prev => {
-            const newSections = prev.includes(sectionKey)
-                ? prev.filter(s => s !== sectionKey)
-                : [...prev, sectionKey]
-            // Nettoyage des items si la section est désactivée
-            if (!newSections.includes(sectionKey)) {
-                setValue(`sections.${sectionKey}`, [])
-            }
-            return newSections
-        })
+    // ===================== DRAG & DROP AMÉLIORÉ =======================
+    const handleDragEnd = (result) => {
+        const { source, destination } = result
+        // Note: draggableId est disponible dans result si besoin pour du debug
+        // console.log('Dragging:', result.draggableId)
+
+        // Pas de destination = annulation du drag
+        if (!destination) return
+
+        // Même position = pas de changement
+        if (
+            source.droppableId === destination.droppableId &&
+            source.index === destination.index
+        ) return
+
+        // Copie de l'état pour manipulation
+        const newState = { ...dragState }
+
+        // Retirer l'élément de la source
+        const sourceList = [...newState[source.droppableId]]
+        const [removed] = sourceList.splice(source.index, 1)
+        newState[source.droppableId] = sourceList
+
+        // Ajouter l'élément à la destination
+        const destList = [...newState[destination.droppableId]]
+        destList.splice(destination.index, 0, removed)
+        newState[destination.droppableId] = destList
+
+        // Mettre à jour l'état
+        setDragState(newState)
+
+        // Si on retire une section d'une colonne, réinitialiser ses items
+        if (source.droppableId !== 'bank' && destination.droppableId === 'bank') {
+            setValue(`sections.${removed}`, [])
+        }
     }
 
-    // Mise à jour d'une section
+    // ===================== SUPPRESSION DE SECTION ======================
+    const handleRemoveSection = (columnId, sectionKey) => {
+        setDragState(prev => ({
+            ...prev,
+            [columnId]: prev[columnId].filter(key => key !== sectionKey),
+            bank: [...prev.bank, sectionKey].sort((a, b) =>
+                SECTIONS_ORDER.indexOf(a) - SECTIONS_ORDER.indexOf(b)
+            )
+        }))
+        // Réinitialiser les items de cette section
+        setValue(`sections.${sectionKey}`, [])
+    }
+
+    // ===================== GESTION DES ITEMS ======================
     const handleSectionItemsChange = (sectionKey, items) => {
         setValue(`sections.${sectionKey}`, items)
     }
 
-    // Création d'item
     const handleCreateItem = async (name, category) => {
         try {
-            const newItem = await createItem({ name: name.trim(), category }).unwrap()
-            toast.success(`"${name}" ajouté avec succès`)
-            return newItem._id
+            const result = await createItem({ name, category }).unwrap()
+            toast.success(`Item "${name}" créé`)
+            return result._id
         } catch (error) {
-            toast.error(error?.data?.message || "Erreur lors de la création")
-            console.error('Erreur création item:', error)
+            toast.error('Erreur lors de la création')
+            console.log(error)
             return null
         }
     }
 
-    // Soumission du formulaire
+    // ===================== SOUMISSION DU FORMULAIRE =======================
     const onSubmit = async (data) => {
         try {
-            const SECTIONS_KEYS = ["AB", "Entrée", "Plat", "Fromage", "Dessert", "Boisson"]
+            // Construire les sections avec tous les items
             const sectionsPayload = {}
-            SECTIONS_KEYS.forEach(sectionKey => {
+            SECTIONS_ORDER.forEach(sectionKey => {
                 sectionsPayload[sectionKey] = data.sections?.[sectionKey] || []
             })
+
             const payload = {
                 serviceId: service._id,
                 sections: sectionsPayload,
             }
+            console.log('menu', payload)
+
             if (menu) {
                 await updateMenu({ id: menu._id, ...payload }).unwrap()
                 toast.success('Menu mis à jour avec succès')
@@ -162,149 +196,252 @@ const MenuEditorModal = ({
                 await createMenu(payload).unwrap()
                 toast.success('Menu créé avec succès')
             }
+
             onSaved?.()
             onClose()
         } catch (error) {
             toast.error(error?.data?.message || 'Erreur lors de la sauvegarde')
             console.error('Erreur soumission:', error)
+
         }
     }
 
-    // Stats dynamiques
-    const menuStats = useMemo(() => {
-        let totalItems = 0
-        const sectionCounts = {}
-        activeSections.forEach(sectionKey => {
-            const items = formSections[sectionKey] || []
-            sectionCounts[sectionKey] = items.length
-            totalItems += items.length
-        })
-        return { totalItems, sectionCounts }
-    }, [activeSections, formSections])
 
+
+    //  Filtrage des formateurs 
+    const cuisineTeacher = progression?.teachers?.find(t => t.specialization === 'cuisine')
+    const serviceTeacher = progression?.teachers?.find(t => t.specialization === 'service')
+
+    // ===================== RENDER ===========================
     return (
         <Modal
             isOpen={isOpen}
             onClose={onClose}
             title={
                 <div className="menu-modal-title">
-                    {menu ? `Modifier le menu du ${date}` : `Créer le menu du ${date}`}
+                    {menu ? "Modifier le menu" : "Créer le menu"}
                 </div>
             }
+            size="large"
         >
-            <form className='form-container-menudashboard' onSubmit={handleSubmit(onSubmit)}>
-                <div className="form-container-dashboard">
-                    <div className="dashboard-left">
-                        <div className="dashboard-section">
-                            <div className="dashboard-section-header">
-                                <h3 className="dashboard-section-title">Composition du Menu</h3>
-                            </div>
-                            {/* Sélecteur de sections */}
-                            <div className="section-selector">
-                                <p className="label">Sections à inclure :</p>
-                                <div className="section-chips">
-                                    {Object.entries(SECTIONS_CONFIG).map(([key, config]) => (
-                                        <button
-                                            key={key}
-                                            type="button"
-                                            onClick={() => handleSectionToggle(key)}
-                                            className={`section-chip${activeSections.includes(key) ? ' active' : ''}`}
-                                            aria-pressed={activeSections.includes(key)}
-                                            tabIndex={0}
-                                        >
-                                            <span className="section-chip-content">
-                                                {config.label}
-                                            </span>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                            {/* Sections actives et items */}
-                            <div className="active-sections">
-                                {SECTIONS_ORDER.filter(sectionKey => activeSections.includes(sectionKey)).map(sectionKey => {
-                                    const config = SECTIONS_CONFIG[sectionKey]
-                                    const sectionItems = formSections[sectionKey] || []
-                                    return (
-                                        <div key={sectionKey} className="menu-section-composer">
-                                            <div className="section-label-row">
-                                                <span className="section-label-badge">
-                                                    <span className="section-label-text">{config.label}</span>
-                                                    <span className="section-count-badge">{sectionItems.length}</span>
-                                                </span>
-                                                <div className="menu-synthesis-items">
-                                                    {sectionItems.map(itemId => {
-                                                        const item = itemsList.find(i => i._id === itemId)
-                                                        if (!item) return null
-                                                        // Contrôle de droits
-                                                        const editable = (item.authors || []).some(a => a._id === user.id)
-                                                            || user.role === 'superAdmin'
-                                                            || user.role === 'manager'
-                                                        return (
-                                                            <div key={itemId} className="menu-item-row">
-                                                                <ItemPill
-                                                                    item={item}
-                                                                    color={config.color}
-                                                                    onRemove={editable ? () => {
-                                                                        const newItems = sectionItems.filter(id => id !== itemId)
-                                                                        handleSectionItemsChange(sectionKey, newItems)
-                                                                    } : undefined}
-                                                                    showTooltip
-                                                                    disabled={!editable}
-                                                                    authors={item.authors}
-                                                                />
-                                                                {/* Auteurs */}
-                                                                {item.authors && (
-                                                                    <span className="item-authors">
-                                                                        {item.authors.map(a => (
-                                                                            <span key={a._id} className="item-author-badge">
-                                                                                {a.firstname} {a.lastname}
-                                                                            </span>
-                                                                        ))}
-                                                                    </span>
-                                                                )}
-                                                                {/* Cadenas si non éditable */}
-                                                                {!editable && (
-                                                                    <span
-                                                                        className="item-lock-icon"
-                                                                        title="Modification interdite : vous n’êtes pas l’auteur"
-                                                                    >
-                                                                        <LockIcon size={16} />
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                        )
-                                                    })}
-                                                </div>
-                                            </div>
-                                            {/* Autocomplete */}
-                                            <div className="input-group-custom">
-                                                <SmartAutocomplete
-                                                    category={sectionKey}
-                                                    items={itemsList}
-                                                    selectedItems={sectionItems}
-                                                    onChange={(items) => handleSectionItemsChange(sectionKey, items)}
-                                                    onCreateItem={handleCreateItem}
-                                                    loading={itemsLoading}
-                                                    placeholder={`Rechercher des ${config.label}...`}
-                                                    color={config.color}
-                                                    className="input-custom"
-                                                />
-                                            </div>
-                                            {/* Erreur de validation */}
-                                            {errors.sections?.[sectionKey] && (
-                                                <p className="form-error">
-                                                    {errors.sections[sectionKey]?.message}
-                                                </p>
-                                            )}
+            <form className="form-container-menudashboard" onSubmit={handleSubmit(onSubmit)}>
+                <DragDropContext onDragEnd={handleDragEnd}>
+                    {/* ====== Banque centrale des sections ====== */}
+                    <div className="section-bank-container">
+                        <h3 className='section-bank-container-title'>
+                            Sections disponibles (glissez pour utiliser)
+                        </h3>
+                        <Droppable droppableId="bank" direction="horizontal">
+                            {(provided, snapshot) => (
+                                <div
+                                    className={`section-bank ${snapshot.isDraggingOver ? 'droppable-hover' : ''}`}
+                                    ref={provided.innerRef}
+                                    {...provided.droppableProps}
+                                >
+                                    {dragState.bank.length > 0 ? (
+                                        dragState.bank.map((sectionKey, index) => (
+                                            <Draggable
+                                                key={sectionKey}
+                                                draggableId={`bank-${sectionKey}`}
+                                                index={index}
+                                            >
+                                                {(provided, snapshot) => (
+                                                    <div
+                                                        ref={provided.innerRef}
+                                                        {...provided.draggableProps}
+                                                        {...provided.dragHandleProps}
+                                                        className={`section-chip-drag ${snapshot.isDragging ? 'dragging' : ''}`}
+                                                        style={{
+                                                            ...provided.draggableProps.style,
+                                                            backgroundColor: snapshot.isDragging
+                                                                ? SECTIONS_CONFIG[sectionKey]?.color + '20'
+                                                                : 'var(--surface)',
+                                                            borderColor: SECTIONS_CONFIG[sectionKey]?.color || 'var(--border)'
+                                                        }}
+                                                    >
+                                                        <GripVertical size={14} style={{ opacity: 0.5 }} />
+                                                        <span>{SECTIONS_CONFIG[sectionKey]?.label}</span>
+                                                    </div>
+                                                )}
+                                            </Draggable>
+                                        ))
+                                    ) : (
+                                        <div style={{
+                                            padding: '1rem',
+                                            color: 'var(--text-muted)',
+                                            fontStyle: 'italic'
+                                        }}>
+                                            Toutes les sections sont utilisées
                                         </div>
-                                    )
-                                })}
-                            </div>
-                        </div>
+                                    )}
+                                    {provided.placeholder}
+                                </div>
+                            )}
+                        </Droppable>
                     </div>
-                </div>
-                {/* Actions */}
-                <div className="form-actions">
+
+                    {/* ======== Colonnes cuisine & service ========== */}
+                    <div className="menu-editor-columns">
+                        {/* --- Colonne Cuisine --- */}
+                        <Droppable droppableId="cuisine">
+                            {(provided, snapshot) => (
+                                <div
+                                    className={`menu-column ${snapshot.isDraggingOver ? 'droppable-hover' : ''}`}
+                                    ref={provided.innerRef}
+                                    {...provided.droppableProps}
+                                >
+                                    <div className="menu-column-header">
+                                        <h2 className="menu-column-title">Production Cuisine</h2>
+                                        {cuisineTeacher && (
+                                            <strong className=' badge-warning'>
+                                                {cuisineTeacher.firstname} {cuisineTeacher.lastname}
+                                            </strong>
+                                        )}
+                                    </div>
+
+                                    <div className="menu-sections-list">
+                                        {dragState.cuisine.length > 0 ? (
+                                            dragState.cuisine.map((sectionKey, index) => (
+                                                <Draggable
+                                                    key={`cuisine-${sectionKey}`}
+                                                    draggableId={`cuisine-${sectionKey}`}
+                                                    index={index}
+                                                >
+                                                    {(provided, snapshot) => (
+                                                        <div
+                                                            ref={provided.innerRef}
+                                                            {...provided.draggableProps}
+                                                            className={`menu-section-editor ${snapshot.isDragging ? 'dragging' : ''}`}
+                                                            style={{
+                                                                ...provided.draggableProps.style,
+                                                                borderColor: SECTIONS_CONFIG[sectionKey]?.color || 'var(--border)'
+                                                            }}
+                                                        >
+                                                            <div className="section-header-drag-chips">
+                                                                <div className="section-header-left" {...provided.dragHandleProps}>
+                                                                    <GripVertical size={16} style={{ opacity: 0.5 }} />
+                                                                    <span className="section-title">
+                                                                        {SECTIONS_CONFIG[sectionKey]?.label}
+                                                                    </span>
+                                                                </div>
+                                                                <button
+                                                                    type="button"
+                                                                    className="section-remove-btn"
+                                                                    onClick={() => handleRemoveSection('cuisine', sectionKey)}
+                                                                    title="Retirer cette section"
+                                                                >
+                                                                    <X size={16} />
+                                                                </button>
+                                                            </div>
+
+                                                            <MenuColumnEditor
+                                                                sectionKeys={[sectionKey]}
+                                                                formSections={formSections}
+                                                                itemsList={itemsList}
+                                                                errors={errors}
+                                                                user={user}
+                                                                onChange={handleSectionItemsChange}
+                                                                onCreateItem={handleCreateItem}
+                                                                itemsLoading={itemsLoading}
+                                                                sectionsConfig={SECTIONS_CONFIG}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </Draggable>
+                                            ))
+                                        ) : (
+                                            <div className="empty-column-state">
+                                                Glissez des sections ici
+                                            </div>
+                                        )}
+                                        {provided.placeholder}
+                                    </div>
+                                </div>
+                            )}
+                        </Droppable>
+
+                        {/* --- Colonne Service --- */}
+                        <Droppable droppableId="service">
+                            {(provided, snapshot) => (
+                                <div
+                                    className={`menu-column ${snapshot.isDraggingOver ? 'droppable-hover' : ''}`}
+                                    ref={provided.innerRef}
+                                    {...provided.droppableProps}
+                                >
+                                    <div className="menu-column-header">
+                                        <h2 className="menu-column-title">Production Service</h2>
+                                        {serviceTeacher && (
+                                            <strong className=' badge-warning'>
+                                                {serviceTeacher.firstname} {serviceTeacher.lastname}
+                                            </strong>
+                                        )}
+                                    </div>
+
+                                    <div className="menu-sections-list">
+                                        {dragState.service.length > 0 ? (
+                                            dragState.service.map((sectionKey, index) => (
+                                                <Draggable
+                                                    key={`service-${sectionKey}`}
+                                                    draggableId={`service-${sectionKey}`}
+                                                    index={index}
+                                                >
+                                                    {(provided, snapshot) => (
+                                                        <div
+                                                            ref={provided.innerRef}
+                                                            {...provided.draggableProps}
+                                                            className={`menu-section-editor ${snapshot.isDragging ? 'dragging' : ''}`}
+                                                            style={{
+                                                                ...provided.draggableProps.style,
+                                                                borderColor: SECTIONS_CONFIG[sectionKey]?.color || 'var(--border)'
+                                                            }}
+                                                        >
+                                                            <div className="section-header-drag-chips">
+                                                                <div className="section-header-left" {...provided.dragHandleProps}>
+                                                                    <GripVertical size={16} style={{ opacity: 0.5 }} />
+                                                                    <span className="section-title">
+                                                                        {SECTIONS_CONFIG[sectionKey]?.label}
+                                                                    </span>
+                                                                </div>
+                                                                <button
+                                                                    type="button"
+                                                                    className="section-remove-btn"
+                                                                    onClick={() => handleRemoveSection('service', sectionKey)}
+                                                                    title="Retirer cette section"
+                                                                >
+                                                                    <X size={16} />
+                                                                </button>
+                                                            </div>
+
+                                                            <MenuColumnEditor
+                                                                sectionKeys={[sectionKey]}
+                                                                formSections={formSections}
+                                                                itemsList={itemsList}
+                                                                errors={errors}
+                                                                user={user}
+                                                                onChange={handleSectionItemsChange}
+                                                                onCreateItem={handleCreateItem}
+                                                                itemsLoading={itemsLoading}
+                                                                sectionsConfig={SECTIONS_CONFIG}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </Draggable>
+                                            ))
+                                        ) : (
+                                            <div className="empty-column-state">
+                                                Glissez des sections ici
+                                            </div>
+                                        )}
+                                        {provided.placeholder}
+                                    </div>
+                                </div>
+                            )}
+                        </Droppable>
+                    </div>
+                </DragDropContext>
+
+                {/* ======= Actions (Annuler / Enregistrer) ========== */}
+                <div className="form-actions mt-8 flex justify-end gap-4">
                     <button
                         type="button"
                         className="btn btn-ghost"
@@ -315,13 +452,12 @@ const MenuEditorModal = ({
                     </button>
                     <button
                         type="submit"
-                        className={`btn btn-primary${(isCreating || isUpdating) ? 'btn-loading' : ''}`}
-                        disabled={isCreating || isUpdating || menuStats.totalItems === 0}
+                        className={`btn btn-primary ${(isCreating || isUpdating) ? 'btn-loading' : ''}`}
+                        disabled={isCreating || isUpdating}
                     >
                         {isCreating || isUpdating
                             ? (menu ? 'Mise à jour...' : 'Création...')
-                            : (menu ? 'Mettre à jour' : 'Créer le menu')
-                        }
+                            : (menu ? 'Mettre à jour' : 'Créer le menu')}
                     </button>
                 </div>
             </form>

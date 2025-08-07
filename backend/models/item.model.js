@@ -9,7 +9,7 @@ const itemSchema = new mongoose.Schema({
     },
     category: {
         type: String,
-        enum: ["AB", "Entrée", "Plat", "Fromage", "Dessert", "Cocktail"],
+        enum: ["AB", "Entrée", "Plat", "Fromage", "Dessert", "Boisson"],
         required: true
     },
     authors: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]

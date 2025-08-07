@@ -110,9 +110,9 @@ const ProgressionTable = ({
             accessorKey: 'weekNumbers',  // ✅ CORRECTION : weekNumbers au lieu de weekList
             header: 'Semaines',
             cell: ({ row }) => {
-                const weeks = row.original.weekNumbers || [];
+                const weeks = row.original.weekList || [];
                 return Array.isArray(weeks) && weeks.length
-                    ? weeks.map(w => `S${w}`).join(', ')
+                    ? weeks.map(w => `S${w.weekNumber || w}`).join(', ')
                     : 'Aucune';
             }
         },

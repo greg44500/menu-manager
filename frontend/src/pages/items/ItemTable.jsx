@@ -34,7 +34,7 @@ const ItemTable = () => {
 
     // Liste des catégories disponibles (à synchroniser si modif backend)
     const categories = [
-        "AB", "Entrée", "Plat", "Fromage", "Dessert", "Cocktail"
+        "AB", "Entrée", "Plat", "Fromage", "Dessert", "Boisson"
     ];
 
     // ===============================
@@ -179,10 +179,10 @@ const ItemTable = () => {
             >
                 <div>
                     <p>
-                        Êtes-vous sûr de vouloir supprimer l’item&nbsp;
-                        <b>{selectedItem?.name}</b> ?
+                        Êtes-vous sûr de vouloir supprimer l’item : 
+                        <strong className='modal-item'>{selectedItem?.name}</strong> ?
                     </p>
-                    <div className="mt-6 flex justify-end gap-3">
+                    <div className="form-actions">
                         <button className="btn btn-ghost" onClick={() => setDeleteModalOpen(false)}>
                             Annuler
                         </button>

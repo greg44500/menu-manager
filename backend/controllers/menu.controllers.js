@@ -12,7 +12,6 @@ const MenuHistory = require("../models/history.model");
  * @access  Privé (formateur assigné/remplaçant, manager, admin)
  */
 const createMenu = asyncHandler(async (req, res) => {
-    console.log('📦 Données reçues:', req.body); // Debug
 
     const { serviceId, sections } = req.body;
     const userId = req.user.id;
@@ -55,11 +54,11 @@ const createMenu = asyncHandler(async (req, res) => {
         const menu = new Menu({
             service: serviceId,
             sections: sections || {},
-            authors: [userId]
+            authors: [userId],
         });
 
         const createdMenu = await menu.save();
-        console.log('✅ Menu créé:', createdMenu._id);
+        console.log('Menu créé:', createdMenu._id);
 
         // MISE À JOUR DU SERVICE
         service.menu = createdMenu._id;
@@ -115,6 +114,81 @@ const getAllMenus = asyncHandler(async (req, res) => {
         data: menus.length ? menus : "Aucun menu à afficher"
     });
 });
+
+/**
+ * @desc    Mettre à jour une section précise d’un menu (ajout/suppression/modification des items de la section)
+ * @route   PATCH /api/menus/:id/sections/:sectionKey
+ * @method  PATCH
+ * @access  Privé (formateur assigné/remplaçant, manager, admin)
+ * @body    { items: Array<ObjectId> }  // Tableau d'IDs des items à associer à la section
+ * @returns Menu mis à jour avec la section concernée modifiée, et historique des modifications
+ */
+const patchMenuSection = async (req, res) => {
+    const { id, sectionKey } = req.params;
+    const { items } = req.body; // items: array of Item IDs
+
+    if (!Array.isArray(items)) {
+        return res.status(400).json({ message: "Le champ 'items' (tableau d'IDs d'items) est requis." });
+    }
+
+    // Récupération du menu
+    const menu = await Menu.findById(id);
+    if (!menu) {
+        return res.status(404).json({ message: "Menu non trouvé." });
+    }
+
+    // Vérification du nom de section
+    const validSections = Object.keys(menu.sections);
+    if (!validSections.includes(sectionKey)) {
+        return res.status(400).json({ message: `Section invalide. Sections possibles : ${validSections.join(', ')}` });
+    }
+
+    // Pour la traçabilité, conserver l'état avant modification
+    const oldSection = [...(menu.sections[sectionKey] || [])];
+
+    // Mise à jour de la section
+    menu.sections[sectionKey] = items;
+
+    // Ajout de l'auteur si non présent
+    const authorId = req.user.id?.toString() || req.user._id?.toString();
+    if (!menu.authors.map(a => a.toString()).includes(authorId)) {
+        menu.authors.push(authorId);
+    }
+
+    // Sauvegarde du menu
+    await menu.save();
+
+    // Log historique
+    await MenuHistory.create({
+        entity: menu._id,
+        entityType: "menu",
+        action: "update",
+        author: authorId,
+        date: new Date(),
+        changes: {
+            section: sectionKey,
+            before: oldSection,
+            after: items
+        },
+        comment: `Modification de la section '${sectionKey}'`
+    });
+
+    // Récupérer le menu mis à jour avec la population si besoin
+    const updatedMenu = await Menu.findById(menu._id)
+        .populate('service')
+        .populate({
+            path: Object.keys(menu.sections).map(k => `sections.${k}`).join(' '),
+            model: 'Item',
+            populate: { path: 'authors', select: 'firstname lastname role' }
+        })
+        .populate('authors');
+
+    res.status(200).json({
+        success: true,
+        message: `Section '${sectionKey}' mise à jour avec succès`,
+        data: updatedMenu
+    });
+};
 
 /**
  * @desc    Récupérer un menu spécifique par ID
@@ -256,5 +330,6 @@ module.exports = {
     getAllMenus,
     getMenuById,
     updateMenu,
-    deleteMenu
+    deleteMenu,
+    patchMenuSection
 };

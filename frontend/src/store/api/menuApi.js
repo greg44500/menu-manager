@@ -40,6 +40,18 @@ export const menuApi = baseApi.injectEndpoints({
             ],
         }),
 
+        //Patch une section spécifique du menu
+        patchMenuSection: builder.mutation({
+            query: ({ id, sectionKey, items }) => ({
+                url: `/menus/${id}/sections/${sectionKey}`,
+                method: 'PATCH',
+                body: { items },
+            }),
+            invalidatesTags: (result, error, { id }) => [
+                { type: 'Menus', id }, 'Menus'
+            ],
+        }),
+
         // Supprimer un menu
         deleteMenu: builder.mutation({
             query: (id) => ({
@@ -56,6 +68,7 @@ export const menuApi = baseApi.injectEndpoints({
             transformResponse: (res) => res.data || [],
         }),
     }),
+    overrideExisting: false
 })
 
 export const {
@@ -63,6 +76,7 @@ export const {
     useGetAllMenusQuery,
     useGetMenuByIdQuery,
     useUpdateMenuMutation,
+    usePatchMenuSectionMutation,
     useDeleteMenuMutation,
     useGetMenuHistoryQuery,
 } = menuApi

@@ -6,7 +6,8 @@ const {
     getAllMenus,
     getMenuById,
     updateMenu,
-    deleteMenu
+    deleteMenu,
+    patchMenuSection,
 } = require('../controllers/menu.controllers');
 
 const {
@@ -53,6 +54,15 @@ router.put('/:id', authenticateUser, onlyManagerOrSuperAdmin, updateMenu);
  */
 router.delete('/:id', authenticateUser, onlySuperAdmin, deleteMenu);
 
+/**
+ * @desc    Mettre à jour une section précise d’un menu (création ou modification des items de la section)
+ * @route   PATCH /api/menus/:id/sections/:sectionKey
+ * @method  PATCH
+ * @access  Privé (formateur assigné/remplaçant, manager, admin)
+ * @body    { items: Array<ObjectId> }  // Tableau d'IDs des items pour la section ciblée
+ * @returns Menu mis à jour (section modifiée uniquement) avec historique des modifications
+ */
+router.patch('/:id/sections/:sectionKey', patchMenuSection);//{ authenticateUser, canEditMenuItems }
 /**
  * @route   GET /api/menus/:id/history
  * @desc    Récupérer l'historique complet d'un menu (créations, modifications, suppressions)

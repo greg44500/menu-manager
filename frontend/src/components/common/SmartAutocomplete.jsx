@@ -195,11 +195,7 @@ const SmartAutocomplete = ({
                         >
                             <div className="item-content">
                                 <span className="item-name">{item.name}</span>
-                                {item.isPopular && (
-                                    <TrendingUp size={12} className="popularity-icon" />
-                                )}
                             </div>
-                            <span className="item-category">{item.category}</span>
                         </div>
                     ))}
 

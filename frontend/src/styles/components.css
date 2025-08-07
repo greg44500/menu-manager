@@ -2,6 +2,8 @@
    COMPONENTS.CSS - Version restaurée et optimisée
    ========================================================================== */
 /* === TITLE PAGE === */
+
+
 .title-primary {
   font-size: 2rem;
   font-weight: 600;
@@ -425,9 +427,16 @@
 
 /* === Session selector === */
 .session-selector {
+  color: var(--secondary-dark);
   display: flex;
   align-items: center;
   gap: 0.5em;
+  padding: 0.3em 0.9em;
+  border-radius: 0.5em;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  font-weight: 500;
+  min-width: 100px;
 }
 .session-label {
   font-weight: 500;
@@ -435,12 +444,9 @@
   color: #334155;
 }
 .session-select {
-  padding: 0.3em 0.9em;
   border-radius: 0.5em;
   background: #fff;
   border: 1px solid #d1d5db;
-  font-weight: 500;
-  min-width: 100px;
 }
 
 
@@ -655,6 +661,36 @@ font-size: 14px;
 font-weight: 500;
 }
 
+.section-selector {
+  margin-bottom: 1.5rem;
+}
+
+.active-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.menu-section-composer {
+  background: var(--surface);
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 8px rgba(60,60,60,0.08);
+  padding: 0.5rem; 
+  border: 1px solid var(--border, #eee);
+}
+
+.section-chip-content {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+}
+
+.menu-column-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 /* === FORM LABEL ICON ALIGNMENT === */
 .label-icon {
   display: flex;
@@ -749,6 +785,16 @@ font-weight: 500;
   margin: 0 auto;
   align-items: start;
 }
+
+.form-contanier-2col-menu-editor {
+   display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 950px;      /* ou 950px pour les grands formulaires */
+  margin: 0 auto;
+  align-items: start;
+}
 @media (max-width: 800px) {
   .form-container-2col {
     grid-template-columns: 1fr;
@@ -790,7 +836,10 @@ font-weight: 500;
 .form-container-menudashboard {
    max-width: 1440px;      /* ← largeur maximale du formulaire */
 }
-
+.modal-item {
+  margin-left: 1rem;
+  color: var(--primary)
+}
 .modal-content {
   padding: 1.5rem;
   max-height: calc(80vh - 120px);
@@ -888,8 +937,7 @@ font-weight: 500;
   align-items: center;
   margin: 0.25rem 0.5rem 0.25rem 0;
   position: relative;
-  border: 1px solid rgb(163, 160, 160);
-  border-radius: 3px
+  border-radius: 1rem;
 }
 
 .item-pill {
@@ -899,7 +947,7 @@ font-weight: 500;
   background: var(--pill-bg, var(--primary-pale));
   border-radius: 9999px;
   padding: 0.25rem 0.75rem;
-  font-size: 0.93em;
+  font-size: 0.8em;
   font-weight: 500;
   border: none;
   min-width: 0;
@@ -1074,10 +1122,19 @@ font-weight: 500;
 }
 .section-chips {
   display: flex;
+  justify-content: center;
   flex-wrap: wrap;
   gap: 0.75rem;
   margin-bottom: 1.5rem;
 }
+
+.section-chips-title {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
 
 .section-chip {
   display: flex;
@@ -1145,7 +1202,6 @@ font-weight: 500;
 }
 
 .input-group-custom {
-  margin-bottom: 1.4em;
   width: 100%;
 }
 
@@ -1196,12 +1252,12 @@ font-weight: 500;
 
 .autocomplete-input {
   width: 100%;
-  padding: 0.6em 1em;
+  padding: 0.2rem 1rem;
   border: 1px solid var(--accent-color);
   border-radius: 0.5em;
   background: #fff;
   color: #222;
-  font-size: 1em;
+  font-size: 0.8em;
   outline: none;
   transition: border-color 0.18s;
   box-shadow: 0 1px 4px rgba(30,30,30,0.04);
@@ -1246,6 +1302,7 @@ font-weight: 500;
 .autocomplete-create {
   border-top: 1px solid #f1efe9;
   color: var(--accent-color, #ea580c);
+  font-size: 0.8em;
   font-weight: 500;
   transition: background 0.14s, color 0.18s;
 }
@@ -1274,7 +1331,7 @@ font-weight: 500;
 
 
 .autocomplete-empty {
-  padding: 0.8em 1em;
+  padding: 0.4em 1em;
   color: #aaa;
   font-style: italic;
   text-align: left;
@@ -1287,6 +1344,7 @@ font-weight: 500;
 }
 
 .item-name {
+  font-size: 0.8em;
   font-weight: 500;
   letter-spacing: 0.01em;
 }
@@ -1307,13 +1365,6 @@ font-weight: 500;
 }
 
 /* === SESSION SELECT === */
-.session-label {
-color:var(--text-primary)
-}
-
-.session-select {
-  color: var(--secondary-dark)
-}
 
 @media (max-width: 520px) {
   .smart-autocomplete {
@@ -1385,11 +1436,6 @@ color:var(--text-primary)
   margin-bottom: 0.25rem;
 }
 
-.item-authors {
-  display: flex;
-  gap: 0.25rem;
-}
-
 .item-author-badge {
   background: #f3f4f6;
   color: #334155;
@@ -1416,6 +1462,57 @@ color:var(--text-primary)
 
 
 
+.menu-column {
+  flex: 1 1 0%;
+  min-width: 340px;
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 2px 5px #e2e8f0aa;
+  border: 1px solid #f3f4f6;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: relative;
+  transition: all 0.15s;
+}
+.menu-column.droppable-hover {
+  box-shadow: 0 4px 24px #f59e4277;
+  border-color: #f59e42;
+  background: #fffbe9;
+}
+.menu-section-editor {
+  background: #f8fafc;
+  border-radius: 0.7rem;
+  border: 1.5px solid #fdba74;   /* accent/30 */
+  padding: 1rem;
+  box-shadow: 0 1px 4px 0 #e2e8f0;
+  margin-bottom: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  
+  position: relative;
+}
+
+.menu-section-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.menu-editor-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+@media (max-width: 900px) {
+  .menu-editor-columns {
+    grid-template-columns: 1fr;
+  }
+}
 
 /* === LISTE DES FORMATEURS === */
 .teacher-list {
@@ -1915,4 +2012,259 @@ color:var(--text-primary)
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
   margin-right: 0.5rem;
+}
+
+/* === DRAG & DROP STYLES AMÉLIORÉS === */
+
+/* Container de la banque */
+.section-bank-container {
+  margin-bottom: 1ch;
+}
+
+.section-bank-container-title {
+  margin-bottom: 1rem;
+  font-size: 0.8em;
+}
+
+/* Banque de sections avec effet hover */
+.section-bank {
+  min-height: 80px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 1rem;
+  background: var(--surface-hover);
+  border: 2px dashed var(--border);
+  transition: all 0.3s ease;
+}
+
+.section-bank.droppable-hover {
+  background: var(--primary-pale);
+  border-color: var(--primary);
+  box-shadow: 0 0 20px rgba(235, 94, 40, 0.1);
+}
+
+/* Chip de section draggable */
+.section-chip-drag {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem ;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: grab;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.section-chip-drag:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.section-chip-drag.dragging {
+  cursor: grabbing;
+  opacity: 0.9;
+  transform: rotate(2deg);
+  box-shadow: 0 8px 24px rgba(235, 94, 40, 0.3);
+}
+
+/* Colonnes de menu */
+.menu-column {
+  flex: 1;
+  min-width: 350px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.menu-column.droppable-hover {
+  background: var(--primary-pale);
+  border-color: var(--primary);
+  box-shadow: 0 0 30px rgba(235, 94, 40, 0.15);
+}
+
+/* Header de colonne */
+.menu-column-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 20px
+}
+
+.menu-column-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.menu-column-teacher {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Liste des sections */
+.menu-sections-list {
+  min-height: 200px;
+}
+
+/* Section dans une colonne */
+.menu-section-editor {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.menu-section-editor:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.menu-section-editor.dragging {
+  opacity: 0.9;
+  transform: rotate(1deg);
+  box-shadow: 0 8px 24px rgba(235, 94, 40, 0.2);
+}
+
+/* Header de section */
+.section-header-drag-chips {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.section-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: grab;
+}
+
+.section-header-left:active {
+  cursor: grabbing;
+}
+
+.section-title {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+/* Bouton supprimer section */
+.section-remove-btn {
+  padding: 0.25rem;
+  background: transparent;
+  border: none;
+  border-radius: 0.375rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.section-remove-btn:hover {
+  background: var(--error-bg);
+  color: var(--error);
+  transform: rotate(360deg);
+  transition: all 0.2s ease;
+}
+
+/* État vide de colonne */
+.empty-column-state {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  border: 2px dashed var(--border);
+  border-radius: 0.5rem;
+  background: var(--surface-hover);
+}
+
+/* Animations drag */
+@keyframes dragPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.section-chip.dragging,
+.menu-section-editor.dragging {
+  animation: dragPulse 0.5s ease-in-out;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .menu-editor-columns {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .menu-column {
+    min-width: 100%;
+  }
+}
+
+.section-bank {
+  min-height: 80px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 1rem;
+  background: var(--surface-hover);
+  border: 2px dashed var(--border);
+  transition: all 0.3s ease;
+}
+
+.section-bank.droppable-hover {
+  background: var(--primary-pale);
+  border-color: var(--primary);
+  box-shadow: 0 0 20px rgba(235, 94, 40, 0.1);
+}
+
+.section-chip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.section-chip.dragging {
+  cursor: grabbing;
+  opacity: 0.9;
+  transform: rotate(2deg);
+  box-shadow: 0 8px 24px rgba(235, 94, 40, 0.3);
+  position: relative;
+  top:0;
+}
+.modal-card,
+.modal-card-large,
+.modal-card-menu {
+  position: relative;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-xl);
+  overflow: visible; /* Important pour le DnD */
+  display: flex;
+  flex-direction: column;
+  /* Animation simple sans transform */
+  animation: modalFadeIn 0.3s ease-out forwards;
+  /* Pas de transform ! */
+  transform: none !important;
 }

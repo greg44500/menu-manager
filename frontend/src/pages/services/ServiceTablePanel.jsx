@@ -8,6 +8,7 @@ import DataTable from '../../components/common/DataTable'
 import MenuEditorModal from '../menus/MenuEditorModal'
 import { useDeleteMenuMutation } from '../../store/api/menuApi'
 import { useUpdateMenuMutation } from '../../store/api/menuApi'
+import { useGetMenuByIdQuery } from '../../store/api/menuApi'
 import { toast } from 'react-hot-toast'
 /**
  * @param {Object} props
@@ -23,11 +24,14 @@ const ServiceTablePanel = ({
   onCreateService,
   onMenuSaved,
   getProgressionForService,
+
 }) => {
   // Etat local pour la modale d'édition du menu
   const [deleteMenu] = useDeleteMenuMutation();
   const [updateMenu] = useUpdateMenuMutation()
   const [editingService, setEditingService] = useState(null)
+
+
 
   // EXTERNALISATION de la fonction d’assignation
   const handleToggleRestaurant = async (menu) => {
