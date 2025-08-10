@@ -379,6 +379,54 @@ const getProgressionsByClassroom = asyncHandler(async (req, res) => {
   res.status(200).json(progressions);
 });
 
+// ** @desc    Mettre à jour uniquement la date d'un service
+// ** @route   PATCH /api/progressions/:progressionId/services/:serviceId/date
+// ** @access  Private (superAdmin & manager uniquement)
+const patchServiceDate = asyncHandler(async (req, res) => {
+    const { progressionId, serviceId } = req.params
+    const { serviceDate } = req.body
+
+    if (!serviceDate) {
+        return res.status(400).json({ success: false, message: "serviceDate est requis" })
+    }
+
+    // 1) progression existe ?
+    const progression = await Progression.findById(progressionId)
+    if (!progression) {
+        res.status(404)
+        throw new Error("Progression non trouvée")
+    }
+
+    // 2) service lié à la progression ?
+    const serviceExists = progression.services.some(s => s.service.toString() === serviceId)
+    if (!serviceExists) {
+        res.status(404)
+        throw new Error("Service non trouvé dans cette progression")
+    }
+
+    // 3) normaliser heure pour éviter décalages (optionnel)
+    const d = new Date(serviceDate)
+    if (Number.isNaN(d.getTime())) {
+        return res.status(400).json({ success: false, message: "serviceDate invalide" })
+    }
+    d.setHours(12, 0, 0, 0)
+
+    // 4) update ciblé
+    const updated = await Service.findByIdAndUpdate(
+        serviceId,
+        { $set: { serviceDate: d.toISOString() } },
+        { new: true, runValidators: true }
+    )
+
+    if (!updated) {
+        res.status(404)
+        throw new Error("Service introuvable")
+    }
+
+    console.log("✅ serviceDate mis à jour :", { id: updated._id, serviceDate: updated.serviceDate })
+    return res.status(200).json({ success: true, data: updated })
+})
+
 // @desc    Obtenir les progressions par formateur
 // @route   GET /api/progressions/teacher/:teacherId
 // @access  Admin, Manager, Formateur assigné
@@ -486,5 +534,6 @@ module.exports = {
   getAllProgressions,
   getProgressionsByClassroom,
   getProgressionsByTeacher,
-  assignTeachersToProgression
+  assignTeachersToProgression,
+  patchServiceDate
 }

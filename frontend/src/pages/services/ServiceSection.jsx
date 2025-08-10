@@ -1,4 +1,4 @@
-// ServiceSection.jsx
+// ServiceSection.jsx - VERSION CORRIGÉE
 import React, { useState, useMemo } from 'react'
 import { getISOWeek } from 'date-fns'
 import { useSelector } from 'react-redux'
@@ -9,7 +9,7 @@ import ProgressionSummaryPanel from './ProgressionSummaryPanel'
 import ServiceTablePanel from './ServiceTablePanel'
 
 const ServiceSection = () => {
-    // Etat pour la progression sélectionnée
+    // État pour la progression sélectionnée
     const [selectedProgressionId, setSelectedProgressionId] = useState(null)
 
     // Redux: session académique active
@@ -25,7 +25,8 @@ const ServiceSection = () => {
         if (!activeCalendarId) return null
         return (calendarsData?.calendars || []).find(cal => cal._id === activeCalendarId)
     }, [calendarsData, activeCalendarId])
-    // Réccupération de la semaine exacte
+    
+    // Récupération de la semaine exacte
     const startWeek = useMemo(() => {
         if (activeSession && activeSession.startDate) {
             return getISOWeek(new Date(activeSession.startDate))
@@ -34,7 +35,7 @@ const ServiceSection = () => {
         return 35
     }, [activeSession])
 
-    // Progressions filtrées par calendrier/session active (utilisation du champ .calendar !)
+    // Progressions filtrées par calendrier/session active
     const filteredProgressions = useMemo(() => {
         if (!activeCalendarId) return []
         return progressions.filter(prog =>
@@ -43,12 +44,12 @@ const ServiceSection = () => {
         )
     }, [progressions, activeCalendarId])
 
-    // Quand la session active change, on réinitialise la sélection pour éviter un id orphelin
+    // Quand la session active change, on réinitialise la sélection
     React.useEffect(() => {
         setSelectedProgressionId(null)
     }, [activeCalendarId])
 
-    // Progression actuellement sélectionnée (objet complet, toujours dans la liste filtrée !)
+    // Progression actuellement sélectionnée
     const selectedProgression = useMemo(
         () => filteredProgressions.find(p => p._id === selectedProgressionId),
         [filteredProgressions, selectedProgressionId]
@@ -56,16 +57,16 @@ const ServiceSection = () => {
 
     // Services liés à la progression sélectionnée
     const {
-        data: services = {},
+        data: servicesResponse = {},
         isLoading: loadingServices,
         refetch: refetchServices,
     } = useGetServicesByProgressionQuery(selectedProgressionId, {
         skip: !selectedProgressionId
     })
 
-    // Liste de tous les services triés par semaine (corrigé pour années scolaires décalées)
+    // Liste de tous les services triés par semaine
     const allServices = useMemo(() => {
-        const serviceList = services?.data || []
+        const serviceList = servicesResponse?.data || []
         if (!serviceList.length || !startWeek) return serviceList
 
         const rotateWeek = (w) => (
@@ -75,7 +76,7 @@ const ServiceSection = () => {
         return serviceList
             .slice()
             .sort((a, b) => rotateWeek(a.weekNumber) - rotateWeek(b.weekNumber))
-    }, [services, startWeek])
+    }, [servicesResponse, startWeek])
 
     // Semaines programmées (sans doublons)
     const uniqueWeeks = useMemo(() =>
@@ -83,14 +84,18 @@ const ServiceSection = () => {
 
     // Calculs progression/services complétés
     const totalWeeks = uniqueWeeks.length
-    const completedServices = allServices.filter(service =>
-        !!service.menu
-    ).length
+    const completedServices = allServices.filter(service => !!service.menu).length
     const progressPercentage = totalWeeks > 0 ? (completedServices / totalWeeks) * 100 : 0
 
-    // Helper pour retrouver la progression liée à un service (utile pour la modale menu)
-    const getProgressionForService = (serviceId) =>
-        filteredProgressions.find(prog =>
+    // Helper pour retrouver la progression liée à un service
+    const getProgressionForService = (serviceId) => {
+        // Si on a déjà la progression sélectionnée, on la retourne directement
+        if (selectedProgression) {
+            return selectedProgression
+        }
+        
+        // Sinon on cherche dans toutes les progressions filtrées
+        return filteredProgressions.find(prog =>
             Array.isArray(prog.services) &&
             prog.services.some(s =>
                 s.service && (
@@ -101,18 +106,38 @@ const ServiceSection = () => {
                 )
             )
         )
+    }
 
     // Callback création de service
     const handleCreateService = () => {
-        // TODO: log création service si besoin
+        console.log('Création de service pour la progression:', selectedProgressionId)
+        // TODO: Implémenter la création de service
+    }
+
+    // Callback après sauvegarde d'un menu
+    const handleMenuSaved = () => {
+        console.log('Menu sauvegardé, rafraîchissement des services...')
+        refetchServices()
     }
 
     // Chargement global
     const isLoading = loadingProgressions || loadingServices || loadingCalendars
 
+    // Debug - pour vérifier les données
+    React.useEffect(() => {
+        if (selectedProgressionId && allServices.length > 0) {
+            console.log('📊 Services chargés:', {
+                progressionId: selectedProgressionId,
+                servicesCount: allServices.length,
+                firstService: allServices[0],
+                hasProgressionId: allServices[0]?.progressionId
+            })
+        }
+    }, [selectedProgressionId, allServices])
+
     return (
         <div className="main-grid-layout-service">
-            {/* Colonne de gauche : résumé progression, infos, complétion */}
+            {/* Colonne de gauche : résumé progression */}
             <ProgressionSummaryPanel
                 progressions={filteredProgressions}
                 selectedProgressionId={selectedProgressionId}
@@ -124,13 +149,14 @@ const ServiceSection = () => {
                 progressPercentage={progressPercentage}
             />
 
-            {/* Colonne de droite : table des services, actions, modale menu */}
+            {/* Colonne de droite : table des services */}
             <ServiceTablePanel
                 allServices={allServices}
                 loading={isLoading}
                 onCreateService={handleCreateService}
-                onMenuSaved={refetchServices}
-                getProgressionForService={getProgressionForService}
+                onMenuSaved={handleMenuSaved}
+                progressionId={selectedProgressionId}  // ⚡ CORRECTION ICI
+                getProgressionForService={getProgressionForService} // ⚡ OPTIONNEL mais utile
             />
         </div>
     )

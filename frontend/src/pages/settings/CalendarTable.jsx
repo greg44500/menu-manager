@@ -5,26 +5,40 @@ import Modal from '../../components/common/Modal'
 import EditCalendarModal from './EditCalendarModal'
 import { useDeleteCalendarMutation } from '../../store/api/calendarApi'
 import toast from 'react-hot-toast'
-import { format, getISOWeek } from "date-fns"
-import { fr } from "date-fns/locale"
+import { getISOWeek } from "date-fns"
+
+
+// Helpers pour gérer les valeurs des <input type="date">
+const toInputDate = (value) => {
+  if (!value) return ''
+  const d = new Date(value)
+  // Corrige le décalage timezone pour affichage dans input date
+  const tz = d.getTimezoneOffset()
+  const local = new Date(d.getTime() - tz * 60000)
+  return local.toISOString().slice(0, 10) // yyyy-MM-dd
+}
+
+const fromInputDate = (value) => {
+  if (!value) return null
+  // Normalise à 12:00 UTC pour éviter les glissements de fuseau
+  return new Date(`${value}T12:00:00.000Z`).toISOString()
+}
 
 // TABLEAU DES CALENDRIERS SCOLAIRES (sessions)
-// --------------------------------------------
-
 const CalendarTable = ({
   calendars = [],
   isLoading = false,
   error = null,
   onDataChange = () => { },
 }) => {
-  // --- ÉTAT LOCAL POUR L'EDITION ---
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [selectedCalendar, setSelectedCalendar] = useState(null)
 
-  // --- HOOK RTK QUERY POUR SUPPRESSION ---
+  // état local pour les valeurs inline (sans toucher à l’API)
+  const [draftDates, setDraftDates] = useState({}) // { [calendarId]: { startDate: string, endDate: string } }
+
   const [deleteCalendar, { isLoading: isDeleting }] = useDeleteCalendarMutation()
 
-  // --- HANDLER METIER : SUPPRESSION ---
   const handleDelete = async (calendar) => {
     if (!window.confirm(`Supprimer le calendrier "${calendar.label}" ?`)) return
     try {
@@ -37,7 +51,6 @@ const CalendarTable = ({
     }
   }
 
-  // --- HANDLER METIER : EDITION ---
   const handleEdit = (calendar) => {
     setSelectedCalendar(calendar)
     setEditModalOpen(true)
@@ -49,46 +62,73 @@ const CalendarTable = ({
     onDataChange()
   }
 
-  // --- DEFINITION DES COLONNES ---
+  const handleInlineDateChange = (calendarId, field, value) => {
+    setDraftDates((prev) => ({
+      ...prev,
+      [calendarId]: {
+        ...(prev[calendarId] || {}),
+        [field]: value, // value est déjà au format yyyy-MM-dd
+      },
+    }))
+  }
+
   const columns = useMemo(() => [
     {
       accessorKey: 'label',
       header: 'Session',
-      cell: ({ row }) => (
+      cell: ({ row }) =>
         row.original.active ? (
-          <span className="badge-session-active badge-success">
-            {row.original.label}
-          </span>
+          <span className="badge-session-active badge-success">{row.original.label}</span>
         ) : (
-          <span>
-            {row.original.label}
-          </span>
-        )
-      ),
+          <span>{row.original.label}</span>
+        ),
     },
     {
       accessorKey: 'period',
       header: 'Période',
       cell: ({ row }) => {
-        const start = row.original.startDate ? new Date(row.original.startDate) : null
-        const end = row.original.endDate ? new Date(row.original.endDate) : null
+        const cal = row.original
+        const draft = draftDates[cal._id] || {}
+        const startInput = draft.startDate ?? toInputDate(cal.startDate)
+        const endInput = draft.endDate ?? toInputDate(cal.endDate)
+
+        const startWeek = startInput ? getISOWeek(new Date(fromInputDate(startInput))) : null
+        const endWeek = endInput ? getISOWeek(new Date(fromInputDate(endInput))) : null
+
         return (
-          <span>
-            {" du "}
-            {start && (
-              <>
-                {format(start, "dd/MM/yyyy", { locale: fr })}
-                <span className="text-xs text-gray-400 ml-1">&nbsp;<strong>(S{getISOWeek(start)})</strong></span>
-              </>
-            )}
-            {" au "}
-            {end && (
-              <>
-                {format(end, "dd/MM/yyyy", { locale: fr })}
-                <span className="text-xs text-gray-400 ml-1">&nbsp;<strong>(S{getISOWeek(end)})</strong></span>
-              </>
-            )}
-          </span>
+          <div>
+            <div>
+              <strong>Commence le :</strong>
+              <input
+                type="date"
+                className=" input input-calendar"
+                value={startInput}
+                onChange={(e) => handleInlineDateChange(cal._id, 'startDate', e.target.value)}
+                aria-label="Date de début"
+              />
+              {startInput && (
+                <span className="text-xs text-text-muted">
+                  <strong>Semaine{startWeek}</strong>
+                </span>
+              )}
+            </div>
+
+            <div>
+              <strong>Se Termine le :</strong>
+              <input
+                type="date"
+                className=" input input-calendar"
+                value={endInput}
+                onChange={(e) => handleInlineDateChange(cal._id, 'endDate', e.target.value)}
+                aria-label="Date de fin"
+              />
+              {endInput && (
+                <span className="text-xs text-text-muted">
+                  <strong>Semaine {endWeek}</strong>
+                </span>
+              )}
+            </div>
+          </div>
         )
       }
     },
@@ -102,9 +142,8 @@ const CalendarTable = ({
       header: 'Evénements',
       cell: ({ row }) => (row.original.events?.length || 0),
     },
-  ], [])
+  ], [draftDates])
 
-  // --- ACTIONS PAR LIGNE (EDIT / DELETE) ---
   const rowActions = (calendar) => (
     <div className="flex gap-2">
       <button
@@ -125,7 +164,6 @@ const CalendarTable = ({
     </div>
   )
 
-  // --- AFFICHAGE / ERREURS / LOADING ---
   if (isLoading) {
     return (
       <div className="datatable-loading">
@@ -142,7 +180,6 @@ const CalendarTable = ({
     )
   }
 
-  // --- RENDU PRINCIPAL DU TABLEAU ---
   return (
     <>
       <DataTable
@@ -153,7 +190,6 @@ const CalendarTable = ({
         pageSize={8}
       />
 
-      {/* --- MODALE D'EDITION --- */}
       {editModalOpen && selectedCalendar && (
         <Modal
           isOpen={editModalOpen}

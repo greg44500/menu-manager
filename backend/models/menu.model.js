@@ -14,6 +14,10 @@ const menuSchema = new mongoose.Schema({
         Dessert: [{ type: mongoose.Schema.Types.ObjectId, ref: "Item" }],
         Boisson: [{ type: mongoose.Schema.Types.ObjectId, ref: "Item" }]
     },
+    productionAssignment: {
+        cuisine: [String], // Ex: ['Entrée', 'Plat', 'Dessert']
+        service: [String]  // Ex: ['AB', 'Boisson', 'Fromage']
+    },
     isMenuValidate: {
         type: Boolean,
         default: false

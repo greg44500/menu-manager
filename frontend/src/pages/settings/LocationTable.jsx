@@ -51,7 +51,7 @@ const LocationTable = ({ onDataChange }) => {
     ], [])
 
     const rowActions = (location) => (
-        <div className="flex justify-end gap-2">
+        <div>
             <button className="icon-button" onClick={() => handleEdit(location)}>
                 <Edit3 size={16} />
             </button>

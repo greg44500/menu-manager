@@ -424,6 +424,37 @@
   line-height: 1rem;
   background: greenyellow;
 }
+.badge-section-menu-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;              /* indispensable en flex pour permettre le shrink */
+}
+
+.badge-section-menu {
+  font-size: 1em;
+  font-weight: 500;
+  margin-inline-end: 0.5rem;
+  flex: 0 0 auto;            /* ne pas shrink */
+}
+.badge-section-menu::after {
+  content: ":";
+  margin-inline-start: 0.2rem;
+}
+
+.badge-section-menu-content {
+  overflow: hidden;          /* requis */
+  white-space: nowrap;       /* requis */
+  text-overflow: ellipsis;   /* ✅ valeur correcte */
+  text-align: left;          /* si besoin */
+}
+
+.badge-section-menu-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  max-width: 15rem;
+}
 
 /* === Session selector === */
 .session-selector {
@@ -469,6 +500,12 @@
   font-size: 0.875rem;
   line-height: 1.25rem;
   transition: all 0.2s ease;
+}
+
+.input-calendar {
+  width: 10rem;
+  margin: 0.5rem 2rem;
+  color: var(--primary)
 }
 
 .input-classrooms {
@@ -1957,7 +1994,7 @@ font-weight: 500;
 
 .datatable-th {
   padding: 1rem 1.25rem;
-  text-align: left;
+  text-align: center;
   font-weight: 600;
   color: var(--text-secondary);
   text-transform: uppercase;
@@ -1967,12 +2004,13 @@ font-weight: 500;
 }
 
 .datatable-th-actions {
-  text-align: right;
+  text-align: center;
 }
 
 .datatable-tr {
   border-bottom: 1px solid var(--border);
   transition: background-color 0.2s ease;
+  text-align: center;
 }
 
 .datatable-tr:hover {
@@ -1982,11 +2020,11 @@ font-weight: 500;
 .datatable-td {
   padding: 1rem 1.25rem;
   color: var(--text-primary);
-  vertical-align: top;
+  vertical-align: center;
 }
 
 .datatable-td-actions {
-  text-align: right;
+  text-align: center;
 }
 
 .datatable-empty {

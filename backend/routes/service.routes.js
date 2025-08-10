@@ -7,7 +7,8 @@ const {
     getServices,
     updateServiceOrMenu,
     getServiceById,
-    deleteService
+    deleteService,
+    patchServiceDate
 } = require("../controllers/service.controllers");
 
 
@@ -20,9 +21,12 @@ router.get('/:progressionId/services', getServices);
 router.get('/:progressionId/services/:serviceId', authenticateUser, getServiceById);
 router.put('/:progressionId/services/:serviceId', authenticateUser, updateServiceOrMenu);
 router.delete('/:progressionId/services/:serviceId', authenticateUser, deleteService);
-
-
-
+router.patch(
+    '/:progressionId/services/:serviceId/date',
+    authenticateUser,
+    authorizeRoles('superAdmin', 'manager'),
+    patchServiceDate
+)
 
 router.get("/classroom/:classroomId")
 router.get("/teacher/:teacherId")

@@ -51,6 +51,13 @@ body {
   /* Améliore les performances de scroll */
   overscroll-behavior: none;
 }
+input[type="date"] {
+  cursor: pointer;
+}
+
+input[type="date"] svg{
+  cursor: pointer;
+}
 
 /* === ÉLÉMENTS DE BASE === */
 h1, h2, h3, h4, h5, h6 {
@@ -177,7 +184,7 @@ button {
   }
 }
 
-/* 🎨 STYLES CSS POUR LES ANIMATIONS
+/* STYLES CSS POUR LES ANIMATIONS */
   @keyframes fadeInBlur {
     from {
       opacity: 0;
@@ -201,7 +208,7 @@ button {
   }
 
   /* Animation de sortie (optionnelle) */
-  /* .modal-blur-wrapper.closing {
+  .modal-blur-wrapper.closing {
     animation: fadeOutBlur 0.2s ease-in forwards;
   }
 
@@ -216,3 +223,11 @@ button {
     }
   } */ 
 
+  .ellipsis {
+  display: inline-block;
+  max-width: 10rem; 
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}

@@ -5,10 +5,10 @@ export const servicesApi = baseApi.injectEndpoints({
     // Liste des services d'une progression
     getServicesByProgression: builder.query({
       query: (progressionId) => `/progressions/${progressionId}/services`,
-     providesTags: (result, error, progressionId) => [
-  { type: 'Services', id: progressionId },
-  'Services'
-]
+      providesTags: (result, error, progressionId) => [
+        { type: 'Services', id: progressionId },
+        'Services'
+      ]
     }),
 
     // Détail d'un service
@@ -31,7 +31,15 @@ export const servicesApi = baseApi.injectEndpoints({
         'Service'
       ]
     }),
-
+    // Modifier la date d'un service
+    updateServiceDate: builder.mutation({
+      query: ({ progressionId, serviceId, serviceDate }) => ({
+        url: `/progressions/${progressionId}/services/${serviceId}/date`,
+        method: 'PATCH',
+        body: { serviceDate }
+      }),
+      invalidatesTags: (r, e, { serviceId }) => [{ type: 'Service', id: serviceId }, 'Service']
+    }),
     // Supprimer un service
     deleteService: builder.mutation({
       query: ({ progressionId, serviceId }) => ({
@@ -48,5 +56,6 @@ export const {
   useGetServicesByProgressionQuery,
   useGetServiceByIdQuery,
   useUpdateServiceMutation,
-  useDeleteServiceMutation
+  useDeleteServiceMutation,
+  useUpdateServiceDateMutation
 } = servicesApi

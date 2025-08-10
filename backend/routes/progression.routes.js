@@ -12,10 +12,11 @@ const {
     getAllProgressions,
     getProgressionsByClassroom,
     getProgressionsByTeacher,
-    assignTeachersToProgression
+    assignTeachersToProgression,
+    patchServiceDate
 } = require("../controllers/progression.controllers");
 const {
-    getServices
+    getServices,
 } = require("../controllers/service.controllers");
 
 const router = express.Router();
@@ -40,5 +41,11 @@ router.put('/:id/assign-teachers', assignTeachersToProgression);//Ajout authenti
 router.get("/classroom/:classroomId", getProgressionsByClassroom)
 router.get("/teacher/:teacherId", getProgressionsByTeacher)
 
+router.patch(
+    '/:progressionId/services/:serviceId/date',
+    authenticateUser,
+    authorizeRoles('superAdmin', 'manager'),
+    patchServiceDate
+)
 
 module.exports = router;

@@ -40,6 +40,7 @@ const MenuEditorModal = ({
     const [createMenu, { isLoading: isCreating }] = useCreateMenuMutation()
     const [updateMenu, { isLoading: isUpdating }] = useUpdateMenuMutation()
 
+
     // --- État unifié pour le Drag & Drop ---
     const [dragState, setDragState] = useState({
         bank: [],
@@ -47,14 +48,13 @@ const MenuEditorModal = ({
         service: []
     })
 
-
-
     // RHF pour la gestion du contenu des sections
     const {
         handleSubmit,
         setValue,
         watch,
-        formState: { errors }
+        formState: { errors },
+        reset,
     } = useForm({
         resolver: yupResolver(menuSchema),
         defaultValues: {
@@ -64,28 +64,36 @@ const MenuEditorModal = ({
 
     // --- Initialisation du drag state ---
     useEffect(() => {
-        if (menu && menu.sections) {
+        // Si on a déjà une répartition sauvegardée, on la restaure
+        if (menu && menu.productionAssignment) {
+            setDragState({
+                bank: SECTIONS_ORDER.filter(key =>
+                    !menu.productionAssignment.cuisine.includes(key) &&
+                    !menu.productionAssignment.service.includes(key)
+                ),
+                cuisine: menu.productionAssignment.cuisine || [],
+                service: menu.productionAssignment.service || []
+            })
+        } else if (menu && menu.sections) {
+            // Fallback : si pas de productionAssignment, on fait une répartition par défaut
             const usedSections = Object.keys(menu.sections).filter(key =>
                 menu.sections[key] && menu.sections[key].length > 0
             )
 
-            // Répartition intelligente des sections
             const cuisineSections = []
             const serviceSections = []
 
             usedSections.forEach(sectionKey => {
-                // Logique de répartition basée sur le type de section
+                // Répartition par défaut si pas d'info
                 if (['Entrée', 'Plat', 'Fromage'].includes(sectionKey)) {
                     cuisineSections.push(sectionKey)
                 } else if (['AB', 'Dessert', 'Boisson'].includes(sectionKey)) {
                     serviceSections.push(sectionKey)
                 } else {
-                    // Par défaut, on met dans cuisine
                     cuisineSections.push(sectionKey)
                 }
             })
 
-            // Sections disponibles dans la banque
             const bankSections = SECTIONS_ORDER.filter(key => !usedSections.includes(key))
 
             setDragState({
@@ -102,6 +110,19 @@ const MenuEditorModal = ({
             })
         }
     }, [menu])
+
+    // --- remet toutes les sections du formulaire à partir du menu courant ---
+    useEffect(() => {
+        if (!isOpen) return;                           // évite le reset quand la modale est fermée
+        if (!menu) {
+            // Nouveau menu : on remet les valeurs par défaut (vide)
+            reset({ sections: sectionsToIdList({}) });
+            return;
+        }
+        // Menu existant : pré-remplir avec les items sauvés
+        reset({ sections: sectionsToIdList(menu.sections || {}) });
+    }, [isOpen, menu, reset]);
+
 
     // --- RHF: suivi dynamique des items ---
     const sectionsValue = watch('sections')
@@ -183,11 +204,17 @@ const MenuEditorModal = ({
                 sectionsPayload[sectionKey] = data.sections?.[sectionKey] || []
             })
 
+            // NOUVEAU : Sauvegarder la répartition cuisine/service
+            const productionAssignment = {
+                cuisine: dragState.cuisine || [],
+                service: dragState.service || []
+            }
+
             const payload = {
                 serviceId: service._id,
                 sections: sectionsPayload,
+                productionAssignment: productionAssignment, // Stocke qui fait quoi
             }
-            console.log('menu', payload)
 
             if (menu) {
                 await updateMenu({ id: menu._id, ...payload }).unwrap()
@@ -202,15 +229,8 @@ const MenuEditorModal = ({
         } catch (error) {
             toast.error(error?.data?.message || 'Erreur lors de la sauvegarde')
             console.error('Erreur soumission:', error)
-
         }
     }
-
-
-
-    //  Filtrage des formateurs 
-    const cuisineTeacher = progression?.teachers?.find(t => t.specialization === 'cuisine')
-    const serviceTeacher = progression?.teachers?.find(t => t.specialization === 'service')
 
     // ===================== RENDER ===========================
     return (
@@ -228,7 +248,12 @@ const MenuEditorModal = ({
                 <DragDropContext onDragEnd={handleDragEnd}>
                     {/* ====== Banque centrale des sections ====== */}
                     <div className="section-bank-container">
-                        <h3 className='section-bank-container-title'>
+                        <h3 style={{
+                            fontSize: '0.875rem',
+                            fontWeight: '600',
+                            color: 'var(--text-muted)',
+                            marginBottom: '0.75rem'
+                        }}>
                             Sections disponibles (glissez pour utiliser)
                         </h3>
                         <Droppable droppableId="bank" direction="horizontal">
@@ -250,7 +275,7 @@ const MenuEditorModal = ({
                                                         ref={provided.innerRef}
                                                         {...provided.draggableProps}
                                                         {...provided.dragHandleProps}
-                                                        className={`section-chip-drag ${snapshot.isDragging ? 'dragging' : ''}`}
+                                                        className={`section-chip ${snapshot.isDragging ? 'dragging' : ''}`}
                                                         style={{
                                                             ...provided.draggableProps.style,
                                                             backgroundColor: snapshot.isDragging
@@ -292,10 +317,10 @@ const MenuEditorModal = ({
                                 >
                                     <div className="menu-column-header">
                                         <h2 className="menu-column-title">Production Cuisine</h2>
-                                        {cuisineTeacher && (
-                                            <strong className=' badge-warning'>
-                                                {cuisineTeacher.firstname} {cuisineTeacher.lastname}
-                                            </strong>
+                                        {progression?.cuisineTeacher && (
+                                            <span className="menu-column-teacher">
+                                                {progression.cuisineTeacher.firstname} {progression.cuisineTeacher.lastname}
+                                            </span>
                                         )}
                                     </div>
 
@@ -317,7 +342,7 @@ const MenuEditorModal = ({
                                                                 borderColor: SECTIONS_CONFIG[sectionKey]?.color || 'var(--border)'
                                                             }}
                                                         >
-                                                            <div className="section-header-drag-chips">
+                                                            <div className="section-header">
                                                                 <div className="section-header-left" {...provided.dragHandleProps}>
                                                                     <GripVertical size={16} style={{ opacity: 0.5 }} />
                                                                     <span className="section-title">
@@ -370,10 +395,10 @@ const MenuEditorModal = ({
                                 >
                                     <div className="menu-column-header">
                                         <h2 className="menu-column-title">Production Service</h2>
-                                        {serviceTeacher && (
-                                            <strong className=' badge-warning'>
-                                                {serviceTeacher.firstname} {serviceTeacher.lastname}
-                                            </strong>
+                                        {progression?.serviceTeacher && (
+                                            <span className="menu-column-teacher">
+                                                {progression.serviceTeacher.firstname} {progression.serviceTeacher.lastname}
+                                            </span>
                                         )}
                                     </div>
 
@@ -395,7 +420,7 @@ const MenuEditorModal = ({
                                                                 borderColor: SECTIONS_CONFIG[sectionKey]?.color || 'var(--border)'
                                                             }}
                                                         >
-                                                            <div className="section-header-drag-chips">
+                                                            <div className="section-header">
                                                                 <div className="section-header-left" {...provided.dragHandleProps}>
                                                                     <GripVertical size={16} style={{ opacity: 0.5 }} />
                                                                     <span className="section-title">
@@ -444,7 +469,7 @@ const MenuEditorModal = ({
                 <div className="form-actions mt-8 flex justify-end gap-4">
                     <button
                         type="button"
-                        className="btn btn-ghost"
+                        className="btn btn-secondary"
                         onClick={onClose}
                         disabled={isCreating || isUpdating}
                     >

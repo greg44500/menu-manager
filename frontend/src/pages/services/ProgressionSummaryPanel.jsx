@@ -79,7 +79,7 @@ const ProgressionSummaryPanel = ({
                                     {uniqueTeachers.map(t => (
                                         <li key={t._id}>
                                             {t.fullName || `${t.firstname} ${t.lastname}`}
-                                            <span className="small-tag">({t.specialization})</span>
+                                            <span className="badge">({t.specialization})</span>
                                         </li>
                                     ))}
                                 </ul>
